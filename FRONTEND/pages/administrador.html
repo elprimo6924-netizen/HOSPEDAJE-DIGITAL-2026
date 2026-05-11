@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospedaje - Panel Administrativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="/src/css/style.css">
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+    <!-- Include Sidebar Component -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content Area with Flex Layout -->
+    <div class="flex">
+        <main class="flex-1 mt-10 p-6">
+            <!-- DATOS DEL DASHBOARD FAKE -->
+            <div class="bg-white p-8 rounded-xl shadow-md mb-8">
+                <h3 class="text-2xl font-bold text-slate-800 mb-6">📊 Estadísticas del Sistema</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
+                        <p class="text-slate-600 text-sm">Total Usuarios</p>
+                        <p class="text-3xl font-bold text-blue-600">1,247</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
+                        <p class="text-slate-600 text-sm">Habitaciones Activas</p>
+                        <p class="text-3xl font-bold text-green-600">48</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-600">
+                        <p class="text-slate-600 text-sm">Reservas Este Mes</p>
+                        <p class="text-3xl font-bold text-purple-600">342</p>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-600">
+                        <p class="text-slate-600 text-sm">Ingresos Totales</p>
+                        <p class="text-3xl font-bold text-orange-600">$45,230</p>
+                    </div>
+                </div>
+
+                <div class="h-80">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/src/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospedaje Digital - Ragnarök</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <!-- Fuente Nórdica Cinzel -->
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="navbar">
+    <h1>⚔ Hospedaje Digital</h1>
+    <button onclick="logout()" class="btn-logout">Cerrar sesión</button>
+</header>
+
+<!-- ================= DASHBOARD ================= -->
+<section class="dashboard">
+    <h2>Dashboard del Hospedaje</h2>
+    <div class="cards">
+        <div class="card neon">
+            <h3>Total Reservas</h3>
+            <p id="totalReservas">0</p>
+        </div>
+        <div class="card neon">
+            <h3>Ingresos Totales</h3>
+            <p id="totalIngresos">$0</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= HABITACIONES ================= -->
+<section class="panel neon">
+    <h2>Habitaciones</h2>
+    <button onclick="abrirModalHabitacion()" class="btn-crud">➕ Nueva habitación</button>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Habitación</th>
+                <th>Precio</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaHabitaciones"></tbody>
+    </table>
+</section>
+
+<!-- ================= CLIENTES ================= -->
+<section class="panel neon">
+    <h2>Clientes</h2>
+    <button onclick="abrirModalCliente()" class="btn-crud">➕ Nuevo cliente</button>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Documento</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaClientes"></tbody>
+    </table>
+</section>
+
+<!-- ================= PAQUETES DE PODER (RAGNARÖK) ================= -->
+<section class="panel neon-bifrost">
+    <h2>ᚠ Paquetes de los Reinos</h2>
+    <button onclick="abrirModalPaquete()" class="btn-crud">➕ Forjar Nuevo Paquete</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Runa</th>
+                <th>Paquete</th>
+                <th>Costo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaPaquetes"></tbody>
+    </table>
+</section>
+
+<!-- ================= BUSCAR HABITACIONES (AIRBNB STYLE) ================= -->
+<section class="panel neon">
+    <h2>Explorar Disponibilidad</h2>
+    <input type="date" id="inicio">
+    <input type="date" id="fin">
+    <button onclick="buscarHabitaciones()" class="btn-crud">Buscar</button>
+    <div id="habitacionesDisponibles"></div>
+</section>
+
+<!-- ================= MODALES ================= -->
+
+<!-- 1. MODAL HABITACION -->
+<div id="modalHabitacion" class="modal">
+    <div class="modal-content neon">
+        <h3>Nueva Habitación</h3>
+        <input type="text" id="nombreHab" placeholder="Nombre habitación">
+        <input type="text" id="descHab" placeholder="Descripción">
+        <input type="number" id="precioHab" placeholder="Precio">
+        <button onclick="guardarHabitacion()" class="btn-crud">Guardar</button>
+        <button onclick="cerrarModalHabitacion()" class="btn-cancel">Cancelar</button>
+    </div>
+</div>
+
+<!-- 2. MODAL CLIENTE -->
+<div id="modalCliente" class="modal">
+    <div class="modal-content neon">
+        <h3>Nuevo Cliente</h3>
+        <input type="text" id="docCliente" placeholder="Documento">
+        <input type="text" id="nombreCliente" placeholder="Nombre">
+        <input type="text" id="apellidoCliente" placeholder="Apellido">
+        <input type="email" id="emailCliente" placeholder="Email">
+        <input type="text" id="telefonoCliente" placeholder="Teléfono">
+        <button onclick="guardarCliente()" class="btn-crud">Guardar</button>
+        <button onclick="cerrarModalCliente()" class="btn-cancel">Cancelar</button>
+    </div>
+</div>
+
+<!-- 3. MODAL RESERVA BIFROST -->
+<div id="modalReserva" class="modal">
+    <div class="modal-content neon-bifrost">
+        <h2 class="glow-text-blue">ᚱᛅᛋᛅᚱᚢᛅ - Sellar Pacto de Estancia</h2>
+        <div class="reserva-grid-airbnb">
+            <div class="inputs-ragnarok">
+                <label>ID del Guerrero (Documento)</label>
+                <input type="text" id="resDocCliente" placeholder="Nro Documento">
+                <div class="fechas-group">
+                    <div>
+                        <label>Llegada</label>
+                        <input type="date" id="resFechaInicio" class="input-neon" onchange="actualizarPrecioTotal()">
+                    </div>
+                    <div>
+                        <label>Salida</label>
+                        <input type="date" id="resFechaFin" class="input-neon" onchange="actualizarPrecioTotal()">
+                    </div>
+                </div>
+            </div>
+            <div class="paquetes-check">
+                <label>Bendiciones Adicionales</label>
+                <div id="listaPaquetesCheck" class="scroll-paquetes"></div>
+            </div>
+        </div>
+        <div class="resumen-pago neon-fury">
+            <p>Subtotal Noches: <span id="resSubtotal">$0</span></p>
+            <p>Extras (Paquetes): <span id="resExtras">$0</span></p>
+            <p>IVA (19%): <span id="resIva">$0</span></p>
+            <hr class="divider-rune">
+            <h3>TOTAL: <span id="resTotal" class="glow-text-gold">$0</span></h3>
+        </div>
+        <div class="modal-actions">
+            <button onclick="confirmarReserva()" class="btn-reserva-brutal">Sellar en el Muro</button>
+            <button onclick="cerrarModalReserva()" class="btn-cancel">Retirada</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= JS ================= -->
+<script src="./js/app.js"></script>
+
+</body>
+</html>

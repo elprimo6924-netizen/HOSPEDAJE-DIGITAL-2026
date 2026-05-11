@@ -1,0 +1,65 @@
+/* ============================================
+   BASE - Estilos Generales
+   ============================================ */
+
+/* Importar archivos base */
+@import 'reset.css';
+@import 'variables.css';
+
+/* ============================================
+   LAYOUT GENERAL
+   ============================================ */
+
+body {
+    background:
+        radial-gradient(circle at 12% -5%, rgba(255, 140, 66, 0.18), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(15, 61, 62, 0.2), transparent 28%),
+        var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-family);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.55;
+}
+
+main {
+    flex: 1;
+    max-width: var(--max-width-xl);
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-md);
+    width: 100%;
+    max-width: 1320px;
+    padding-top: calc(var(--spacing-xl) + 6px);
+}
+
+/* ============================================
+   HELPERS
+   ============================================ */
+
+.hidden {
+    display: none !important;
+}
+
+/* ============================================
+   MAIN WRAPPER
+   ============================================ */
+
+.main-wrapper {
+    transition: margin-left var(--transition-base);
+    margin-left: 80px;
+}
+
+.main-wrapper.sidebar-open {
+    margin-left: 280px;
+}
+
+@media (max-width: 768px) {
+    .main-wrapper {
+        margin-left: 0;
+    }
+    
+    .main-wrapper.sidebar-open {
+        margin-left: 0;
+    }
+}

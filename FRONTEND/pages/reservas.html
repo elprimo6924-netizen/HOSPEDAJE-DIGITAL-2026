@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas - Hospedaje Digital</title>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+
+        .crud-reservas-toolbar { display:flex; align-items:center; justify-content:space-between; gap:var(--spacing-md); margin-bottom:var(--spacing-md); }
+        .btn-nueva-reserva { padding:.75rem 1.5rem; background:#c2410c; color:#fff; border:none; border-radius:10px; font-size:.9rem; font-weight:700; cursor:pointer; letter-spacing:.03em; transition:background .2s; }
+        .btn-nueva-reserva:hover { background:#9a3412; }
+
+        .crud-reservas-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--spacing-md); margin-bottom:var(--spacing-lg); }
+        .crud-reservas-summary article { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-md); box-shadow:var(--shadow-sm); }
+        .crud-reservas-summary span    { display:block; color:var(--color-text-light); font-size:var(--font-size-sm); margin-bottom:var(--spacing-xs); }
+        .crud-reservas-summary strong  { font-size:2rem; color:#c2410c; }
+
+        .crud-reservas-panel  { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-lg); box-shadow:var(--shadow-sm); }
+        .crud-reservas-panel h4 { font-size:var(--font-size-xl); color:#c2410c; margin-bottom:var(--spacing-sm); }
+        .crud-reservas-note   { color:var(--color-text-light); margin:0 0 var(--spacing-md); }
+        .crud-reservas-lista-top { display:flex; justify-content:space-between; gap:var(--spacing-md); align-items:flex-start; margin-bottom:var(--spacing-md); }
+
+        .crud-reservas-filtros { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+        .crud-reservas-filtros input  { flex:1 1 240px; min-width:240px; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:10px; background:var(--color-white); color:var(--color-text); font:inherit; }
+        .crud-reservas-filtros select { flex:0 0 180px; min-width:180px; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:10px; background:var(--color-white); color:var(--color-text); font:inherit; }
+        .crud-reservas-filtros input:focus, .crud-reservas-filtros select:focus { outline:none; border-color:#c2410c; box-shadow:0 0 0 3px rgba(194,65,12,.12); }
+
+        .crud-reservas-tabla-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:14px; background:#fff; }
+        .crud-reservas-tabla { width:100%; min-width:1000px; border-collapse:collapse; }
+        .crud-reservas-tabla thead th { background:#f8fafc; color:#c2410c; text-align:left; padding:1rem; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e2e8f0; }
+        .crud-reservas-tabla tbody td { padding:1rem; border-bottom:1px solid #edf2f7; vertical-align:middle; color:var(--color-text); }
+        .crud-reservas-tabla tbody tr:hover { background:#f8fafc; }
+        .crud-reservas-acciones { display:flex; flex-wrap:wrap; gap:.5rem; }
+
+        .badge-estado { display:inline-flex; align-items:center; padding:.25rem .65rem; border-radius:999px; font-weight:700; font-size:.78rem; }
+        .badge-estado.activa    { background:#dcfce7; color:#166534; }
+        .badge-estado.cancelada { background:#fee2e2; color:#991b1b; }
+        .badge-estado.otro      { background:#e2e8f0; color:#475569; }
+
+        .crud-reservas-mensaje { min-height:1.5rem; color:var(--color-text-light); font-size:var(--font-size-sm); display:inline-flex; align-items:center; padding:.5rem .75rem; border-radius:10px; background:rgba(255,255,255,.98); box-shadow:0 10px 24px rgba(15,23,42,.12); }
+        .crud-reservas-mensaje.error { color:var(--color-danger); }
+        .crud-reservas-mensaje.ok    { color:#14532d; background:rgba(20,83,45,.08); }
+
+        /* Modal detalle */
+        .modal-reserva-overlay { position:fixed; inset:0; z-index:1200; display:grid; place-items:center; background:rgba(15,23,42,.55); padding:1rem; }
+        .modal-reserva-overlay.hidden { display:none; }
+        .modal-reserva-content { width:min(700px,100%); max-height:84vh; overflow:auto; background:#fff; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 24px 48px rgba(15,23,42,.25); padding:var(--spacing-lg); position:relative; }
+        .modal-reserva-content h4 { font-size:1.3rem; color:#c2410c; margin-bottom:var(--spacing-md); }
+        .modal-reserva-close { position:absolute; top:.6rem; right:.8rem; border:none; background:transparent; font-size:2rem; line-height:1; cursor:pointer; color:#64748b; }
+        .modal-reserva-close:hover { color:#0f172a; }
+        .detalle-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+        .detalle-item { padding:.75rem .9rem; border:1px solid #dbe4f0; border-radius:12px; background:#f8fbff; }
+        .detalle-item span   { display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; font-weight:700; margin-bottom:.3rem; }
+        .detalle-item strong { color:#0f172a; font-size:.95rem; }
+
+        /* ── Pagination ── */
+        .pag-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.9rem 1rem; border-top:1px solid #f1f5f9; margin-top:.5rem; }
+        .pag-info { font-size:.8rem; color:#64748b; }
+        .pag-info strong { color:#0f172a; }
+        .pag-controls { display:flex; align-items:center; gap:.35rem; }
+        .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#64748b; }
+        .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e2e8f0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#0f172a; cursor:pointer; outline:none; }
+        .pag-per-page select:focus { border-color:#c2410c; }
+        .pag-btn {
+            min-width:34px; height:34px; padding:0 .5rem;
+            border:1.5px solid #e2e8f0; border-radius:8px;
+            background:#fff; color:#334155; font-size:.82rem; font-weight:600;
+            cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+            transition:all .15s;
+        }
+        .pag-btn:hover:not(:disabled) { border-color:#c2410c; color:#c2410c; background:#fff7ed; }
+        .pag-btn.active  { background:#c2410c; color:#fff; border-color:#c2410c; }
+        .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
+        .pag-btn.dots { cursor:default; border-color:transparent; background:transparent; }
+
+        @media (max-width:720px) {
+            .crud-reservas-summary { grid-template-columns:1fr; }
+            .detalle-grid { grid-template-columns:1fr; }
+            .crud-reservas-lista-top { flex-direction:column; }
+            .pag-bar { flex-direction:column; align-items:flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper">
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
+        </header>
+
+        <main>
+            <div class="crud-reservas-toolbar">
+                <button type="button" class="btn-nueva-reserva" id="btn-nueva-reserva">
+                    <i class="fa-solid fa-plus"></i> NUEVA RESERVA
+                </button>
+                <div id="mensaje-reservas-admin" class="crud-reservas-mensaje" aria-live="polite"></div>
+            </div>
+
+            <div class="crud-reservas-summary">
+                <article><span>Total</span><strong id="reservas-total">0</strong></article>
+                <article><span>Activas</span><strong id="reservas-activas">0</strong></article>
+                <article><span>Canceladas</span><strong id="reservas-canceladas">0</strong></article>
+            </div>
+
+            <div class="crud-reservas-panel">
+                <div class="crud-reservas-lista-top">
+                    <div>
+                        <h4>Listado de Reservas</h4>
+                        <p class="crud-reservas-note">Busca por cliente, estado o documento.</p>
+                    </div>
+                    <div class="crud-reservas-filtros">
+                        <input type="search" id="busqueda-reservas" placeholder="Buscar reserva...">
+                        <select id="filtro-estado-reservas">
+                            <option value="all">Todos los estados</option>
+                            <option value="1">Activa</option>
+                            <option value="2">Completada</option>
+                            <option value="3">Cancelada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="crud-reservas-tabla-wrap">
+                    <table class="crud-reservas-tabla">
+                        <thead>
+                            <tr>
+                                <th>#</th><th>Cliente</th><th>Paquetes</th>
+                                <th>Fecha Inicio</th><th>Fecha Fin</th>
+                                <th>Total</th><th>Estado</th><th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservas-tbody">
+                            <tr><td colspan="8" class="mensaje-vacio">Cargando reservas...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Barra de paginación -->
+                <div class="pag-bar" id="pag-bar-reservas">
+                    <div class="pag-per-page">
+                        Mostrar
+                        <select id="reservas-per-page">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                        </select>
+                        por página
+                    </div>
+                    <div class="pag-info" id="reservas-pag-info"></div>
+                    <div class="pag-controls" id="reservas-pag-controls"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal detalle -->
+        <div id="modal-reserva-detalle" class="modal-reserva-overlay hidden" role="dialog" aria-modal="true">
+            <div class="modal-reserva-content">
+                <button class="modal-reserva-close" id="btn-cerrar-modal-reserva" aria-label="Cerrar">&times;</button>
+                <h4>Detalle de Reserva</h4>
+                <div id="detalle-reserva-contenido" class="detalle-grid"></div>
+            </div>
+        </div>
+
+        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        /* ── Utilidades ── */
+        function badgeEstado(id, nombre) {
+            const map   = { 1:'activa', 2:'otro', 3:'cancelada' };
+            const label = nombre || {1:'Activa',2:'Completada',3:'Cancelada'}[id] || `Estado ${id}`;
+            return `<span class="badge-estado ${map[id]||'otro'}">${label}</span>`;
+        }
+        const formatFecha = f => f ? new Date(f).toLocaleDateString('es-CO') : '-';
+        const formatMonto = m => '$' + Number(m||0).toLocaleString('es-CO');
+
+        let reservasCargadas  = [];
+        let listaFiltrada     = [];
+        let paginaActual      = 1;
+
+        function getPerPage() {
+            return parseInt(document.getElementById('reservas-per-page')?.value || '10', 10);
+        }
+
+        /* ── Mensaje ── */
+        function mostrarMensaje(texto, tipo = '') {
+            const el = document.getElementById('mensaje-reservas-admin');
+            el.textContent = texto;
+            el.className = 'crud-reservas-mensaje' + (tipo ? ` ${tipo}` : '');
+            if ((tipo === 'ok' || tipo === 'error') && typeof showAlert === 'function')
+                showAlert(texto, tipo === 'ok' ? 'success' : 'error');
+        }
+
+        /* ── Contadores ── */
+        function actualizarContadores(lista) {
+            document.getElementById('reservas-total').textContent      = lista.length;
+            document.getElementById('reservas-activas').textContent    = lista.filter(r => r.IdEstadoReserva === 1).length;
+            document.getElementById('reservas-canceladas').textContent = lista.filter(r => r.IdEstadoReserva === 3).length;
+        }
+
+        /* ── Paginación helper ── */
+        function pageNumbers(current, total) {
+            if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+            const pages = [];
+            pages.push(1);
+            if (current > 3)          pages.push('...');
+            for (let i = Math.max(2, current-1); i <= Math.min(total-1, current+1); i++) pages.push(i);
+            if (current < total - 2)  pages.push('...');
+            pages.push(total);
+            return pages;
+        }
+
+        /* ── Render tabla (slice de página) ── */
+        function renderTabla(lista) {
+            const tbody  = document.getElementById('reservas-tbody');
+            const pp     = getPerPage();
+            const total  = lista.length;
+            const pages  = Math.max(1, Math.ceil(total / pp));
+
+            if (paginaActual > pages) paginaActual = pages;
+
+            const desde  = (paginaActual - 1) * pp;
+            const hasta  = Math.min(desde + pp, total);
+            const pagina = lista.slice(desde, hasta);
+
+            if (!pagina.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="mensaje-vacio">No hay reservas.</td></tr>';
+            } else {
+                tbody.innerHTML = pagina.map(r => `
+                    <tr>
+                        <td><strong>#${r.IDReserva}</strong></td>
+                        <td>${r.Nombre||''} ${r.Apellido||''}<br><small style="color:#64748b">${r.NroDocumentoCliente||''}</small></td>
+                        <td>${r.Paquetes||'<span style="color:#94a3b8">—</span>'}</td>
+                        <td>${formatFecha(r.FechaInicio)}</td>
+                        <td>${formatFecha(r.FechaFinalizacion)}</td>
+                        <td><strong>${formatMonto(r.MontoTotal)}</strong></td>
+                        <td>${badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)}</td>
+                        <td>
+                            <div class="crud-reservas-acciones">
+                                <button class="btn-mini btn-mini-ver"     onclick="verDetalle(${r.IDReserva})"         title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn-mini btn-mini-editar"  onclick="editarReserva(${r.IDReserva})"      title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                                ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva})" title="Cancelar"><i class="fa-solid fa-ban"></i></button>` : ''}
+                                <button class="btn-mini btn-mini-eliminar" onclick="eliminarReservaUI(${r.IDReserva})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`).join('');
+            }
+
+            /* ── info ── */
+            document.getElementById('reservas-pag-info').innerHTML =
+                total ? `Mostrando <strong>${desde+1}–${hasta}</strong> de <strong>${total}</strong> reservas` : '';
+
+            /* ── botones ── */
+            const ctrl = document.getElementById('reservas-pag-controls');
+            if (total <= pp) { ctrl.innerHTML = ''; return; }
+
+            const nums = pageNumbers(paginaActual, pages);
+            ctrl.innerHTML =
+                `<button class="pag-btn" onclick="irPagina(${paginaActual-1})" ${paginaActual===1?'disabled':''}>
+                    <i class="fa-solid fa-chevron-left"></i>
+                 </button>` +
+                nums.map(n => n === '...'
+                    ? `<button class="pag-btn dots">…</button>`
+                    : `<button class="pag-btn ${n===paginaActual?'active':''}" onclick="irPagina(${n})">${n}</button>`
+                ).join('') +
+                `<button class="pag-btn" onclick="irPagina(${paginaActual+1})" ${paginaActual===pages?'disabled':''}>
+                    <i class="fa-solid fa-chevron-right"></i>
+                 </button>`;
+        }
+
+        function irPagina(n) {
+            const pp    = getPerPage();
+            const pages = Math.max(1, Math.ceil(listaFiltrada.length / pp));
+            if (n < 1 || n > pages) return;
+            paginaActual = n;
+            renderTabla(listaFiltrada);
+            document.querySelector('.crud-reservas-tabla-wrap')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }
+
+        /* ── Filtrar ── */
+        function filtrar() {
+            const texto  = document.getElementById('busqueda-reservas').value.toLowerCase();
+            const estado = document.getElementById('filtro-estado-reservas').value;
+            listaFiltrada = reservasCargadas;
+            if (estado !== 'all') listaFiltrada = listaFiltrada.filter(r => String(r.IdEstadoReserva) === estado);
+            if (texto) listaFiltrada = listaFiltrada.filter(r =>
+                (r.Nombre||'').toLowerCase().includes(texto) ||
+                (r.Apellido||'').toLowerCase().includes(texto) ||
+                (r.NroDocumentoCliente||'').toLowerCase().includes(texto)
+            );
+            paginaActual = 1;
+            renderTabla(listaFiltrada);
+        }
+
+        /* ── Cargar ── */
+        async function cargarReservas() {
+            try {
+                const data = await requestJson('/reservas');
+                reservasCargadas = Array.isArray(data) ? data : [];
+                listaFiltrada    = reservasCargadas;
+                actualizarContadores(reservasCargadas);
+                paginaActual = 1;
+                renderTabla(listaFiltrada);
+            } catch (e) {
+                mostrarMensaje('Error al cargar reservas.', 'error');
+                document.getElementById('reservas-tbody').innerHTML =
+                    '<tr><td colspan="8" class="mensaje-vacio">Error al cargar reservas.</td></tr>';
+            }
+        }
+
+        /* ── Navegación ── */
+        function nuevaReserva() {
+            sessionStorage.removeItem('reserva_form_data');
+            window.location.href = '../reserva-form.html';
+        }
+
+        function editarReserva(id) {
+            const r = reservasCargadas.find(x => x.IDReserva === id);
+            if (!r) return;
+            sessionStorage.setItem('reserva_form_data', JSON.stringify(r));
+            window.location.href = '../reserva-form.html';
+        }
+
+        /* ── Ver detalle ── */
+        function verDetalle(id) {
+            const r = reservasCargadas.find(x => x.IDReserva === id);
+            if (!r) return;
+            const campos = [
+                ['ID Reserva',    `#${r.IDReserva}`],
+                ['Cliente',       `${r.Nombre||''} ${r.Apellido||''}`],
+                ['Documento',     r.NroDocumentoCliente||'-'],
+                ['Fecha reserva', formatFecha(r.FechaReserva)],
+                ['Fecha inicio',  formatFecha(r.FechaInicio)],
+                ['Fecha fin',     formatFecha(r.FechaFinalizacion)],
+                ['Subtotal',      formatMonto(r.SubTotal)],
+                ['Descuento',     formatMonto(r.Descuento)],
+                ['IVA',           formatMonto(r.IVA)],
+                ['Total',         formatMonto(r.MontoTotal)],
+                ['Estado',        r.NombreEstadoReserva||'-'],
+                ['Paquetes',      r.Paquetes||'Ninguno'],
+                ['Servicios',     r.Servicios||'Ninguno'],
+            ];
+            document.getElementById('detalle-reserva-contenido').innerHTML = campos.map(([l,v]) =>
+                `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('');
+            document.getElementById('modal-reserva-detalle').classList.remove('hidden');
+        }
+
+        /* ── Cancelar / Eliminar ── */
+        async function cancelarReservaUI(id) {
+            if (!confirm(`¿Cancelar la reserva #${id}?`)) return;
+            try {
+                await requestJson(`/reservas/${id}/cancelar`, { method: 'PUT' });
+                mostrarMensaje(`Reserva #${id} cancelada.`, 'ok');
+                cargarReservas();
+            } catch { mostrarMensaje('Error al cancelar.', 'error'); }
+        }
+
+        async function eliminarReservaUI(id) {
+            if (!confirm(`¿Eliminar definitivamente la reserva #${id}? No se puede deshacer.`)) return;
+            try {
+                await requestJson(`/reservas/${id}`, { method: 'DELETE', allowNoContent: true });
+                mostrarMensaje(`Reserva #${id} eliminada.`, 'ok');
+                cargarReservas();
+            } catch { mostrarMensaje('Error al eliminar.', 'error'); }
+        }
+
+        /* ── Init ── */
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const session = window.getStoredSession ? window.getStoredSession() : null;
+                if (!session) { window.location.href = '../login.html'; return; }
+
+                await window.loadSidebarComponent('sidebar-placeholder');
+                await window.filterSidebarByPermissions();
+
+                document.getElementById('busqueda-reservas').addEventListener('input', filtrar);
+                document.getElementById('filtro-estado-reservas').addEventListener('change', filtrar);
+                document.getElementById('reservas-per-page').addEventListener('change', () => {
+                    paginaActual = 1;
+                    renderTabla(listaFiltrada);
+                });
+                document.getElementById('btn-nueva-reserva').addEventListener('click', nuevaReserva);
+                document.getElementById('btn-cerrar-modal-reserva').addEventListener('click', () =>
+                    document.getElementById('modal-reserva-detalle').classList.add('hidden'));
+                document.getElementById('modal-reserva-detalle').addEventListener('click', e => {
+                    if (e.target === e.currentTarget)
+                        document.getElementById('modal-reserva-detalle').classList.add('hidden');
+                });
+
+                cargarReservas();
+            } catch (e) { console.error('Error en reservas.html:', e); }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Reserva — Hospedaje Digital</title>
+    
+    <!-- CSS Base -->
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/modals.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        .confirmation-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+        }
+        
+        .confirmation-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--color-success);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin-bottom: var(--spacing-xl);
+            animation: scaleIn 600ms ease;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .confirmation-content {
+            max-width: 600px;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .confirmation-content h1 {
+            font-size: var(--font-size-xxxl);
+            color: var(--color-primary);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .confirmation-content p {
+            color: var(--color-text-light);
+            font-size: var(--font-size-lg);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .reservation-details {
+            background: var(--color-white);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xl);
+            margin: var(--spacing-xl) 0;
+            text-align: left;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: var(--color-text-light);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        .detail-value {
+            color: var(--color-text-dark);
+            font-weight: var(--font-weight-bold);
+        }
+        
+        .reservation-number {
+            background: var(--color-light-gray);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .reservation-number-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .reservation-number-value {
+            font-size: 24px;
+            font-family: monospace;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-primary);
+            letter-spacing: 2px;
+        }
+        
+        .confirmation-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-xl);
+        }
+        
+        .confirmation-actions button,
+        .confirmation-actions a {
+            flex: 0 1 auto;
+        }
+        
+        .next-steps {
+            background: rgba(26, 37, 47, 0.04);
+            border-left: 4px solid var(--color-primary);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            margin-top: var(--spacing-xl);
+            text-align: left;
+        }
+        
+        .next-steps h3 {
+            margin-bottom: var(--spacing-md);
+            color: var(--color-primary);
+        }
+        
+        .next-steps ol {
+            padding-left: var(--spacing-lg);
+        }
+        
+        .next-steps li {
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-text);
+            line-height: var(--line-height-relaxed);
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="../index.html" class="navbar-logo">
+                <div class="navbar-logo-icon">
+                    <i class="fa-solid fa-hotel"></i>
+                </div>
+                <span>Hospedaje Digital</span>
+            </a>
+            
+            <ul class="navbar-nav">
+                <li><a href="../index.html#inicio">Inicio</a></li>
+                <li><a href="../index.html#propiedades">Propiedades</a></li>
+                <li><a href="../index.html#contacto">Contacto</a></li>
+            </ul>
+            
+            <div class="navbar-actions">
+                <a href="../login.html" class="btn btn-ghost">Inicia sesión</a>
+                <a href="register.html" class="btn btn-primary">Registrarme</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- MAIN CONTENT -->
+    <main class="main-container">
+        <div class="confirmation-container">
+            <div class="confirmation-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            
+            <div class="confirmation-content">
+                <h1>¡Reserva Confirmada!</h1>
+                <p>Tu reserva ha sido registrada exitosamente. Te hemos enviado un email con los detalles.</p>
+            </div>
+            
+            <div class="reservation-details">
+                <div class="reservation-number">
+                    <div class="reservation-number-label">Número de Reserva</div>
+                    <div class="reservation-number-value" id="reservation-id">HD20260508-001234</div>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Propiedad</span>
+                    <span class="detail-value" id="detail-property">Casa de Montaña Exclusiva</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Entrada (Check-in)</span>
+                    <span class="detail-value" id="detail-checkin">15 de mayo de 2026</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Salida (Check-out)</span>
+                    <span class="detail-value" id="detail-checkout">18 de mayo de 2026</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Noches</span>
+                    <span class="detail-value" id="detail-nights">3 noches</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Huéspedes</span>
+                    <span class="detail-value" id="detail-guests">2 huéspedes</span>
+                </div>
+                
+                <div class="detail-row" style="border-bottom: 2px solid var(--color-primary); margin-bottom: var(--spacing-md);">
+                    <span class="detail-label">Precio Total</span>
+                    <span class="detail-value" style="font-size: 20px; color: var(--color-primary);">$<span id="detail-total">450</span></span>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h3>Próximos pasos</h3>
+                <ol>
+                    <li><strong>Revisa tu email:</strong> Hemos enviado todos los detalles y el voucher a tu correo electrónico.</li>
+                    <li><strong>Descarga tu voucher:</strong> Tendrás acceso a un PDF con todos los detalles de la reserva.</li>
+                    <li><strong>Contacto previo:</strong> La propiedad se comunicará contigo 24h antes de tu llegada.</li>
+                    <li><strong>Check-in fácil:</strong> Sigue las instrucciones que recibirás por email para acceder sin problemas.</li>
+                </ol>
+            </div>
+            
+            <div class="confirmation-actions">
+                <button class="btn btn-primary" onclick="downloadVoucher()">
+                    <i class="fa-solid fa-download"></i>
+                    Descargar Voucher
+                </button>
+                <a href="reservas.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-history"></i>
+                    Ver mis reservas
+                </a>
+                <a href="../index.html#propiedades" class="btn btn-ghost">
+                    <i class="fa-solid fa-search"></i>
+                    Buscar otro lugar
+                </a>
+            </div>
+        </div>
+    </main>
+    
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-section">
+                <h4><i class="fa-solid fa-hotel"></i> Hospedaje Digital</h4>
+                <p style="font-size: var(--font-size-sm); color: rgba(255, 255, 255, 0.7);">Tu plataforma de confianza para reservar experiencias inolvidables.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Navegación</h4>
+                <ul>
+                    <li><a href="../index.html">Inicio</a></li>
+                    <li><a href="../index.html#propiedades">Propiedades</a></li>
+                    <li><a href="../index.html#contacto">Contacto</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-divider"></div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    
+    <script>
+        /**
+         * BOOKING CONFIRMATION PAGE
+         */
+        function init() {
+            console.log('[BookingConfirmation] Inicializando...');
+            
+            // Get reservation ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const reservationId = params.get('reservationId') || 'HD20260508-001234';
+            
+            document.getElementById('reservation-id').textContent = reservationId;
+            
+            // TODO: Load reservation details from API
+            // For now, using demo data
+            console.log('[BookingConfirmation] ✅ Reserva confirmada:', reservationId);
+        }
+        
+        function downloadVoucher() {
+            console.log('[BookingConfirmation] Descargando voucher...');
+            alert('Feature: Generación de PDF voucher. En desarrollo.');
+            // TODO: Implementar generación de PDF
+        }
+        
+        // Initialize
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

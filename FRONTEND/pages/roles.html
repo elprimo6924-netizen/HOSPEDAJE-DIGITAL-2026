@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Roles - Hospedaje Digital</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hospedaje-green': '#064e3b',
+                        'hospedaje-blue': '#2563eb',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilo para el Switch de Estado */
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ef4444; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(22px); }
+    </style>
+</head>
+<body class="bg-[#f1f5f9] min-h-screen font-sans text-slate-800">
+
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper flex flex-col min-h-screen">
+        
+        <header class="bg-hospedaje-green text-white p-4 shadow-md">
+            <div class="container mx-auto flex items-center gap-3">
+                <i class="fa-solid fa-hotel text-xl"></i>
+                <h1 class="text-lg font-semibold tracking-tight">Hospedaje Digital</h1>
+            </div>
+        </header>
+
+        <main class="flex-1 p-4 md:p-8">
+            
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-hospedaje-green"></i> Gestión de Roles
+                    </h2>
+                    <p class="text-slate-500 text-sm mt-1">Configura los niveles de acceso y permisos del sistema.</p>
+                </div>
+                <button id="btn-crear-rol" class="bg-gradient-to-r from-[#c2410c] to-[#ea580c] hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all uppercase text-xs tracking-widest">
+                    + NUEVO ROL
+                </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="busqueda-roles" placeholder="Buscar por nombre del rol..." 
+                            class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-hospedaje-green focus:outline-none text-slate-700">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-buscar" class="bg-hospedaje-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
+                        <button id="btn-limpiar" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Limpiar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400">Nombre del Rol</th>
+                                <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Estado</th>
+                                <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roles-tbody" class="divide-y divide-slate-100">
+                            <!-- JS inyectará las filas aquí -->
+                            <tr><td colspan="3" class="p-8 text-center text-slate-500 italic">Cargando roles...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            <!-- Paginación (Sección que faltaba) -->
+                <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium">
+                    <span id="roles-info">Mostrando 0 a 0 de 0 roles</span>
+                    <div class="flex gap-1" id="pagination-controls">
+                        <button id="prevPage" class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors">
+                            ← Anterior
+                        </button>
+                        <button id="nextPage" class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors">
+                            Siguiente →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-hospedaje-green text-white/40 text-center py-4 text-[10px] uppercase tracking-widest">
+            &copy; 2026 Hospedaje Digital. Todos los derechos reservados.
+        </footer>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/rolFormModal.js"></script>
+    <script src="../js/roles.js"></script>
+</body>
+</html>

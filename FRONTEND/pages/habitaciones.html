@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Habitaciones - Hospedaje Digital</title>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            background-color: var(--color-background) !important;
+            color: var(--color-text) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar placeholder (será reemplazado dinámicamente) -->
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper">
+        <!-- Header y Navegación -->
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+                </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Sección CRUD de Habitaciones -->
+            <section id="seccion-administrar-habitaciones" class="crud-habitaciones-section">
+                <div class="crud-habitaciones-toolbar">
+                    <button type="button" class="btn-accion-crud btn-accion-principal" id="btn-nueva-habitacion-admin">+ NUEVA HABITACION</button>
+                    <div id="mensaje-habitacion-admin" class="crud-habitaciones-mensaje" aria-live="polite"></div>
+                </div>
+
+                <div class="crud-habitaciones-summary">
+                    <article>
+                        <span>Total</span>
+                        <strong id="habitaciones-admin-total">0</strong>
+                    </article>
+                    <article>
+                        <span>Disponibles</span>
+                        <strong id="habitaciones-admin-disponibles">0</strong>
+                    </article>
+                    <article>
+                        <span>No disponibles</span>
+                        <strong id="habitaciones-admin-no-disponibles">0</strong>
+                    </article>
+                </div>
+
+                <div class="crud-habitaciones-layout">
+                    <section class="crud-habitaciones-panel crud-habitaciones-panel-lista">
+                        <div class="crud-habitaciones-lista-top">
+                            <div>
+                                <h4>Listado</h4>
+                                <p class="crud-habitaciones-note">Busca por nombre, descripción o estado y usa las acciones por fila.</p>
+                            </div>
+
+                            <div class="crud-habitaciones-filtros">
+                                <input type="search" id="busqueda-habitaciones-admin" placeholder="Buscar habitación">
+                                <select id="filtro-estado-habitaciones-admin" aria-label="Filtrar habitaciones por estado">
+                                    <option value="all">Todos</option>
+                                    <option value="available">Disponibles</option>
+                                    <option value="unavailable">No disponibles</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="crud-habitaciones-tabla-wrap">
+                            <table class="crud-habitaciones-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Nombre</th>
+                                        <th>Costo</th>
+                                        <th>Estado</th>
+                                        <th>Descripción</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="habitaciones-admin-tbody">
+                                    <tr>
+                                        <td colspan="6" class="mensaje-vacio">Cargando habitaciones...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <div id="modal-habitacion-admin" class="crud-modal hidden" role="dialog" aria-modal="true" aria-labelledby="habitacion-admin-form-title">
+                <div class="crud-modal-content">
+                    <button type="button" class="crud-modal-close" id="btn-cerrar-modal-habitacion" aria-label="Cerrar formulario">&times;</button>
+                    <h4 id="habitacion-admin-form-title">Crear habitación</h4>
+                    <p class="crud-habitaciones-note">Los campos están alineados con la estructura real de la base de datos.</p>
+                    <div id="mensaje-habitacion-admin-modal" class="crud-habitaciones-mensaje" aria-live="polite"></div>
+
+                    <form id="form-habitacion-admin" class="crud-habitaciones-form">
+                        <input type="hidden" id="habitacion-admin-id">
+
+                        <label>
+                            <span>Nombre de la habitación <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="text" id="habitacion-admin-nombre" required maxlength="30" placeholder="Ej. Suite Premium">
+                        </label>
+
+                        <label>
+                            <span>Descripción <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <textarea id="habitacion-admin-descripcion" required maxlength="50" placeholder="Describe la habitación en pocas palabras"></textarea>
+                        </label>
+
+                        <label>
+                            <span>Costo <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="number" id="habitacion-admin-costo" required min="0" step="0.01" placeholder="Ej. 250000">
+                        </label>
+
+                        <label>
+                            <span>Estado <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <select id="habitacion-admin-estado" required>
+                                <option value="1">Disponible</option>
+                                <option value="0">No disponible</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            Imágenes por URL
+                            <textarea id="habitacion-admin-imagen" placeholder="Pega una o varias URL separadas por salto de línea o coma"></textarea>
+                            <small class="crud-habitaciones-help">Pega una o varias URLs para armar la galería del detalle.</small>
+                        </label>
+
+                        <div id="habitacion-admin-preview-wrap" class="crud-habitaciones-preview hidden">
+                            <p>Vista previa:</p>
+                            <img id="habitacion-admin-preview" alt="Vista previa de habitación">
+                        </div>
+
+                        <div class="crud-habitaciones-form-actions">
+                            <button type="submit" class="btn-accion-crud btn-accion-principal" id="btn-habitacion-admin-guardar">Guardar habitación</button>
+                            <button type="button" class="btn-accion-crud btn-accion-secundaria" id="btn-habitacion-admin-limpiar">Limpiar formulario</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="modal-detalle-admin" class="crud-modal hidden" role="dialog" aria-modal="true" aria-labelledby="detalle-admin-titulo">
+                <div class="crud-modal-content crud-detalle-modal-content">
+                    <button type="button" class="crud-modal-close" id="btn-cerrar-modal-detalle" aria-label="Cerrar detalle">&times;</button>
+                    <h4 id="detalle-admin-titulo">Detalle</h4>
+                    <div id="detalle-admin-contenido" class="detalle-admin-contenido"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/eventos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
+
+                if (!session) {
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                await window.loadSidebarComponent('sidebar-placeholder');
+                await window.filterSidebarByPermissions();
+
+                // Cargar habitaciones
+                if (typeof cargarHabitacionesAdmin === 'function') {
+                    cargarHabitacionesAdmin();
+                }
+            } catch (error) {
+                console.error('Error en habitaciones.html:', error);
+            }
+        });
+    </script>
+</body>
+</html>

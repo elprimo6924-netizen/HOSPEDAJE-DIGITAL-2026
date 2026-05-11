@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hospedaje Digital</title>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+
+        /* ── Layout ── */
+        .db-wrap { max-width: 1260px; margin: 0 auto; }
+
+        /* ── Header ── */
+        .db-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.6rem; }
+        .db-title  { font-size: 1.55rem; font-weight: 800; color: #0f172a; margin: 0; }
+        .db-title span { color: #c2410c; }
+        .db-date   { font-size: .82rem; color: #64748b; font-weight: 500; }
+
+        /* ── KPI cards ── */
+        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
+        .kpi-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 1.1rem 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,.05);
+            display: flex; flex-direction: column; gap: .25rem;
+            transition: transform .18s, box-shadow .18s;
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.09); }
+        .kpi-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; margin-bottom: .45rem;
+        }
+        .kpi-label { font-size: .71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
+        .kpi-value { font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+        .kpi-value.sm { font-size: 1.35rem; }
+        .kpi-sub   { font-size: .72rem; color: #94a3b8; margin-top: .1rem; }
+
+        .kpi-icon.orange { background: #fff7ed; color: #c2410c; }
+        .kpi-icon.green  { background: #f0fdf4; color: #16a34a; }
+        .kpi-icon.blue   { background: #eff6ff; color: #2563eb; }
+        .kpi-icon.purple { background: #f5f3ff; color: #7c3aed; }
+        .kpi-icon.teal   { background: #f0fdfa; color: #0d9488; }
+
+        /* ── Row layouts ── */
+        .db-row2   { display: grid; grid-template-columns: 1.8fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .db-row2b  { display: grid; grid-template-columns: 1fr 1fr;   gap: 1rem; margin-bottom: 1rem; }
+
+        /* ── Card panel ── */
+        .db-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.05); overflow: hidden;
+        }
+        .db-card-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.3rem; border-bottom: 1px solid #f1f5f9;
+            background: #fafbfc;
+        }
+        .db-card-head h4 { font-size: .92rem; font-weight: 700; color: #0f172a; margin: 0; }
+        .db-card-head h4 i { color: #c2410c; margin-right: .4rem; }
+        .db-card-body { padding: 1.2rem 1.3rem; }
+
+        /* ── Chart ── */
+        .chart-wrap { position: relative; height: 240px; }
+
+        /* ── Tabla recientes ── */
+        .db-table { width: 100%; border-collapse: collapse; }
+        .db-table thead th {
+            background: #f8fafc; color: #c2410c; text-align: left;
+            padding: .7rem .9rem; font-size: .72rem; text-transform: uppercase;
+            letter-spacing: .05em; border-bottom: 1.5px solid #e2e8f0; white-space: nowrap;
+        }
+        .db-table tbody td {
+            padding: .75rem .9rem; border-bottom: 1px solid #f1f5f9;
+            font-size: .84rem; color: #0f172a; vertical-align: middle;
+        }
+        .db-table tbody tr:last-child td { border-bottom: none; }
+        .db-table tbody tr:hover td { background: #fafafa; }
+
+        /* Badge estado */
+        .badge { display: inline-flex; align-items: center; gap: .3rem; padding: .18rem .55rem; border-radius: 999px; font-size: .7rem; font-weight: 700; }
+        .badge-confirmada { background: #dcfce7; color: #166534; }
+        .badge-pendiente  { background: #fef9c3; color: #854d0e; }
+        .badge-cancelada  { background: #fee2e2; color: #991b1b; }
+        .badge-completada { background: #eff6ff; color: #1d4ed8; }
+        .badge-en-curso   { background: #f0fdfa; color: #0f766e; }
+        .badge-default    { background: #f1f5f9; color: #475569; }
+
+        /* ── Ranking bar ── */
+        .rank-list { display: flex; flex-direction: column; gap: .65rem; }
+        .rank-item { display: flex; flex-direction: column; gap: .25rem; }
+        .rank-label { display: flex; justify-content: space-between; font-size: .8rem; }
+        .rank-name  { font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+        .rank-count { font-weight: 700; color: #c2410c; }
+        .rank-bar-bg { height: 7px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+        .rank-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#c2410c,#ea580c); transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+        /* ── Skeleton ── */
+        .skeleton { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* ── Responsive ── */
+        @media (max-width:1100px) {
+            .kpi-grid { grid-template-columns: repeat(3,1fr); }
+            .db-row2  { grid-template-columns: 1fr; }
+        }
+        @media (max-width:700px) {
+            .kpi-grid   { grid-template-columns: 1fr 1fr; }
+            .db-row2b   { grid-template-columns: 1fr; }
+        }
+        @media (max-width:420px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper">
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
+        </header>
+
+        <main>
+            <div class="db-wrap">
+
+                <!-- Header -->
+                <div class="db-header">
+                    <h2 class="db-title"><i class="fa-solid fa-chart-line" style="color:#c2410c;margin-right:.45rem"></i>Panel de <span>Control</span></h2>
+                    <span class="db-date" id="db-fecha"></span>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid" id="kpi-grid">
+                    <div class="kpi-card"><div class="kpi-icon orange skeleton" style="width:44px;height:44px"></div><div class="kpi-label skeleton" style="height:10px;width:70%;margin-top:.3rem"></div><div class="kpi-value skeleton" style="height:28px;width:50%;margin-top:.3rem"></div></div>
+                    <div class="kpi-card"><div class="kpi-icon skeleton" style="width:44px;height:44px"></div><div class="kpi-label skeleton" style="height:10px;width:70%;margin-top:.3rem"></div><div class="kpi-value skeleton" style="height:28px;width:50%;margin-top:.3rem"></div></div>
+                    <div class="kpi-card"><div class="kpi-icon skeleton" style="width:44px;height:44px"></div><div class="kpi-label skeleton" style="height:10px;width:70%;margin-top:.3rem"></div><div class="kpi-value skeleton" style="height:28px;width:50%;margin-top:.3rem"></div></div>
+                    <div class="kpi-card"><div class="kpi-icon skeleton" style="width:44px;height:44px"></div><div class="kpi-label skeleton" style="height:10px;width:70%;margin-top:.3rem"></div><div class="kpi-value skeleton" style="height:28px;width:50%;margin-top:.3rem"></div></div>
+                    <div class="kpi-card"><div class="kpi-icon skeleton" style="width:44px;height:44px"></div><div class="kpi-label skeleton" style="height:10px;width:70%;margin-top:.3rem"></div><div class="kpi-value skeleton" style="height:28px;width:50%;margin-top:.3rem"></div></div>
+                </div>
+
+                <!-- Row 1: Gráfico barras + Donut estado -->
+                <div class="db-row2">
+                    <div class="db-card">
+                        <div class="db-card-head">
+                            <h4><i class="fa-solid fa-chart-bar"></i> Reservas e Ingresos por Mes</h4>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="chart-wrap"><canvas id="chart-mensual"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="db-card">
+                        <div class="db-card-head">
+                            <h4><i class="fa-solid fa-circle-half-stroke"></i> Reservas por Estado</h4>
+                        </div>
+                        <div class="db-card-body" style="display:flex;align-items:center;justify-content:center">
+                            <div class="chart-wrap" style="height:220px;width:100%"><canvas id="chart-estado"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Top paquetes + Top servicios -->
+                <div class="db-row2b">
+                    <div class="db-card">
+                        <div class="db-card-head">
+                            <h4><i class="fa-solid fa-box-open"></i> Paquetes más solicitados</h4>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="rank-list" id="rank-paquetes">
+                                <div class="rank-item"><div class="rank-bar-bg"><div class="rank-bar-fill skeleton" style="width:100%;height:7px"></div></div></div>
+                                <div class="rank-item"><div class="rank-bar-bg"><div class="rank-bar-fill skeleton" style="width:70%;height:7px"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="db-card">
+                        <div class="db-card-head">
+                            <h4><i class="fa-solid fa-concierge-bell"></i> Servicios más solicitados</h4>
+                        </div>
+                        <div class="db-card-body">
+                            <div class="rank-list" id="rank-servicios">
+                                <div class="rank-item"><div class="rank-bar-bg"><div class="rank-bar-fill skeleton" style="width:100%;height:7px"></div></div></div>
+                                <div class="rank-item"><div class="rank-bar-bg"><div class="rank-bar-fill skeleton" style="width:60%;height:7px"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Tabla recientes -->
+                <div class="db-card" style="margin-bottom:1rem">
+                    <div class="db-card-head">
+                        <h4><i class="fa-solid fa-calendar-check"></i> Reservas Recientes</h4>
+                        <a href="reservas.html" style="font-size:.78rem;color:#c2410c;font-weight:700;text-decoration:none">
+                            Ver todas <i class="fa-solid fa-arrow-right" style="font-size:.7rem"></i>
+                        </a>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="db-table" id="tabla-recientes">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Documento</th>
+                                    <th>Fecha inicio</th>
+                                    <th>Fecha fin</th>
+                                    <th>Monto total</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-recientes">
+                                <tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+    /* ── helpers ── */
+    const fmt  = v => '$' + Number(v || 0).toLocaleString('es-CO');
+    const fmtN = v => Number(v || 0).toLocaleString('es-CO');
+
+    function fmtFecha(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function badgeEstado(nombre) {
+        const n = (nombre || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+        const map = {
+            confirmada: 'badge-confirmada',
+            pendiente:  'badge-pendiente',
+            cancelada:  'badge-cancelada',
+            completada: 'badge-completada',
+            'en curso': 'badge-en-curso',
+        };
+        const cls = map[n] || 'badge-default';
+        return `<span class="badge ${cls}">${nombre || '—'}</span>`;
+    }
+
+    /* ── KPI cards ── */
+    function renderKPIs(d) {
+        const kpis = [
+            { icon:'fa-calendar-check',  cls:'orange', label:'Total Reservas',  value: fmtN(d.totalReservas),    sub:'históricas' },
+            { icon:'fa-coins',           cls:'green',  label:'Ingresos Totales',value: fmt(d.ingresosTotales),   sub:'acumulados', small: true },
+            { icon:'fa-users',           cls:'blue',   label:'Clientes',        value: fmtN(d.totalClientes),    sub:'registrados' },
+            { icon:'fa-bed',             cls:'purple', label:'Habitaciones',    value: fmtN(d.habActivas),       sub:'activas' },
+            { icon:'fa-box-open',        cls:'teal',   label:'Paquetes',        value: fmtN(d.paqActivos),       sub:'activos' },
+        ];
+        document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
+            <div class="kpi-card">
+                <div class="kpi-icon ${k.cls}"><i class="fa-solid ${k.icon}"></i></div>
+                <div class="kpi-label">${k.label}</div>
+                <div class="kpi-value${k.small ? ' sm' : ''}">${k.value}</div>
+                <div class="kpi-sub">${k.sub}</div>
+            </div>`).join('');
+    }
+
+    /* ── Gráfico barras: reservas e ingresos por mes ── */
+    function renderChartMensual(data) {
+        const labels   = data.map(r => {
+            const [y, m] = r.mes.split('-');
+            return new Date(y, m-1).toLocaleDateString('es-CO', { month:'short', year:'2-digit' });
+        });
+        const reservas = data.map(r => r.total);
+        const ingresos = data.map(r => Number(r.ingresos) / 1000); // en miles
+
+        new Chart(document.getElementById('chart-mensual'), {
+            data: {
+                labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Reservas',
+                        data: reservas,
+                        backgroundColor: 'rgba(194,65,12,.85)',
+                        borderRadius: 6,
+                        yAxisID: 'y',
+                    },
+                    {
+                        type: 'line',
+                        label: 'Ingresos (miles $)',
+                        data: ingresos,
+                        borderColor: '#0d9488',
+                        backgroundColor: 'rgba(13,148,136,.12)',
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0d9488',
+                        tension: .35,
+                        fill: true,
+                        yAxisID: 'y2',
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } } },
+                scales: {
+                    y:  { beginAtZero: true, position: 'left',  ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+                    y2: { beginAtZero: true, position: 'right', ticks: { font: { size: 11 }, callback: v => '$' + v + 'k' }, grid: { display: false } },
+                    x:  { ticks: { font: { size: 11 } }, grid: { display: false } },
+                }
+            }
+        });
+    }
+
+    /* ── Gráfico donut: por estado ── */
+    function renderChartEstado(data) {
+        const COLORS = ['#c2410c','#16a34a','#dc2626','#2563eb','#0d9488','#7c3aed'];
+        new Chart(document.getElementById('chart-estado'), {
+            type: 'doughnut',
+            data: {
+                labels: data.map(r => r.nombre),
+                datasets: [{
+                    data: data.map(r => r.total),
+                    backgroundColor: COLORS.slice(0, data.length),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverOffset: 8,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                cutout: '62%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 12 } }
+                }
+            }
+        });
+    }
+
+    /* ── Ranking bars ── */
+    function renderRanking(containerId, items, nameKey) {
+        const max = items.length ? Math.max(...items.map(i => i.total)) : 1;
+        document.getElementById(containerId).innerHTML = items.length
+            ? items.map(item => `
+                <div class="rank-item">
+                    <div class="rank-label">
+                        <span class="rank-name">${item[nameKey]}</span>
+                        <span class="rank-count">${item.total} vez${item.total !== 1 ? 'es' : ''}</span>
+                    </div>
+                    <div class="rank-bar-bg">
+                        <div class="rank-bar-fill" style="width:${Math.round((item.total/max)*100)}%"></div>
+                    </div>
+                </div>`).join('')
+            : '<p style="color:#94a3b8;font-size:.82rem;text-align:center;padding:.5rem 0">Sin datos aún</p>';
+    }
+
+    /* ── Tabla recientes ── */
+    function renderRecientes(data) {
+        document.getElementById('tbody-recientes').innerHTML = data.length
+            ? data.map(r => `
+                <tr>
+                    <td><strong style="color:#c2410c">#${r.IdReserva}</strong></td>
+                    <td>${r.NroDocumentoCliente}</td>
+                    <td>${fmtFecha(r.FechaInicio)}</td>
+                    <td>${fmtFecha(r.FechaFinalizacion)}</td>
+                    <td><strong>${fmt(r.Monto_Total)}</strong></td>
+                    <td>${badgeEstado(r.estado)}</td>
+                </tr>`).join('')
+            : '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8">Sin reservas</td></tr>';
+    }
+
+    /* ── Init ── */
+    document.addEventListener('DOMContentLoaded', async () => {
+        const session = window.getStoredSession ? window.getStoredSession() : null;
+        if (!session) { window.location.href = '../login.html'; return; }
+
+        /* Fecha actual */
+        document.getElementById('db-fecha').textContent =
+            new Date().toLocaleDateString('es-CO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+        await window.loadSidebarComponent('sidebar-placeholder');
+
+        try {
+            const data = await requestJson('/dashboard/estadisticas');
+
+            renderKPIs(data);
+            renderChartMensual(data.reservasPorMes || []);
+            renderChartEstado(data.reservasPorEstado || []);
+            renderRanking('rank-paquetes',  data.topPaquetes  || [], 'NombrePaquete');
+            renderRanking('rank-servicios', data.topServicios || [], 'NombreServicio');
+            renderRecientes(data.reservasRecientes || []);
+
+        } catch (e) {
+            console.error('Dashboard error:', e.message);
+            document.getElementById('kpi-grid').innerHTML =
+                '<div style="grid-column:1/-1;text-align:center;color:#dc2626;padding:1rem;font-size:.85rem">' +
+                '<i class="fa-solid fa-triangle-exclamation"></i> Error al cargar estadísticas. Verifica la conexión con el servidor.</div>';
+        }
+    });
+    </script>
+</body>
+</html>

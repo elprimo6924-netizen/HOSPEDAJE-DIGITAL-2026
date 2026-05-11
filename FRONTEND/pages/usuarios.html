@@ -1,0 +1,237 @@
+<!doctype html>
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Gestión de Usuarios - Hospedaje Digital</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="../css/reset.css" />
+
+    <link rel="stylesheet" href="../css/variables.css" />
+
+    <link rel="stylesheet" href="../css/styles.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "hospedaje-green": "#064e3b",
+
+              "hospedaje-blue": "#2563eb",
+
+              "hospedaje-orange": "#ea580c",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      /* Estilo para el Switch de Estado */
+
+      .switch {
+        position: relative;
+
+        display: inline-block;
+
+        width: 44px;
+
+        height: 22px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background-color: #ef4444;
+        transition: 0.4s;
+
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+
+        height: 16px;
+        width: 16px;
+
+        left: 3px;
+        bottom: 3px;
+
+        background-color: white;
+        transition: 0.4s;
+
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #22c55e;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div id="sidebar-placeholder"></div>
+    <div id="main-wrapper" class="main-wrapper flex flex-col min-h-screen" style="background-color: #f1f5f9; color: #1e293b; font-family: sans-serif">
+      <header class="bg-hospedaje-green text-white p-4 shadow-md">
+        <div class="container mx-auto flex items-center gap-3">
+          <i class="fa-solid fa-hotel text-xl"></i>
+
+          <h1 class="text-lg font-semibold tracking-tight">Hospedaje Digital</h1>
+        </div>
+      </header>
+
+      <main class="flex-1 p-4 md:p-8">
+        <!-- Encabezado con botón estilo Habitaciones -->
+
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-users text-hospedaje-green"></i>
+              Gestión de Usuarios
+            </h2>
+
+            <p class="text-slate-500 text-sm mt-1">Administra el personal, sus roles y estados de acceso.</p>
+          </div>
+
+          <button id="btn-crear-usuario" class="bg-gradient-to-r from-[#c2410c] to-[#ea580c] hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all uppercase text-xs tracking-widest">+ NUEVO USUARIO</button>
+        </div>
+
+        <!-- Buscador -->
+
+        <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
+          <div class="flex flex-col md:flex-row gap-3">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+              <input type="text" id="busqueda-usuarios" placeholder="Buscar por nombre, email o documento..." autocomplete="off" class="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-hospedaje-green focus:outline-none text-slate-700" />
+            </div>
+
+            <div class="flex gap-2">
+              <button id="id-btn-buscar" class="bg-hospedaje-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
+
+              <button id="btn-limpiar" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Limpiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400">Nombre / Email</th>
+
+                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Rol</th>
+
+                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Estado</th>
+
+                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody id="usuarios-tbody" class="divide-y divide-slate-100">
+                <!-- Ejemplo de fila con los componentes solicitados -->
+
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="p-4">
+                    <div class="font-bold text-slate-800">example</div>
+
+                    <div class="text-xs text-slate-500">example@example.com</div>
+                  </td>
+
+                  <td class="p-4 text-center">
+                    <!-- 1. Lista desplegable de Rol -->
+
+                    <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-hospedaje-green outline-none text-slate-700">
+                      <option value="admin">example</option>
+
+                      <option value="recep">example</option>
+
+                      <option value="empleado">example</option>
+                    </select>
+                  </td>
+
+                  <td class="p-4 text-center">
+                    <!-- 2. Switch de Estado (Verde/Rojo) -->
+
+                    <label class="switch">
+                      <input type="checkbox" checked />
+
+                      <span class="slider"></span>
+                    </label>
+                  </td>
+
+                  <td class="p-4">
+                    <!-- 3. Iconos Lápiz y Papelera (Estilo Habitaciones) -->
+
+                    <div class="flex justify-center gap-2">
+                      <button class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors shadow-sm" title="Editar">
+                        <i class="fa-solid fa-pencil"></i>
+                      </button>
+
+                      <button class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors shadow-sm" title="Eliminar">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium">
+            <span id="usuarios-info">Mostrando 1 a 5 de 5 usuarios</span>
+
+            <div class="flex gap-1">
+              <button class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100">Anterior</button>
+
+              <button class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100">Siguiente</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="bg-hospedaje-green text-white/40 text-center py-4 text-[10px] uppercase tracking-widest">&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</footer>
+    </div>
+
+    <!-- Scripts -->
+
+    <script src="../js/config.js"></script>
+
+    <script src="../js/main.js"></script>
+
+    <script src="../js/api.js"></script>
+
+    <script src="../js/usuarios.js"></script>
+
+    <script src="../js/usuarioFormModal.js"></script>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Hospedaje Digital</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <style>
+        /* Mantenemos solo las animaciones y estados de visibilidad que Tailwind no maneja por defecto en clases estáticas */
+        .hidden { display: none; }
+        input:disabled, select:disabled { cursor: not-allowed; background-color: #f1f5f9; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+    <!-- Sidebar placeholder -->
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper flex flex-col min-h-screen">
+        <!-- Header y Navegación -->
+        <header class="bg-hospedaje-green text-white p-4 shadow-md">
+            <div class="container mx-auto flex items-center gap-3">
+                <i class="fa-solid fa-hotel text-xl"></i>
+                <h1 class="text-lg font-semibold tracking-tight">Hospedaje Digital</h1>
+            </div>
+        </header>
+
+        <main class="flex-grow p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <!-- Encabezado de Perfil -->
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-extrabold text-slate-900 mb-2">👤 Mi Perfil</h1>
+                    <p class="text-slate-500">Administra tu información personal y credenciales</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                    
+                    <!-- MODO VISTA -->
+                    <div id="profileViewMode" class="view-mode p-8 space-y-8">
+                        
+                        <!-- Sección 1 -->
+                        <section>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">📋 Información de Documento</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tipo de Documento</label>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewTipoDocumento">-</div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Número de Documento</label>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewNumeroDocumento">-</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Sección 2 -->
+                        <section>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">📱 Datos de Contacto</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre</label>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewNombre">-</div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Apellido</label>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewApellido">-</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Teléfono</label>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewTelefono">-</div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">País</label>
+                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewPais">-</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Dirección</label>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewDireccion">-</div>
+                            </div>
+                        </section>
+
+                        <!-- Sección 3 y 4 en grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <section>
+                                <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">🔐 Acceso</h2>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label>
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewEmail">-</div>
+                            </section>
+                            <section>
+                                <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">🔑 Rol</h2>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tu Rol</label>
+                                <div class="bg-orange-50 text-orange-700 p-3 rounded-lg border border-orange-100 font-bold text-center" id="viewRol">-</div>
+                            </section>
+                        </div>
+
+                        <!-- Botones Vista -->
+                        <div class="flex flex-col md:flex-row gap-4 justify-center pt-8 border-top border-slate-100">
+                            <button type="button" id="editProfileBtn" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-amber-100 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
+                            </button>
+                            <button type="button" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-bold py-3 px-8 rounded-xl transition-all flex items-center justify-center gap-2" onclick="cerrarSesion()">
+                                <i class="fa-solid fa-door-open"></i> Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MODO EDICIÓN -->
+                    <form id="profileForm" class="edit-mode hidden p-8 space-y-8 bg-slate-50/50">
+                        
+                        <section>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4 border-b-2 border-blue-100 pb-2">📋 Editar Documento</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label for="TipoDocumento" class="block text-sm font-semibold text-slate-700">Tipo de Documento <span class="text-red-500">*</span></label>
+                                    <select id="TipoDocumento" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                        <option value="">Selecciona un tipo</option>
+                                        <option value="CC">Cédula de Ciudadanía</option>
+                                        <option value="CE">Cédula de Extranjería</option>
+                                        <option value="TI">Tarjeta de Identidad</option>
+                                        <option value="PA">Pasaporte</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="NumeroDocumento" class="block text-sm font-semibold text-slate-700">Número de Documento <span class="text-red-500">*</span></label>
+                                    <input type="text" id="NumeroDocumento" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4 border-b-2 border-blue-100 pb-2">📱 Datos Personales</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                <div class="space-y-2">
+                                    <label for="Nombre" class="block text-sm font-semibold text-slate-700">Nombre <span class="text-red-500">*</span></label>
+                                    <input type="text" id="Nombre" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="Apellido" class="block text-sm font-semibold text-slate-700">Apellido <span class="text-red-500">*</span></label>
+                                    <input type="text" id="Apellido" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                <div class="space-y-2">
+                                    <label for="Telefono" class="block text-sm font-semibold text-slate-700">Teléfono</label>
+                                    <input type="text" id="Telefono" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="Pais" class="block text-sm font-semibold text-slate-700">País</label>
+                                    <input type="text" id="Pais" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="Direccion" class="block text-sm font-semibold text-slate-700">Dirección</label>
+                                <input type="text" id="Direccion" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                            </div>
+                        </section>
+
+                        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label for="Email" class="block text-sm font-semibold text-slate-400">Email (No editable)</label>
+                                <input type="email" id="Email" disabled class="w-full p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label for="Rol" class="block text-sm font-semibold text-slate-400">Rol (No editable)</label>
+                                <input type="text" id="Rol" disabled class="w-full p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 font-bold">
+                            </div>
+                        </section>
+
+                        <!-- Botones Edición -->
+                        <div class="flex flex-col md:flex-row gap-4 justify-between pt-8 border-t border-slate-200">
+                            <button type="button" id="deleteAccountBtn" class="text-red-500 hover:text-red-700 font-bold py-3 px-6 rounded-xl transition-colors order-3 md:order-1">
+                                🗑️ Borrar Cuenta
+                            </button>
+                            <div class="flex flex-col md:flex-row gap-3 order-1 md:order-2">
+                                <button type="button" id="cancelEditBtn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-8 rounded-xl transition-all">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-xl shadow-lg shadow-blue-200 transition-all">
+                                    ✅ Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-slate-100 py-8 text-center text-slate-500 text-sm border-t border-slate-200">
+            <p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/perfil.js"></script>
+</body>
+</html>

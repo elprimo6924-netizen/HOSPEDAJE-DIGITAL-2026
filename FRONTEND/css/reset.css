@@ -1,0 +1,274 @@
+/* ============================================
+   RESET CSS - Normalización Global
+   ============================================ */
+
+/* ─────────────────────────────────────────
+   BOX SIZING
+   ───────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ─────────────────────────────────────────
+   DOCUMENT & ROOT
+   ───────────────────────────────────────── */
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    text-rendering: optimizeSpeed;
+}
+
+/* ─────────────────────────────────────────
+   TYPOGRAPHY RESET
+   ───────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-family: var(--font-family-heading);
+    line-height: var(--line-height-tight);
+}
+
+h1 { font-size: var(--font-size-display); }
+h2 { font-size: var(--font-size-xxxl); }
+h3 { font-size: var(--font-size-xxl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
+
+p {
+    margin: 0;
+}
+
+/* ─────────────────────────────────────────
+   LINKS
+   ───────────────────────────────────────── */
+
+a {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a:visited {
+    color: inherit;
+}
+
+/* ─────────────────────────────────────────
+   LISTS
+   ───────────────────────────────────────── */
+
+ol,
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    margin: 0;
+    padding: 0;
+}
+
+/* ─────────────────────────────────────────
+   IMAGES & MEDIA
+   ───────────────────────────────────────── */
+
+img,
+picture,
+svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+img {
+    vertical-align: middle;
+}
+
+svg {
+    overflow: visible;
+}
+
+/* ─────────────────────────────────────────
+   FORMS & INPUTS
+   ───────────────────────────────────────── */
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+}
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+input,
+select,
+textarea {
+    border: none;
+    background: transparent;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+/* ─────────────────────────────────────────
+   TABLES
+   ───────────────────────────────────────── */
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0;
+    padding: 0;
+}
+
+th,
+td {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    vertical-align: top;
+}
+
+/* ─────────────────────────────────────────
+   BLOCKQUOTE & QUOTES
+   ───────────────────────────────────────── */
+
+blockquote,
+q {
+    quotes: none;
+    margin: 0;
+    padding: 0;
+}
+
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+    content: '';
+    content: none;
+}
+
+/* ─────────────────────────────────────────
+   MAIN SEMANTIC
+   ───────────────────────────────────────── */
+
+main {
+    display: block;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section {
+    display: block;
+}
+
+/* ─────────────────────────────────────────
+   UTILITIES
+   ───────────────────────────────────────── */
+
+hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: var(--spacing-md) 0;
+}
+
+code,
+pre {
+    font-family: 'Courier New', monospace;
+    background: var(--color-light-gray);
+    border-radius: var(--border-radius-sm);
+}
+
+code {
+    padding: 2px 6px;
+    font-size: 0.9em;
+}
+
+pre {
+    padding: var(--spacing-md);
+    overflow-x: auto;
+}
+
+strong,
+b {
+    font-weight: var(--font-weight-bold);
+}
+
+em,
+i {
+    font-style: italic;
+}
+
+small {
+    font-size: 0.875em;
+}
+
+mark {
+    background: #fef3c7;
+    padding: 2px 4px;
+}
+
+del {
+    text-decoration: line-through;
+}
+
+ins {
+    text-decoration: underline;
+}
+
+sub,
+sup {
+    font-size: 0.75em;
+    line-height: 0;
+    position: relative;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+sup {
+    top: -0.5em;
+}

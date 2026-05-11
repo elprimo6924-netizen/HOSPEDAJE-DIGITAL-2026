@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Propiedad — Hospedaje Digital</title>
+    
+    <!-- CSS Base -->
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/modals.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* ────────────────────────────────────────────
+           PROPERTY DETAIL LAYOUT
+           ──────────────────────────────────────────── */
+        .property-detail-container {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: var(--spacing-xl);
+            align-items: start;
+        }
+        
+        @media (max-width: 1024px) {
+            .property-detail-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ────────────────────────────────────────────
+           GALLERY CAROUSEL
+           ──────────────────────────────────────────── */
+        .property-gallery {
+            position: relative;
+            border-radius: var(--border-radius-xl);
+            overflow: hidden;
+            background: var(--color-light-gray);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .gallery-main {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gallery-main-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            opacity: 0;
+            transition: opacity 300ms ease;
+        }
+        
+        .gallery-main-img.active {
+            opacity: 1;
+        }
+        
+        .gallery-controls {
+            position: absolute;
+            bottom: var(--spacing-md);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: var(--spacing-sm);
+            z-index: 10;
+        }
+        
+        .gallery-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            border: none;
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+        
+        .gallery-dot.active {
+            background: var(--color-white);
+            width: 24px;
+            border-radius: 4px;
+        }
+        
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 var(--spacing-md);
+            pointer-events: none;
+        }
+        
+        .gallery-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: all;
+            color: var(--color-primary);
+            font-size: 18px;
+            transition: all var(--transition-fast);
+        }
+        
+        .gallery-btn:hover {
+            background: var(--color-white);
+            transform: scale(1.1);
+        }
+        
+        .gallery-thumbs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--color-light-gray);
+        }
+        
+        .gallery-thumb {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color var(--transition-fast);
+        }
+        
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .gallery-thumb.active {
+            border-color: var(--color-primary);
+        }
+        
+        /* ────────────────────────────────────────────
+           PROPERTY INFO
+           ──────────────────────────────────────────── */
+        .property-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .property-title-group h1 {
+            font-size: var(--font-size-xxxl);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .property-rating {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .property-rating .stars {
+            display: flex;
+            gap: 2px;
+            color: var(--color-secondary);
+        }
+        
+        .property-rating .rating-text {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-light);
+        }
+        
+        .property-location {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .property-price-hero {
+            text-align: right;
+        }
+        
+        .property-price-hero .price {
+            font-size: 32px;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-primary);
+        }
+        
+        .property-price-hero .price-unit {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-light);
+        }
+        
+        /* ────────────────────────────────────────────
+           AMENITIES GRID
+           ──────────────────────────────────────────── */
+        .amenities-section {
+            margin: var(--spacing-xl) 0;
+            padding: var(--spacing-xl) 0;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .amenity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--border-radius-lg);
+            background: var(--color-light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .amenity-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        /* ────────────────────────────────────────────
+           DESCRIPTION SECTION
+           ──────────────────────────────────────────── */
+        .description-section {
+            margin: var(--spacing-xl) 0;
+        }
+        
+        .description-section h3 {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .description-section p {
+            color: var(--color-text-light);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        /* ────────────────────────────────────────────
+           CANCELLATION POLICY
+           ──────────────────────────────────────────── */
+        .cancellation-policy {
+            background: rgba(255, 140, 66, 0.06);
+            border-left: 4px solid var(--color-secondary);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            margin: var(--spacing-xl) 0;
+        }
+        
+        .cancellation-policy h4 {
+            color: var(--color-secondary);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .cancellation-policy p {
+            font-size: var(--font-size-sm);
+            color: var(--color-text);
+            margin: 0;
+        }
+        
+        /* ────────────────────────────────────────────
+           REVIEWS SECTION
+           ──────────────────────────────────────────── */
+        .reviews-section {
+            margin: var(--spacing-xxl) 0;
+            padding: var(--spacing-xl) 0;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .review-card {
+            padding: var(--spacing-lg) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .review-card:last-child {
+            border-bottom: none;
+        }
+        
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .review-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            flex-shrink: 0;
+        }
+        
+        .review-info {
+            flex: 1;
+        }
+        
+        .review-name {
+            font-weight: var(--font-weight-semibold);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .review-date {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-light);
+        }
+        
+        .review-stars {
+            display: flex;
+            gap: 2px;
+            color: var(--color-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .review-text {
+            color: var(--color-text-light);
+            line-height: var(--line-height-relaxed);
+            font-size: var(--font-size-sm);
+        }
+        
+        /* ────────────────────────────────────────────
+           BOOKING WIDGET STICKY
+           ──────────────────────────────────────────── */
+        .booking-sidebar {
+            position: sticky;
+            top: 100px;
+        }
+        
+        @media (max-width: 1024px) {
+            .booking-sidebar {
+                position: relative;
+                top: auto;
+            }
+        }
+        
+        /* ────────────────────────────────────────────
+           RELATED PROPERTIES
+           ──────────────────────────────────────────── */
+        .related-section {
+            margin: var(--spacing-xxl) 0;
+            padding: var(--spacing-xxl) 0;
+            border-top: 1px solid var(--color-border);
+        }
+        
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="../index.html" class="navbar-logo">
+                <div class="navbar-logo-icon">
+                    <i class="fa-solid fa-hotel"></i>
+                </div>
+                <span>Hospedaje Digital</span>
+            </a>
+            
+            <ul class="navbar-nav">
+                <li><a href="../index.html#inicio">Inicio</a></li>
+                <li><a href="../index.html#propiedades">Propiedades</a></li>
+                <li><a href="../index.html#contacto">Contacto</a></li>
+            </ul>
+            
+            <div class="navbar-actions">
+                <a href="../login.html" class="btn btn-ghost">Inicia sesión</a>
+                <a href="register.html" class="btn btn-primary">Registrarme</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- MAIN CONTENT -->
+    <main class="main-container" style="padding: var(--spacing-xl) 0;">
+        <!-- GALLERY SECTION -->
+        <div class="property-gallery">
+            <div class="gallery-main" id="gallery-main">
+                <img class="gallery-main-img active" id="main-image" src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=500&fit=crop" alt="Propiedad">
+            </div>
+            
+            <div class="gallery-nav">
+                <button class="gallery-btn" id="gallery-prev" aria-label="Imagen anterior">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="gallery-btn" id="gallery-next" aria-label="Imagen siguiente">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="gallery-controls" id="gallery-controls"></div>
+            
+            <div class="gallery-thumbs" id="gallery-thumbs"></div>
+        </div>
+        
+        <!-- PROPERTY DETAIL -->
+        <div class="property-detail-container">
+            <!-- LEFT COLUMN -->
+            <div>
+                <!-- HEADER INFO -->
+                <div class="property-header">
+                    <div class="property-title-group">
+                        <h1 id="property-title">Casa de Montaña Exclusiva</h1>
+                        <div class="property-rating">
+                            <div class="stars" id="property-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+                            <span class="rating-value" id="property-rating">4.8</span>
+                            <span class="rating-text">(<span id="property-reviews">124</span> reseñas)</span>
+                        </div>
+                        <div class="property-location">
+                            <i class="fa-solid fa-map-pin"></i>
+                            <span id="property-location">Bogotá, Colombia</span>
+                        </div>
+                    </div>
+                    <div class="property-price-hero">
+                        <div class="price">$<span id="property-price">150</span></div>
+                        <div class="price-unit">por noche</div>
+                    </div>
+                </div>
+                
+                <!-- AMENITIES -->
+                <div class="amenities-section">
+                    <h3>Amenidades</h3>
+                    <div class="amenities-grid" id="amenities-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- DESCRIPTION -->
+                <div class="description-section">
+                    <h3>Acerca de esta propiedad</h3>
+                    <p id="property-description">
+                        Hermosa casa ubicada en la cordillera con vistas panorámicas espectaculares. Perfecta para familias o grupos que buscan escapar del ruido de la ciudad.
+                    </p>
+                    <p>
+                        La propiedad cuenta con 4 habitaciones cómodas, áreas comunes amplias y una terraza privada ideal para disfrutar del atardecer. Todos los servicios e instalaciones están diseñados para tu comodidad.
+                    </p>
+                </div>
+                
+                <!-- CANCELLATION POLICY -->
+                <div class="cancellation-policy">
+                    <h4>
+                        <i class="fa-solid fa-info-circle"></i>
+                        Política de cancelación flexible
+                    </h4>
+                    <p>Cancela hasta 48 horas antes del check-in y recibe un reembolso completo. Sin cargos ocultos.</p>
+                </div>
+                
+                <!-- REVIEWS -->
+                <div class="reviews-section">
+                    <div class="reviews-header">
+                        <h3>Reseñas de huéspedes</h3>
+                        <div class="badge badge-success-light">
+                            <i class="fa-solid fa-thumbs-up"></i>
+                            Muy bien calificado
+                        </div>
+                    </div>
+                    
+                    <div id="reviews-container">
+                        <!-- Reviews populated by JS -->
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-avatar">M</div>
+                                <div class="review-info">
+                                    <div class="review-name">María González</div>
+                                    <div class="review-date">Hace 2 semanas</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <div class="review-text">
+                                Excelente propiedad. Las vistas son hermosas y el ambiente muy acogedor. Perfecto para descansar. Volvería sin dudarlo.
+                            </div>
+                        </div>
+                        
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-avatar">C</div>
+                                <div class="review-info">
+                                    <div class="review-name">Carlos Mendez</div>
+                                    <div class="review-date">Hace 1 mes</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+                            <div class="review-text">
+                                Muy buena experiencia. La atención fue excelente y la propiedad está bien mantenida. Un lugar ideal para familias.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT COLUMN - BOOKING WIDGET -->
+            <div class="booking-sidebar">
+                <div id="booking-widget-container"></div>
+            </div>
+        </div>
+        
+        <!-- RELATED PROPERTIES -->
+        <div class="related-section">
+            <h2>Propiedades similares</h2>
+            <p class="text-muted" style="margin-bottom: var(--spacing-xl);">Te podrían interesar estas otras opciones en la zona.</p>
+            <div class="related-grid" id="related-grid">
+                <!-- Related properties populated by JS -->
+            </div>
+        </div>
+    </main>
+    
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-section">
+                <h4><i class="fa-solid fa-hotel"></i> Hospedaje Digital</h4>
+                <p style="font-size: var(--font-size-sm); color: rgba(255, 255, 255, 0.7);">Tu plataforma de confianza para reservar experiencias inolvidables.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Navegación</h4>
+                <ul>
+                    <li><a href="../index.html">Inicio</a></li>
+                    <li><a href="../index.html#propiedades">Propiedades</a></li>
+                    <li><a href="../index.html#contacto">Contacto</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Legales</h4>
+                <ul>
+                    <li><a href="#">Términos de servicio</a></li>
+                    <li><a href="#">Política de privacidad</a></li>
+                    <li><a href="#">Política de cookies</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-divider"></div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p>
+                <div style="display: flex; gap: var(--spacing-md);">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    
+    <script>
+        /**
+         * PROPERTY DETAIL PAGE APP
+         * Maneja galería, detalles de propiedad y BookingWidget
+         */
+        class PropertyDetailApp {
+            constructor() {
+                this.propertyId = this.getPropertyIdFromUrl();
+                this.property = null;
+                this.images = [];
+                this.currentImageIndex = 0;
+                this.init();
+            }
+            
+            getPropertyIdFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('id') || '1';
+            }
+            
+            async init() {
+                console.log('[PropertyDetail] Cargando propiedad:', this.propertyId);
+                
+                // Cargar propiedad
+                await this.loadProperty();
+                
+                // Renderizar
+                this.renderProperty();
+                this.initGallery();
+                this.initBookingWidget();
+                
+                console.log('[PropertyDetail] ✅ Inicializado');
+            }
+            
+            async loadProperty() {
+                try {
+                    // Intentar cargar del API
+                    const property = await requestJson(`/propiedades/${this.propertyId}`);
+                    this.property = property;
+                } catch (error) {
+                    console.warn('[PropertyDetail] API no disponible, usando datos de demo');
+                    this.property = this.getDemoProperty();
+                }
+                
+                // Setup images
+                this.images = [
+                    this.property.imagen || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=500&fit=crop',
+                    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=500&fit=crop',
+                    'https://images.unsplash.com/photo-1470117855212-5953dc762956?w=1200&h=500&fit=crop',
+                    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&h=500&fit=crop'
+                ];
+            }
+            
+            getDemoProperty() {
+                return {
+                    id: '1',
+                    nombre: 'Casa de Montaña Exclusiva',
+                    descripcion: 'Hermosa casa ubicada en la cordillera con vistas panorámicas espectaculares',
+                    precio: 150,
+                    calificacion: 4.8,
+                    resenas: 124,
+                    ubicacion: 'Bogotá, Colombia',
+                    amenidades: ['wifi', 'aire', 'cocina', 'parking', 'piscina', 'tv', 'gym', 'balcon']
+                };
+            }
+            
+            renderProperty() {
+                // Título
+                document.getElementById('property-title').textContent = this.property.nombre || 'Propiedad';
+                document.getElementById('property-location').textContent = this.property.ubicacion || 'Colombia';
+                document.getElementById('property-rating').textContent = (this.property.calificacion || 4.8).toFixed(1);
+                document.getElementById('property-reviews').textContent = this.property.resenas || 100;
+                document.getElementById('property-price').textContent = this.property.precio || 150;
+                document.getElementById('property-description').textContent = this.property.descripcion || 'Excelente propiedad';
+                
+                // Amenidades
+                this.renderAmenities();
+            }
+            
+            renderAmenities() {
+                const amenityIcons = {
+                    'wifi': 'fa-wifi',
+                    'aire': 'fa-fan',
+                    'tv': 'fa-tv',
+                    'cocina': 'fa-utensils',
+                    'parking': 'fa-car',
+                    'piscina': 'fa-water',
+                    'gym': 'fa-dumbbell',
+                    'lavanderia': 'fa-soap',
+                    'escritorio': 'fa-desk',
+                    'balcon': 'fa-door-open'
+                };
+                
+                const amenities = this.property.amenidades || [];
+                const container = document.getElementById('amenities-grid');
+                
+                container.innerHTML = amenities.map(amenity => {
+                    const name = typeof amenity === 'string' ? amenity : (amenity.nombre || amenity.name || '');
+                    const icon = amenityIcons[name.toLowerCase()] || 'fa-check';
+                    
+                    return `
+                        <div class="amenity-item">
+                            <div class="amenity-icon">
+                                <i class="fa-solid ${icon}"></i>
+                            </div>
+                            <div class="amenity-name">${name}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            initGallery() {
+                const mainImg = document.getElementById('main-image');
+                const prevBtn = document.getElementById('gallery-prev');
+                const nextBtn = document.getElementById('gallery-next');
+                const controlsContainer = document.getElementById('gallery-controls');
+                const thumbsContainer = document.getElementById('gallery-thumbs');
+                
+                // Crear controles (dots)
+                controlsContainer.innerHTML = this.images.map((_, i) => 
+                    `<button class="gallery-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></button>`
+                ).join('');
+                
+                // Crear thumbs
+                thumbsContainer.innerHTML = this.images.map((img, i) => 
+                    `<div class="gallery-thumb ${i === 0 ? 'active' : ''}">
+                        <img src="${img}" alt="Imagen ${i+1}">
+                    </div>`
+                ).join('');
+                
+                // Event listeners
+                prevBtn.addEventListener('click', () => this.prevImage());
+                nextBtn.addEventListener('click', () => this.nextImage());
+                
+                document.querySelectorAll('.gallery-dot').forEach((dot, i) => {
+                    dot.addEventListener('click', () => this.setImage(i));
+                });
+                
+                document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+                    thumb.addEventListener('click', () => this.setImage(i));
+                });
+            }
+            
+            nextImage() {
+                this.setImage((this.currentImageIndex + 1) % this.images.length);
+            }
+            
+            prevImage() {
+                this.setImage((this.currentImageIndex - 1 + this.images.length) % this.images.length);
+            }
+            
+            setImage(index) {
+                this.currentImageIndex = index;
+                const mainImg = document.getElementById('main-image');
+                mainImg.src = this.images[index];
+                
+                // Update dots
+                document.querySelectorAll('.gallery-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+                
+                // Update thumbs
+                document.querySelectorAll('.gallery-thumb').forEach((thumb, i) => {
+                    thumb.classList.toggle('active', i === index);
+                });
+            }
+            
+            initBookingWidget() {
+                const container = document.getElementById('booking-widget-container');
+                const widget = new BookingWidget('booking-widget-container', {
+                    price: this.property.precio || 150,
+                    currency: 'USD'
+                });
+            }
+        }
+        
+        // Iniciar cuando DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.propertyDetailApp = new PropertyDetailApp();
+            });
+        } else {
+            window.propertyDetailApp = new PropertyDetailApp();
+        }
+    </script>
+</body>
+</html>

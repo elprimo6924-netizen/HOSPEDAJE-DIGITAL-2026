@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospedaje Digital | Experiencias Inolvidables</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0f3d3e',
+                        secondary: '#1a1a1a',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white text-secondary font-sans antialiased">
+
+    <!-- NAVEGACIÓN -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a class="flex items-center gap-3 font-bold text-primary tracking-tight" href="#inicio">
+                <span class="w-10 h-10 rounded-xl grid place-items-center bg-primary text-white shadow-lg shadow-primary/20">
+                    <i class="fa-solid fa-hotel"></i>
+                </span>
+                <span class="hidden sm:block text-lg">HOSPEDAJE DIGITAL</span>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 font-medium text-gray-500">
+                <a href="#inicio" class="hover:text-primary transition-colors">Inicio</a>
+                <a href="#habitaciones" class="hover:text-primary transition-colors">Habitaciones</a>
+                <a href="#nosotros" class="hover:text-primary transition-colors">Nosotros</a>
+                <a href="#contacto" class="hover:text-primary transition-colors">Contacto</a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="login.html" class="px-5 py-2.5 rounded-lg font-semibold text-primary hover:bg-gray-50 transition-all text-sm">Login</a>
+                <a href="pages/register.html" class="px-5 py-2.5 rounded-lg font-semibold bg-primary text-white hover:bg-opacity-90 shadow-md hover:shadow-lg transition-all text-sm">Registrarme</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="inicio" class="relative overflow-hidden pt-16 pb-24 lg:pt-32 lg:pb-40 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="z-10">
+                <h1 class="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-secondary mb-8">
+                    Descanso sin <br><span class="text-primary italic">complicaciones</span>
+                </h1>
+                <p class="text-lg text-gray-600 leading-relaxed max-w-lg mb-10">
+                    Reserva tus habitaciones de forma simple. Accede a todos los servicios en una plataforma clara, moderna y disponible 24/7.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="login.html" class="px-8 py-4 bg-primary text-white rounded-xl font-bold shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all">Entrar al sistema</a>
+                    <a href="#habitaciones" class="px-8 py-4 bg-white text-primary border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all">Ver habitaciones</a>
+                </div>
+            </div>
+
+            <div class="relative">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-primary mb-2">24/7</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Disponibilidad</span>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center mt-12 transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-primary mb-2">∞</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Posibilidades</span>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center -mt-12 transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-primary mb-2">100%</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Digital</span>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-primary mb-2">1</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Plataforma</span>
+                    </div>
+                </div>
+                <!-- Decoración abstracta -->
+                <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-primary/5 rounded-full blur-3xl"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HABITACIONES -->
+    <section id="habitaciones" class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                <div class="max-w-xl">
+                    <h2 class="text-4xl font-bold mb-4 tracking-tight">Nuestras habitaciones</h2>
+                    <p class="text-gray-500 text-lg">Selecciona entre nuestras opciones y comienza tu reserva en el sistema hoy mismo.</p>
+                </div>
+                <a href="login.html" class="inline-flex px-6 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all">Reservar ahora</a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="habitaciones-container">
+                <!-- Skeleton loader o estado inicial -->
+                <div class="col-span-full flex flex-col items-center py-20 text-gray-400">
+                    <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p>Cargando experiencias...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- POR QUÉ ELEGIRNOS -->
+    <section id="nosotros" class="py-24 bg-primary">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-4xl font-bold text-white mb-4">Por qué elegirnos</h2>
+                <p class="text-primary-foreground text-emerald-100/70 italic text-lg">Un sistema pensado para que tu experiencia sea fluida de inicio a fin.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white/10 backdrop-blur-sm p-10 rounded-3xl border border-white/10 hover:bg-white/15 transition-all group">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary text-2xl mb-6 shadow-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Simple</h3>
+                    <p class="text-emerald-50/70 leading-relaxed text-sm">Interfaz intuitiva sin complicaciones. Reserva en pocos clics sin necesidad de tutoriales.</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm p-10 rounded-3xl border border-white/10 hover:bg-white/15 transition-all group">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary text-2xl mb-6 shadow-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Seguro</h3>
+                    <p class="text-emerald-50/70 leading-relaxed text-sm">Tus datos protegidos y transacciones confiables bajo los más altos estándares de seguridad.</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm p-10 rounded-3xl border border-white/10 hover:bg-white/15 transition-all group">
+                    <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary text-2xl mb-6 shadow-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Rápido</h3>
+                    <p class="text-emerald-50/70 leading-relaxed text-sm">Confirmación inmediata y gestión ágil. Sabemos que tu tiempo es valioso.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-start">
+                <div>
+                    <h2 class="text-4xl font-bold mb-6 tracking-tight">¿Necesitas ayuda?</h2>
+                    <p class="text-gray-500 text-lg mb-12 leading-relaxed">Ponte en contacto con nuestro equipo de soporte. Responderemos a tu consulta en menos de 24 horas.</p>
+                    
+                    <div class="space-y-8">
+                        <div class="flex items-center gap-6">
+                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-inner">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400">Teléfono</h4>
+                                <p class="text-lg font-semibold text-secondary">+57 300 000 0000</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-inner">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400">Email</h4>
+                                <p class="text-lg font-semibold text-secondary">contacto@hospedaje.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-inner">
+                                <i class="fa-solid fa-map-pin"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400">Dirección</h4>
+                                <p class="text-lg font-semibold text-secondary">Calle 123, Ciudad Digital</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="contact-form" class="bg-slate-50 p-8 rounded-3xl border border-gray-100 shadow-sm">
+                    <div class="grid sm:grid-cols-2 gap-6 mb-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-bold uppercase text-gray-400 ml-1">Nombre</label>
+                            <input type="text" placeholder="Ej. Juan Pérez" required class="px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-xs font-bold uppercase text-gray-400 ml-1">Correo</label>
+                            <input type="email" placeholder="juan@correo.com" required class="px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 mb-8">
+                        <label class="text-xs font-bold uppercase text-gray-400 ml-1">Mensaje</label>
+                        <textarea placeholder="¿En qué podemos ayudarte?" required class="px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all min-h-[150px] resize-none"></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">Enviar mensaje</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-12 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <p class="text-gray-400 text-sm">© 2026 <span class="font-bold text-gray-600">Hospedaje Digital</span>. Diseñado para simplificar tu estancia.</p>
+            <div class="flex items-center gap-6">
+                <a href="#" class="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="#" class="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm">
+                    <i class="fa-brands fa-twitter"></i>
+                </a>
+                <a href="#" class="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all shadow-sm">
+                    <i class="fa-brands fa-linkedin"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        const roomImages = [
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1582719478250-c89cae4df85b?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800'
+        ];
+
+        function getRandomImage(index) {
+            return roomImages[index % roomImages.length];
+        }
+
+        async function loadHabitaciones() {
+            const container = document.getElementById('habitaciones-container');
+            try {
+                const habitaciones = await requestJson('/habitaciones');
+                
+                if (!Array.isArray(habitaciones) || habitaciones.length === 0) {
+                    container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic">No hay habitaciones disponibles hoy.</p>';
+                    return;
+                }
+
+                const roomsToDisplay = habitaciones.slice(0, 6);
+
+                const html = roomsToDisplay.map((room, index) => `
+                    <article class="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="${getRandomImage(index)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary">Disponible</div>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-xl font-bold mb-3 text-secondary">${room.NombreHabitacion || 'Suite Ejecutiva'}</h3>
+                            <p class="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-2">${room.Descripcion || 'Un oasis de tranquilidad con vistas espectaculares y diseño minimalista.'}</p>
+                            <div class="flex items-center justify-between pt-6 border-t border-gray-50">
+                                <div class="text-primary font-bold text-xl">
+                                    $${Number(room.Costo || 0).toLocaleString('es-CO')} <span class="text-xs text-gray-400 font-normal">/ noche</span>
+                                </div>
+                                <a href="login.html" class="p-3 bg-gray-50 rounded-xl text-primary hover:bg-primary hover:text-white transition-colors">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                `).join('');
+
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<p class="col-span-full text-center text-red-400">Error al conectar con el servidor.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadHabitaciones);
+
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Mensaje enviado con éxito! Nos comunicaremos pronto.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>

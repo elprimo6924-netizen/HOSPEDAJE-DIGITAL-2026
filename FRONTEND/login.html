@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Hospedaje Digital</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Sora', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.28),_transparent_32%),linear-gradient(135deg,_#101827_0%,_#5a3d28_48%,_#d17a3a_100%)] font-display text-slate-900">
+    <main class="relative flex min-h-screen items-center justify-center px-4 py-10">
+        <div class="absolute left-8 top-10 h-72 w-72 rounded-full bg-black/20 blur-3xl"></div>
+        <div class="absolute bottom-6 right-10 h-80 w-80 rounded-full bg-orange-300/15 blur-3xl"></div>
+
+        <section class="relative w-full max-w-md rounded-[28px] bg-white/95 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.28)] ring-1 ring-white/60 backdrop-blur">
+            <div class="text-center">
+                <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 shadow-sm">
+                    <i class="fa-solid fa-hotel text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Hospedaje Digital</h1>
+                <p class="mt-2 text-sm text-slate-500">Ingresa a tu cuenta</p>
+            </div>
+
+            <div class="mt-8 rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)]">
+                <form id="loginForm" class="space-y-5">
+                    <div id="errorMessage" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+
+                    <div class="space-y-2">
+                        <label for="email" class="text-sm font-semibold text-slate-700">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" required placeholder="admin@hotel.com" autocomplete="email"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
+                        <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password"
+                            class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                    </div>
+
+                    <button type="submit"
+                        class="inline-flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20">
+                        Iniciar Sesión
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-6 space-y-3 text-center text-sm text-slate-600">
+                <p>¿No tienes cuenta? <a href="pages/register.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">Regístrate aquí</a></p>
+                <p><a href="pages/recuperarpass.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">¿Olvidaste tu contraseña?</a></p>
+                <p><a href="landingPage.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">← Volver</a></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginForm = document.getElementById("loginForm");
+            const errorContainer = document.getElementById("errorMessage");
+
+            if (loginForm) {
+                loginForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    errorContainer.classList.add("hidden");
+                    errorContainer.innerHTML = "";
+
+                    const email = document.getElementById("email").value;
+                    const contrasena = document.getElementById("password").value;
+
+                    const result = await loginUsuario(email, contrasena);
+
+                    if (result.success) {
+                        window.location.href = "pages/dashboard.html";
+                    } else {
+                        errorContainer.classList.remove("hidden");
+                        errorContainer.textContent = result.message;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

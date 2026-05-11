@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Hospedaje Digital</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Sora', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.28),_transparent_32%),linear-gradient(135deg,_#101827_0%,_#5a3d28_48%,_#d17a3a_100%)] px-4 py-10 font-display text-slate-900">
+    <main class="flex min-h-screen items-center justify-center">
+        <section class="w-full max-w-4xl rounded-[28px] bg-white/95 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.28)] ring-1 ring-white/60 backdrop-blur md:p-8">
+            <div class="text-center">
+                <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 shadow-sm">
+                    <i class="fa-solid fa-user-plus text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Crear Cuenta</h1>
+                <p class="mt-2 text-sm text-slate-500">Completa tus datos para registrarte en el sistema</p>
+            </div>
+
+            <form id="registerForm" class="mt-8 space-y-6">
+                <div id="registerError" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+
+                <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
+                    <div class="mb-4 flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                            <i class="fa-solid fa-id-card"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Información de documento</h3>
+                            <p class="text-sm text-slate-500">Identificación del huésped</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label for="reg_tipoDoc" class="text-sm font-semibold text-slate-700">Tipo Documento <span class="text-red-500">*</span></label>
+                            <select id="reg_tipoDoc" required
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                <option value="">Selecciona un tipo</option>
+                                <option value="CC">Cédula de Ciudadanía</option>
+                                <option value="TI">Tarjeta de Identidad</option>
+                                <option value="CE">Cédula de Extranjería</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="reg_numDoc" class="text-sm font-semibold text-slate-700">Número Documento <span class="text-red-500">*</span></label>
+                            <input type="number" id="reg_numDoc" required
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
+                    <div class="mb-4 flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                            <i class="fa-solid fa-address-book"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Datos de contacto</h3>
+                            <p class="text-sm text-slate-500">Información personal principal</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label for="reg_nombre" class="text-sm font-semibold text-slate-700">Nombre <span class="text-red-500">*</span></label>
+                            <input type="text" id="reg_nombre" required
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="reg_apellido" class="text-sm font-semibold text-slate-700">Apellido <span class="text-red-500">*</span></label>
+                            <input type="text" id="reg_apellido" required
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="reg_telefono" class="text-sm font-semibold text-slate-700">Teléfono</label>
+                            <input type="text" id="reg_telefono"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="reg_pais" class="text-sm font-semibold text-slate-700">País</label>
+                            <input type="text" id="reg_pais"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                        <div class="space-y-2 md:col-span-2">
+                            <label for="reg_direccion" class="text-sm font-semibold text-slate-700">Dirección</label>
+                            <input type="text" id="reg_direccion"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
+                    <div class="mb-4 flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Credenciales de acceso</h3>
+                            <p class="text-sm text-slate-500">Usa estos datos para iniciar sesión</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <label for="reg_email" class="text-sm font-semibold text-slate-700">Correo Electrónico <span class="text-red-500">*</span></label>
+                            <input type="email" id="reg_email" required autocomplete="email"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="reg_password" class="text-sm font-semibold text-slate-700">Contraseña <span class="text-red-500">*</span></label>
+                            <input type="password" id="reg_password" required autocomplete="new-password"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="inline-flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20">
+                    Registrarse
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm text-slate-600">
+                <p>¿Ya tienes cuenta? <a href="../login.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">Inicia sesión</a></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const registerForm = document.getElementById("registerForm");
+            const registerError = document.getElementById("registerError");
+
+            if (registerForm) {
+                registerForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    registerError.classList.add("hidden");
+                    registerError.textContent = "";
+
+                    const nombre = document.getElementById("reg_nombre").value.trim();
+                    const apellido = document.getElementById("reg_apellido").value.trim();
+                    const password = document.getElementById("reg_password").value.trim();
+                    const email = document.getElementById("reg_email").value.trim();
+                    const tipoDoc = document.getElementById("reg_tipoDoc").value.trim();
+                    const numDoc = document.getElementById("reg_numDoc").value.trim();
+
+                    if (!nombre || !apellido || !password || !email || !tipoDoc || !numDoc) {
+                        registerError.classList.remove("hidden");
+                        registerError.textContent = "Por favor, completa todos los campos obligatorios (marcados con *)";
+                        return;
+                    }
+
+                    const userData = {
+                        Contrasena: password,
+                        Nombre: nombre,
+                        Apellido: apellido,
+                        Email: email,
+                        TipoDocumento: tipoDoc,
+                        NumeroDocumento: numDoc,
+                        Telefono: document.getElementById("reg_telefono").value.trim() || null,
+                        Pais: document.getElementById("reg_pais").value.trim() || null,
+                        Direccion: document.getElementById("reg_direccion").value.trim() || null,
+                        IDRol: 2,
+                    };
+
+                    const result = await registrarUsuario(userData);
+
+                    if (result.success) {
+                        registerError.classList.add("hidden");
+                        alert("¡Registro exitoso! Redirigiendo a login...");
+                        window.location.href = "../login.html";
+                    } else {
+                        registerError.classList.remove("hidden");
+                        registerError.textContent = result.message;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paquetes - Hospedaje Digital</title>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+
+        /* ── Toolbar ── */
+        .paq-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; margin-bottom:1.2rem; }
+        .paq-title   { font-size:1.5rem; font-weight:800; color:#0f172a; margin:0; }
+        .paq-title span { color:#c2410c; }
+
+        .btn-paq-nuevo {
+            display:inline-flex; align-items:center; gap:.45rem;
+            padding:.7rem 1.4rem; background:#c2410c; color:#fff;
+            border:none; border-radius:10px; font-size:.88rem; font-weight:700;
+            cursor:pointer; letter-spacing:.02em; transition:background .2s, transform .15s;
+        }
+        .btn-paq-nuevo:hover { background:#9a3412; transform:translateY(-1px); }
+
+        /* ── Summary ── */
+        .paq-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.4rem; }
+        .paq-stat    { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+        .paq-stat-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#64748b; margin-bottom:.3rem; }
+        .paq-stat-value { font-size:2rem; font-weight:800; color:#c2410c; line-height:1; }
+        .paq-stat-value.green { color:#16a34a; }
+        .paq-stat-value.gray  { color:#94a3b8; }
+
+        /* ── Panel ── */
+        .paq-panel { background:#fff; border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 1px 6px rgba(0,0,0,.05); overflow:hidden; }
+        .paq-panel-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:1.1rem 1.4rem; border-bottom:1px solid #f1f5f9; background:#fafbfc; }
+        .paq-panel-head h4 { font-size:.95rem; font-weight:700; color:#0f172a; margin:0; }
+        .paq-filtros { display:flex; gap:.6rem; flex-wrap:wrap; }
+        .paq-filtros input, .paq-filtros select {
+            padding:.55rem .85rem; border:1.5px solid #e2e8f0; border-radius:9px;
+            font:inherit; font-size:.83rem; background:#fff; color:#0f172a;
+            outline:none; transition:border-color .2s;
+        }
+        .paq-filtros input  { min-width:220px; }
+        .paq-filtros select { min-width:150px; }
+        .paq-filtros input:focus, .paq-filtros select:focus { border-color:#c2410c; box-shadow:0 0 0 3px rgba(194,65,12,.1); }
+
+        /* ── Tabla ── */
+        .paq-tabla-wrap { overflow-x:auto; }
+        .paq-tabla { width:100%; border-collapse:collapse; min-width:860px; }
+        .paq-tabla thead th { background:#f8fafc; color:#c2410c; text-align:left; padding:.85rem 1rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; border-bottom:1.5px solid #e2e8f0; white-space:nowrap; }
+        .paq-tabla tbody td { padding:.85rem 1rem; border-bottom:1px solid #f1f5f9; vertical-align:middle; font-size:.875rem; color:#0f172a; }
+        .paq-tabla tbody tr:hover td { background:#fafafa; }
+        .paq-tabla tbody tr:last-child td { border-bottom:none; }
+
+        /* Imagen miniatura */
+        .paq-thumb { width:52px; height:44px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0; display:block; }
+        .paq-thumb-placeholder { width:52px; height:44px; border-radius:8px; background:#f1f5f9; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; color:#cbd5e1; font-size:1.1rem; }
+
+        /* Badge precio */
+        .paq-precio { font-weight:700; color:#0f172a; }
+
+        /* ── Toggle switch ── */
+        .toggle-wrap { display:flex; align-items:center; gap:.55rem; }
+        .toggle-label { font-size:.78rem; font-weight:600; min-width:56px; }
+        .toggle-label.activo   { color:#16a34a; }
+        .toggle-label.inactivo { color:#94a3b8; }
+
+        .toggle-switch {
+            position:relative; display:inline-block;
+            width:44px; height:24px; flex-shrink:0;
+        }
+        .toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+        .toggle-slider {
+            position:absolute; inset:0; border-radius:999px;
+            background:#cbd5e1; cursor:pointer;
+            transition:background .25s;
+        }
+        .toggle-slider::before {
+            content:''; position:absolute;
+            width:18px; height:18px; border-radius:50%;
+            background:#fff; top:3px; left:3px;
+            box-shadow:0 1px 4px rgba(0,0,0,.18);
+            transition:transform .25s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background:#16a34a; }
+        .toggle-switch input:checked + .toggle-slider::before { transform:translateX(20px); }
+        .toggle-switch input:disabled + .toggle-slider { opacity:.5; cursor:not-allowed; }
+
+        /* ── Acciones ── */
+        .paq-acciones { display:flex; gap:.4rem; align-items:center; }
+        .btn-paq-accion {
+            width:32px; height:32px; border-radius:8px; border:none;
+            display:inline-flex; align-items:center; justify-content:center;
+            font-size:.8rem; cursor:pointer; transition:all .18s;
+        }
+        .btn-paq-ver     { background:#eff6ff; color:#2563eb; }
+        .btn-paq-editar  { background:#fef3c7; color:#d97706; }
+        .btn-paq-eliminar{ background:#fee2e2; color:#dc2626; }
+        .btn-paq-ver:hover     { background:#dbeafe; }
+        .btn-paq-editar:hover  { background:#fde68a; }
+        .btn-paq-eliminar:hover{ background:#fecaca; }
+
+        /* ── Badge estado ── */
+        .badge-activo   { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:700; background:#dcfce7; color:#166534; }
+        .badge-inactivo { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:999px; font-size:.72rem; font-weight:700; background:#f1f5f9; color:#64748b; }
+
+        /* ── Mensaje ── */
+        .paq-msg { padding:.55rem 1rem; border-radius:9px; font-size:.82rem; margin-bottom:.8rem; display:none; }
+        .paq-msg.ok    { background:#dcfce7; color:#14532d; display:flex; align-items:center; gap:.5rem; }
+        .paq-msg.error { background:#fee2e2; color:#991b1b; display:flex; align-items:center; gap:.5rem; }
+
+        /* ── Modal detalle ── */
+        .paq-modal-overlay { position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; background:rgba(15,23,42,.5); padding:1rem; backdrop-filter:blur(3px); }
+        .paq-modal-overlay.hidden { display:none; }
+        .paq-modal-box { background:#fff; border-radius:18px; width:min(620px,100%); max-height:88vh; overflow-y:auto; box-shadow:0 28px 60px rgba(15,23,42,.22); position:relative; }
+        .paq-modal-close { position:absolute; top:.7rem; right:.9rem; background:transparent; border:none; font-size:1.8rem; cursor:pointer; color:#94a3b8; line-height:1; z-index:1; }
+        .paq-modal-close:hover { color:#0f172a; }
+
+        /* Header con imagen */
+        .paq-modal-img { width:100%; height:200px; object-fit:cover; border-radius:18px 18px 0 0; display:block; }
+        .paq-modal-img-placeholder { width:100%; height:160px; background:linear-gradient(135deg,#1b4332,#2d6a4f); border-radius:18px 18px 0 0; display:flex; align-items:center; justify-content:center; }
+        .paq-modal-img-placeholder i { font-size:3rem; color:rgba(255,255,255,.4); }
+
+        .paq-modal-body { padding:1.5rem 1.6rem 1.8rem; }
+        .paq-modal-nombre { font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:.3rem; }
+        .paq-modal-precio { font-size:1.1rem; font-weight:800; color:#16a34a; margin-bottom:1rem; }
+        .paq-modal-desc   { font-size:.88rem; color:#475569; line-height:1.7; margin-bottom:1.2rem; padding:.8rem 1rem; background:#f8fafc; border-radius:10px; border-left:3px solid #c2410c; }
+        .paq-modal-grid   { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; }
+        .paq-modal-field  { padding:.65rem .85rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; }
+        .paq-modal-field span  { display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:#64748b; font-weight:700; margin-bottom:.2rem; }
+        .paq-modal-field strong{ font-size:.88rem; color:#0f172a; }
+
+        /* ── Modal formulario ── */
+        .paq-form-section { margin-bottom:1.1rem; }
+        .paq-form-section label { display:flex; flex-direction:column; gap:.3rem; font-size:.78rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.03em; }
+        .paq-form-section input,
+        .paq-form-section select,
+        .paq-form-section textarea {
+            font-size:.9rem; font-weight:400; padding:.65rem .9rem;
+            border:1.5px solid #e2e8f0; border-radius:9px;
+            background:#fafafa; color:#0f172a; font-family:inherit;
+            outline:none; transition:border-color .2s;
+        }
+        .paq-form-section input:focus,
+        .paq-form-section select:focus,
+        .paq-form-section textarea:focus { border-color:#c2410c; background:#fff; box-shadow:0 0 0 3px rgba(194,65,12,.09); }
+        .paq-form-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }
+        .paq-form-actions { display:flex; gap:.65rem; justify-content:flex-end; padding-top:1rem; border-top:1px solid #f1f5f9; margin-top:1rem; }
+        .btn-paq-guardar  { padding:.65rem 1.4rem; background:#c2410c; color:#fff; border:none; border-radius:9px; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .2s; }
+        .btn-paq-guardar:hover  { background:#9a3412; }
+        .btn-paq-cancelar { padding:.65rem 1.1rem; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:9px; font-size:.88rem; font-weight:600; cursor:pointer; }
+
+        /* ── Pagination ── */
+        .pag-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.9rem 1.2rem; border-top:1px solid #f1f5f9; }
+        .pag-info { font-size:.8rem; color:#64748b; }
+        .pag-info strong { color:#0f172a; }
+        .pag-controls { display:flex; align-items:center; gap:.35rem; }
+        .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#64748b; }
+        .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e2e8f0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#0f172a; cursor:pointer; outline:none; }
+        .pag-per-page select:focus { border-color:#c2410c; }
+        .pag-btn {
+            min-width:34px; height:34px; padding:0 .5rem;
+            border:1.5px solid #e2e8f0; border-radius:8px;
+            background:#fff; color:#334155; font-size:.82rem; font-weight:600;
+            cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+            transition:all .15s;
+        }
+        .pag-btn:hover:not(:disabled) { border-color:#c2410c; color:#c2410c; background:#fff7ed; }
+        .pag-btn.active  { background:#c2410c; color:#fff; border-color:#c2410c; }
+        .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
+        .pag-btn.dots { cursor:default; border-color:transparent; background:transparent; }
+
+        /* ── Image Picker ── */
+        .img-picker-label { font-size:.78rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.03em; margin-bottom:.5rem; display:block; }
+        .img-picker-tabs { display:flex; gap:0; margin-bottom:.75rem; border-bottom:2px solid #e2e8f0; }
+        .img-tab {
+            padding:.38rem .9rem; border:1.5px solid transparent; border-bottom:none;
+            border-radius:8px 8px 0 0; background:transparent; color:#94a3b8;
+            font-size:.78rem; font-weight:700; cursor:pointer; transition:all .15s;
+            position:relative; bottom:-2px;
+        }
+        .img-tab:hover { color:#374151; }
+        .img-tab.active { background:#fff; color:#c2410c; border-color:#e2e8f0; border-bottom:2px solid #fff; }
+        .img-tab-content { display:none; }
+        .img-tab-content.active { display:block; }
+        .img-url-input {
+            width:100%; padding:.65rem .9rem; border:1.5px solid #e2e8f0; border-radius:9px;
+            background:#fafafa; color:#0f172a; font-family:inherit; font-size:.88rem;
+            outline:none; transition:border-color .2s;
+        }
+        .img-url-input:focus { border-color:#c2410c; background:#fff; box-shadow:0 0 0 3px rgba(194,65,12,.09); }
+        .img-dropzone {
+            border:2px dashed #cbd5e1; border-radius:12px; background:#f8fafc;
+            padding:1.6rem 1.2rem; text-align:center; cursor:pointer; transition:all .2s;
+        }
+        .img-dropzone:hover, .img-dropzone.drag-over { border-color:#c2410c; background:#fff7ed; }
+        .img-dropzone i { font-size:2.2rem; color:#c2410c; margin-bottom:.4rem; display:block; }
+        .img-dropzone p { font-size:.9rem; font-weight:700; color:#374151; margin:.25rem 0; }
+        .img-dropzone span { font-size:.78rem; color:#94a3b8; }
+        .btn-select-file {
+            display:inline-flex; align-items:center; gap:.4rem; margin-top:.65rem;
+            padding:.45rem 1rem; background:#c2410c; color:#fff; border:none;
+            border-radius:8px; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .2s;
+        }
+        .btn-select-file:hover { background:#9a3412; }
+        .img-preview-wrap {
+            position:relative; margin-top:.65rem; border-radius:10px; overflow:hidden;
+            border:1.5px solid #e2e8f0; background:#f8fafc;
+            display:flex; align-items:center; justify-content:center; min-height:80px;
+        }
+        .img-preview-wrap img { max-width:100%; max-height:150px; object-fit:cover; display:block; }
+        .img-remove-btn {
+            position:absolute; top:.35rem; right:.35rem; width:26px; height:26px;
+            border-radius:50%; background:rgba(0,0,0,.55); border:none; color:#fff;
+            font-size:.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+            transition:background .15s;
+        }
+        .img-remove-btn:hover { background:rgba(220,38,38,.9); }
+
+        @media (max-width:700px) {
+            .paq-summary { grid-template-columns:1fr; }
+            .paq-modal-grid, .paq-form-grid2 { grid-template-columns:1fr; }
+            .pag-bar { flex-direction:column; align-items:flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper">
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
+        </header>
+
+        <main>
+            <div class="paq-toolbar">
+                <h2 class="paq-title">Gestión de <span>Paquetes</span></h2>
+                <button class="btn-paq-nuevo" id="btn-nuevo-paquete">
+                    <i class="fa-solid fa-plus"></i> Nuevo Paquete
+                </button>
+            </div>
+
+            <div id="paq-msg" class="paq-msg"></div>
+
+            <div class="paq-summary">
+                <div class="paq-stat">
+                    <div class="paq-stat-label">Total paquetes</div>
+                    <div class="paq-stat-value" id="stat-total">0</div>
+                </div>
+                <div class="paq-stat">
+                    <div class="paq-stat-label">Activos</div>
+                    <div class="paq-stat-value green" id="stat-activos">0</div>
+                </div>
+                <div class="paq-stat">
+                    <div class="paq-stat-label">Inactivos</div>
+                    <div class="paq-stat-value gray" id="stat-inactivos">0</div>
+                </div>
+            </div>
+
+            <div class="paq-panel">
+                <div class="paq-panel-head">
+                    <h4><i class="fa-solid fa-box-open" style="color:#c2410c;margin-right:.4rem"></i> Listado de Paquetes</h4>
+                    <div class="paq-filtros">
+                        <input type="search" id="paq-buscar" placeholder="Buscar paquete...">
+                        <select id="paq-filtro-estado">
+                            <option value="all">Todos</option>
+                            <option value="1">Activos</option>
+                            <option value="0">Inactivos</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="paq-tabla-wrap">
+                    <table class="paq-tabla">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Nombre</th>
+                                <th>Habitación</th>
+                                <th>Servicio incluido</th>
+                                <th>Precio</th>
+                                <th>Estado</th>
+                                <th>Habilitado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paq-tbody">
+                            <tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8">Cargando paquetes...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Barra de paginación -->
+                <div class="pag-bar" id="pag-bar-paquetes">
+                    <div class="pag-per-page">
+                        Mostrar
+                        <select id="paquetes-per-page">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                        </select>
+                        por página
+                    </div>
+                    <div class="pag-info" id="paquetes-pag-info"></div>
+                    <div class="pag-controls" id="paquetes-pag-controls"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
+    </div>
+
+    <!-- Modal Detalle -->
+    <div id="modal-detalle-paq" class="paq-modal-overlay hidden">
+        <div class="paq-modal-box">
+            <button class="paq-modal-close" id="btn-cerrar-detalle">&times;</button>
+            <div id="detalle-img-wrap"></div>
+            <div class="paq-modal-body">
+                <div class="paq-modal-nombre" id="detalle-nombre"></div>
+                <div class="paq-modal-precio" id="detalle-precio"></div>
+                <div class="paq-modal-desc"   id="detalle-desc"></div>
+                <div class="paq-modal-grid"   id="detalle-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Formulario (crear / editar) -->
+    <div id="modal-form-paq" class="paq-modal-overlay hidden">
+        <div class="paq-modal-box">
+            <button class="paq-modal-close" id="btn-cerrar-form">&times;</button>
+            <div class="paq-modal-body">
+                <h3 id="form-paq-titulo" style="font-size:1.15rem;font-weight:800;color:#0f172a;margin-bottom:1.2rem">Nuevo Paquete</h3>
+                <form id="form-paquete" novalidate>
+                    <input type="hidden" id="fpaq-id">
+
+                    <div class="paq-form-section">
+                        <label>Nombre del paquete *<input type="text" id="fpaq-nombre" required maxlength="80" placeholder="Ej. Escapada Romántica"></label>
+                    </div>
+                    <div class="paq-form-section">
+                        <label>Descripción *<textarea id="fpaq-desc" required rows="3" maxlength="300" placeholder="Describe qué incluye el paquete..."></textarea></label>
+                    </div>
+                    <div class="paq-form-grid2">
+                        <div class="paq-form-section">
+                            <label>Habitación *
+                                <select id="fpaq-habitacion" required>
+                                    <option value="">— Selecciona —</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="paq-form-section">
+                            <label>Servicio incluido *
+                                <select id="fpaq-servicio" required>
+                                    <option value="">— Selecciona —</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="paq-form-section">
+                            <label>Precio ($) *<input type="number" id="fpaq-precio" required min="0" step="1000" placeholder="350000"></label>
+                        </div>
+                        <div class="paq-form-section">
+                            <label>Estado
+                                <select id="fpaq-estado">
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="paq-form-section">
+                        <span class="img-picker-label">Imagen del paquete</span>
+                        <input type="hidden" id="fpaq-imagen">
+                        <div class="img-picker-tabs">
+                            <button type="button" class="img-tab active" data-tab="url">
+                                <i class="fa-solid fa-link"></i> Por URL
+                            </button>
+                            <button type="button" class="img-tab" data-tab="file">
+                                <i class="fa-solid fa-upload"></i> Subir archivo
+                            </button>
+                        </div>
+                        <div class="img-tab-content active" id="img-tab-url">
+                            <input type="url" id="fpaq-imagen-url" class="img-url-input"
+                                   placeholder="https://ejemplo.com/imagen.jpg">
+                        </div>
+                        <div class="img-tab-content" id="img-tab-file">
+                            <div class="img-dropzone" id="fpaq-dropzone">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <p>Arrastra aquí tu imagen</p>
+                                <span>o haz clic para seleccionar</span>
+                                <label class="btn-select-file" onclick="event.stopPropagation()">
+                                    <i class="fa-solid fa-folder-open"></i> Seleccionar archivo
+                                    <input type="file" id="fpaq-file-input" accept="image/*" hidden>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="img-preview-wrap" id="fpaq-preview-wrap" style="display:none">
+                            <img id="fpaq-preview-img" src="" alt="Vista previa">
+                            <button type="button" class="img-remove-btn" id="btn-remove-img" title="Quitar imagen">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="paq-form-actions">
+                        <button type="button" class="btn-paq-cancelar" id="btn-form-cancelar">Cancelar</button>
+                        <button type="submit" class="btn-paq-guardar"  id="btn-form-guardar">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+    /* ── Estado ── */
+    let paquetesCargados = [];
+    let listaFiltradaPaq = [];
+    let paginaActualPaq  = 1;
+
+    function getPPPaq() {
+        return parseInt(document.getElementById('paquetes-per-page')?.value || '10', 10);
+    }
+
+    function pageNums(current, total) {
+        if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+        const p = [];
+        p.push(1);
+        if (current > 3)         p.push('...');
+        for (let i = Math.max(2, current-1); i <= Math.min(total-1, current+1); i++) p.push(i);
+        if (current < total - 2) p.push('...');
+        p.push(total);
+        return p;
+    }
+
+    function irPaginaPaq(n) {
+        const pp    = getPPPaq();
+        const pages = Math.max(1, Math.ceil(listaFiltradaPaq.length / pp));
+        if (n < 1 || n > pages) return;
+        paginaActualPaq = n;
+        renderTabla(listaFiltradaPaq);
+        document.querySelector('.paq-tabla-wrap')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    const imgBase = () => {
+        const api = (typeof CONFIG !== 'undefined' ? CONFIG.API_URL : 'http://localhost:3000/api');
+        return api.replace('/api', '/img');
+    };
+    const imgUrl = src => {
+        if (!src) return null;
+        if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) return src;
+        return `${imgBase()}/${encodeURIComponent(src)}`;
+    };
+    const fmtPrecio = v  => '$' + Number(v || 0).toLocaleString('es-CO');
+
+    /* ── Mensaje ── */
+    function showMsg(texto, tipo) {
+        const el = document.getElementById('paq-msg');
+        el.innerHTML = `<i class="fa-solid fa-${tipo === 'ok' ? 'circle-check' : 'circle-xmark'}"></i> ${texto}`;
+        el.className = `paq-msg ${tipo}`;
+        clearTimeout(el._t);
+        el._t = setTimeout(() => { el.className = 'paq-msg'; }, 4000);
+        if ((tipo === 'ok' || tipo === 'error') && typeof showAlert === 'function')
+            showAlert(texto, tipo === 'ok' ? 'success' : 'error');
+    }
+
+    /* ── Contadores ── */
+    function updateStats(lista) {
+        document.getElementById('stat-total').textContent    = lista.length;
+        document.getElementById('stat-activos').textContent  = lista.filter(p => p.Estado == 1).length;
+        document.getElementById('stat-inactivos').textContent= lista.filter(p => p.Estado == 0).length;
+    }
+
+    /* ── Render tabla con paginación ── */
+    function renderTabla(lista) {
+        const tbody  = document.getElementById('paq-tbody');
+        const pp     = getPPPaq();
+        const total  = lista.length;
+        const pages  = Math.max(1, Math.ceil(total / pp));
+
+        if (paginaActualPaq > pages) paginaActualPaq = pages;
+
+        const desde  = (paginaActualPaq - 1) * pp;
+        const hasta  = Math.min(desde + pp, total);
+        const pagina = lista.slice(desde, hasta);
+
+        if (!pagina.length) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:#94a3b8">No hay paquetes.</td></tr>';
+        } else {
+        tbody.innerHTML = pagina.map(p => {
+            const foto = imgUrl(p.ImagenPaquete);
+            const activo = p.Estado == 1;
+            return `
+            <tr>
+                <td>
+                    ${foto
+                      ? `<img class="paq-thumb" src="${foto}" alt="${p.NombrePaquete}"
+                               onerror="this.outerHTML='<div class=\'paq-thumb-placeholder\'><i class=\'fa-solid fa-image\'></i></div>'">`
+                      : `<div class="paq-thumb-placeholder"><i class="fa-solid fa-image"></i></div>`}
+                </td>
+                <td><strong>${p.NombrePaquete}</strong></td>
+                <td style="color:#475569">${p.NombreHabitacion || '—'}</td>
+                <td style="color:#475569">${p.NombreServicio   || '—'}</td>
+                <td class="paq-precio">${fmtPrecio(p.Precio)}</td>
+                <td>
+                    <span class="${activo ? 'badge-activo' : 'badge-inactivo'}">
+                        <i class="fa-solid fa-circle" style="font-size:.45rem"></i>
+                        ${activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                </td>
+                <td>
+                    <div class="toggle-wrap">
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${activo ? 'checked' : ''}
+                                   onchange="toggleEstado(${p.IDPaquete}, this.checked, this)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label ${activo ? 'activo' : 'inactivo'}">
+                            ${activo ? 'ON' : 'OFF'}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <div class="paq-acciones">
+                        <button class="btn-paq-accion btn-paq-ver"      onclick="verDetalle(${p.IDPaquete})"   title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn-paq-accion btn-paq-editar"   onclick="editarPaquete(${p.IDPaquete})" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn-paq-accion btn-paq-eliminar" onclick="eliminarPaquete(${p.IDPaquete})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+        } // end else
+
+        /* ── info ── */
+        document.getElementById('paquetes-pag-info').innerHTML =
+            total ? `Mostrando <strong>${desde+1}–${hasta}</strong> de <strong>${total}</strong> paquetes` : '';
+
+        /* ── botones ── */
+        const ctrl = document.getElementById('paquetes-pag-controls');
+        if (total <= pp) { ctrl.innerHTML = ''; return; }
+
+        const nums = pageNums(paginaActualPaq, pages);
+        ctrl.innerHTML =
+            `<button class="pag-btn" onclick="irPaginaPaq(${paginaActualPaq-1})" ${paginaActualPaq===1?'disabled':''}>
+                <i class="fa-solid fa-chevron-left"></i>
+             </button>` +
+            nums.map(n => n === '...'
+                ? `<button class="pag-btn dots">…</button>`
+                : `<button class="pag-btn ${n===paginaActualPaq?'active':''}" onclick="irPaginaPaq(${n})">${n}</button>`
+            ).join('') +
+            `<button class="pag-btn" onclick="irPaginaPaq(${paginaActualPaq+1})" ${paginaActualPaq===pages?'disabled':''}>
+                <i class="fa-solid fa-chevron-right"></i>
+             </button>`;
+    }
+
+    /* ── Filtros ── */
+    function filtrar() {
+        const q      = document.getElementById('paq-buscar').value.toLowerCase();
+        const estado = document.getElementById('paq-filtro-estado').value;
+        listaFiltradaPaq = paquetesCargados;
+        if (estado !== 'all') listaFiltradaPaq = listaFiltradaPaq.filter(p => String(p.Estado) === estado);
+        if (q) listaFiltradaPaq = listaFiltradaPaq.filter(p =>
+            (p.NombrePaquete || '').toLowerCase().includes(q) ||
+            (p.NombreHabitacion || '').toLowerCase().includes(q) ||
+            (p.NombreServicio || '').toLowerCase().includes(q)
+        );
+        paginaActualPaq = 1;
+        renderTabla(listaFiltradaPaq);
+    }
+
+    /* ── Cargar ── */
+    async function cargarPaquetes() {
+        try {
+            const data = await requestJson('/paquetes');
+            paquetesCargados = Array.isArray(data) ? data : [];
+            listaFiltradaPaq = paquetesCargados;
+            updateStats(paquetesCargados);
+            paginaActualPaq = 1;
+            renderTabla(listaFiltradaPaq);
+        } catch (e) {
+            showMsg('Error al cargar paquetes.', 'error');
+            document.getElementById('paq-tbody').innerHTML =
+                '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#dc2626">Error al cargar paquetes.</td></tr>';
+        }
+    }
+
+    /* ── Toggle estado (ON/OFF) ── */
+    async function toggleEstado(id, activar, checkbox) {
+        const paq = paquetesCargados.find(p => p.IDPaquete === id);
+        if (!paq) return;
+
+        checkbox.disabled = true;
+        const labelEl = checkbox.closest('.toggle-wrap')?.querySelector('.toggle-label');
+
+        try {
+            await requestJson(`/paquetes/${id}`, {
+                method: 'PUT',
+                body: {
+                    NombrePaquete: paq.NombrePaquete,
+                    Descripcion:   paq.Descripcion,
+                    IDHabitacion:  paq.IDHabitacion,
+                    IDServicio:    paq.IDServicio,
+                    Precio:        paq.Precio,
+                    Estado:        activar ? 1 : 0,
+                    ImagenURL:     paq.ImagenPaquete,
+                }
+            });
+
+            /* actualizar estado local sin recargar toda la tabla */
+            paq.Estado = activar ? 1 : 0;
+            if (labelEl) {
+                labelEl.textContent = activar ? 'ON' : 'OFF';
+                labelEl.className = `toggle-label ${activar ? 'activo' : 'inactivo'}`;
+            }
+
+            /* actualizar badge en la misma fila */
+            const row   = checkbox.closest('tr');
+            const badge = row?.querySelector('.badge-activo, .badge-inactivo');
+            if (badge) {
+                badge.className = activar ? 'badge-activo' : 'badge-inactivo';
+                badge.innerHTML = `<i class="fa-solid fa-circle" style="font-size:.45rem"></i> ${activar ? 'Activo' : 'Inactivo'}`;
+            }
+
+            updateStats(paquetesCargados);
+            showMsg(`Paquete "${paq.NombrePaquete}" ${activar ? 'activado' : 'desactivado'}.`, 'ok');
+        } catch (e) {
+            checkbox.checked = !activar;
+            showMsg('No se pudo cambiar el estado del paquete.', 'error');
+        } finally {
+            checkbox.disabled = false;
+        }
+    }
+
+    /* ── Ver detalle ── */
+    function verDetalle(id) {
+        const p = paquetesCargados.find(x => x.IDPaquete === id);
+        if (!p) return;
+        const foto = imgUrl(p.ImagenPaquete);
+        document.getElementById('detalle-img-wrap').innerHTML = foto
+            ? `<img class="paq-modal-img" src="${foto}" alt="${p.NombrePaquete}"
+                    onerror="this.outerHTML='<div class=\'paq-modal-img-placeholder\'><i class=\'fa-solid fa-box-open\'></i></div>'">`
+            : `<div class="paq-modal-img-placeholder"><i class="fa-solid fa-box-open"></i></div>`;
+        document.getElementById('detalle-nombre').textContent = p.NombrePaquete;
+        document.getElementById('detalle-precio').textContent = fmtPrecio(p.Precio);
+        document.getElementById('detalle-desc').textContent   = p.Descripcion || 'Sin descripción.';
+        document.getElementById('detalle-grid').innerHTML = [
+            ['Habitación',    p.NombreHabitacion || '—'],
+            ['Servicio',      p.NombreServicio   || '—'],
+            ['ID Paquete',    `#${p.IDPaquete}`],
+            ['Estado',        p.Estado == 1 ? '✅ Activo' : '⚪ Inactivo'],
+        ].map(([l,v]) => `<div class="paq-modal-field"><span>${l}</span><strong>${v}</strong></div>`).join('');
+        document.getElementById('modal-detalle-paq').classList.remove('hidden');
+    }
+
+    /* ── Abrir formulario ── */
+    async function abrirForm(paquete = null) {
+        /* poblar habitaciones y servicios */
+        try {
+            const [habs, svcs] = await Promise.all([requestJson('/habitaciones'), requestJson('/servicios')]);
+            const selH = document.getElementById('fpaq-habitacion');
+            const selS = document.getElementById('fpaq-servicio');
+            selH.innerHTML = '<option value="">— Selecciona —</option>' +
+                (Array.isArray(habs) ? habs : []).map(h => `<option value="${h.IDHabitacion}">${h.NombreHabitacion}</option>`).join('');
+            selS.innerHTML = '<option value="">— Selecciona —</option>' +
+                (Array.isArray(svcs) ? svcs : []).map(s => `<option value="${s.IDServicio}">${s.NombreServicio}</option>`).join('');
+        } catch { /* continúa sin datos */ }
+
+        document.getElementById('form-paq-titulo').textContent  = paquete ? `Editar — ${paquete.NombrePaquete}` : 'Nuevo Paquete';
+        document.getElementById('btn-form-guardar').innerHTML   = paquete
+            ? '<i class="fa-solid fa-floppy-disk"></i> Guardar cambios'
+            : '<i class="fa-solid fa-plus"></i> Crear paquete';
+        document.getElementById('fpaq-id').value       = paquete?.IDPaquete  || '';
+        document.getElementById('fpaq-nombre').value   = paquete?.NombrePaquete || '';
+        document.getElementById('fpaq-desc').value     = paquete?.Descripcion   || '';
+        document.getElementById('fpaq-precio').value   = paquete?.Precio        || '';
+        document.getElementById('fpaq-estado').value   = paquete?.Estado != null ? paquete.Estado : 1;
+        document.getElementById('fpaq-habitacion').value = paquete?.IDHabitacion || '';
+        document.getElementById('fpaq-servicio').value   = paquete?.IDServicio   || '';
+        if (window._imgPicker) window._imgPicker.set(paquete?.ImagenPaquete || '');
+
+        document.getElementById('modal-form-paq').classList.remove('hidden');
+    }
+
+    function editarPaquete(id) {
+        const p = paquetesCargados.find(x => x.IDPaquete === id);
+        if (p) abrirForm(p);
+    }
+
+    /* ── Eliminar ── */
+    async function eliminarPaquete(id) {
+        const p = paquetesCargados.find(x => x.IDPaquete === id);
+        if (!confirm(`¿Eliminar el paquete "${p?.NombrePaquete}"? Esta acción no se puede deshacer.`)) return;
+        try {
+            await requestJson(`/paquetes/${id}`, { method: 'DELETE', allowNoContent: true });
+            showMsg(`Paquete eliminado correctamente.`, 'ok');
+            cargarPaquetes();
+        } catch { showMsg('Error al eliminar el paquete.', 'error'); }
+    }
+
+    /* ── Image Picker ── */
+    function initImgPicker() {
+        const hidden      = document.getElementById('fpaq-imagen');
+        const urlInput    = document.getElementById('fpaq-imagen-url');
+        const fileInput   = document.getElementById('fpaq-file-input');
+        const dropzone    = document.getElementById('fpaq-dropzone');
+        const previewWrap = document.getElementById('fpaq-preview-wrap');
+        const previewImg  = document.getElementById('fpaq-preview-img');
+        const removeBtn   = document.getElementById('btn-remove-img');
+        const tabs        = document.querySelectorAll('.img-tab');
+        const tabContents = document.querySelectorAll('.img-tab-content');
+
+        function setPreview(src) {
+            if (src) { previewImg.src = src; previewWrap.style.display = 'flex'; }
+            else      { previewImg.src = ''; previewWrap.style.display = 'none'; }
+        }
+        function setValue(val) { hidden.value = val || ''; setPreview(val || ''); }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`img-tab-${tab.dataset.tab}`).classList.add('active');
+                if (tab.dataset.tab === 'url') {
+                    fileInput.value = '';
+                    setValue(urlInput.value.trim());
+                } else {
+                    urlInput.value = '';
+                    setValue('');
+                }
+            });
+        });
+
+        let urlTimer;
+        urlInput.addEventListener('input', () => {
+            clearTimeout(urlTimer);
+            urlTimer = setTimeout(() => setValue(urlInput.value.trim()), 400);
+        });
+
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) readFile(file);
+        });
+        dropzone.addEventListener('click', e => {
+            if (!e.target.closest('.btn-select-file')) fileInput.click();
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) readFile(fileInput.files[0]);
+        });
+        function readFile(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                // Switch to file tab to show the result
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.querySelector('.img-tab[data-tab="file"]').classList.add('active');
+                document.getElementById('img-tab-file').classList.add('active');
+                setValue(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        removeBtn.addEventListener('click', () => { setValue(''); urlInput.value = ''; fileInput.value = ''; });
+
+        return {
+            set(val) {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.querySelector('.img-tab[data-tab="url"]').classList.add('active');
+                document.getElementById('img-tab-url').classList.add('active');
+                urlInput.value = val || '';
+                fileInput.value = '';
+                setValue(val || '');
+            }
+        };
+    }
+
+    /* ── Submit formulario ── */
+    document.addEventListener('DOMContentLoaded', async () => {
+        const session = window.getStoredSession ? window.getStoredSession() : null;
+        if (!session) { window.location.href = '../login.html'; return; }
+
+        await window.loadSidebarComponent('sidebar-placeholder');
+        await window.filterSidebarByPermissions();
+
+        window._imgPicker = initImgPicker();
+
+        cargarPaquetes();
+
+        document.getElementById('paq-buscar').addEventListener('input', filtrar);
+        document.getElementById('paq-filtro-estado').addEventListener('change', filtrar);
+        document.getElementById('paquetes-per-page').addEventListener('change', () => {
+            paginaActualPaq = 1;
+            renderTabla(listaFiltradaPaq);
+        });
+
+        document.getElementById('btn-nuevo-paquete').addEventListener('click', () => abrirForm());
+
+        /* Cerrar modales */
+        const cerrarDetalle = () => document.getElementById('modal-detalle-paq').classList.add('hidden');
+        const cerrarForm    = () => document.getElementById('modal-form-paq').classList.add('hidden');
+        document.getElementById('btn-cerrar-detalle').addEventListener('click', cerrarDetalle);
+        document.getElementById('btn-cerrar-form').addEventListener('click', cerrarForm);
+        document.getElementById('btn-form-cancelar').addEventListener('click', cerrarForm);
+        document.getElementById('modal-detalle-paq').addEventListener('click', e => { if (e.target === e.currentTarget) cerrarDetalle(); });
+        document.getElementById('modal-form-paq').addEventListener('click',    e => { if (e.target === e.currentTarget) cerrarForm(); });
+
+        /* Submit */
+        document.getElementById('form-paquete').addEventListener('submit', async e => {
+            e.preventDefault();
+            const id  = document.getElementById('fpaq-id').value;
+            const btn = document.getElementById('btn-form-guardar');
+
+            const body = {
+                NombrePaquete: document.getElementById('fpaq-nombre').value.trim(),
+                Descripcion:   document.getElementById('fpaq-desc').value.trim(),
+                IDHabitacion:  Number(document.getElementById('fpaq-habitacion').value),
+                IDServicio:    Number(document.getElementById('fpaq-servicio').value),
+                Precio:        Number(document.getElementById('fpaq-precio').value),
+                Estado:        Number(document.getElementById('fpaq-estado').value),
+                ImagenURL:     document.getElementById('fpaq-imagen').value.trim() || null,
+            };
+
+            if (!body.NombrePaquete) { showMsg('El nombre es obligatorio.', 'error'); return; }
+            if (!body.IDHabitacion)  { showMsg('Selecciona una habitación.', 'error'); return; }
+            if (!body.IDServicio)    { showMsg('Selecciona un servicio.', 'error'); return; }
+            if (!body.Precio)        { showMsg('Ingresa un precio válido.', 'error'); return; }
+
+            btn.disabled = true;
+            try {
+                if (id) {
+                    await requestJson(`/paquetes/${id}`, { method: 'PUT', body });
+                    showMsg('Paquete actualizado correctamente.', 'ok');
+                } else {
+                    await requestJson('/paquetes', { method: 'POST', body });
+                    showMsg('Paquete creado correctamente.', 'ok');
+                }
+                cerrarForm();
+                cargarPaquetes();
+            } catch { showMsg('Error al guardar el paquete.', 'error'); }
+            finally  { btn.disabled = false; }
+        });
+    });
+    </script>
+</body>
+</html>
