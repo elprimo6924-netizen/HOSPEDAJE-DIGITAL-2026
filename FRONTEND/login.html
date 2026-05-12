@@ -40,21 +40,33 @@
                 <form id="loginForm" class="space-y-5">
                     <div id="errorMessage" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
-                    <div class="space-y-2">
-                        <label for="email" class="text-sm font-semibold text-slate-700">Correo Electrónico</label>
+                    <!-- ✏️ MODIFICADO: Email con field-wrapper para validación visual -->
+                    <div class="field-wrapper space-y-2 relative">
+                        <label for="email" class="text-sm font-semibold text-slate-700">
+                            Correo Electrónico <span class="text-red-500">*</span>
+                        </label>
                         <input type="email" id="email" name="email" required placeholder="admin@hotel.com" autocomplete="email"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                            class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                     </div>
 
-                    <div class="space-y-2">
+                    <!-- ✏️ MODIFICADO: Password con toggle mostrar/ocultar -->
+                    <div class="field-wrapper space-y-2 relative">
                         <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
-                        <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                        <div class="relative">
+                            <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password"
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                            <button type="button" id="togglePassword"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" style="background:none;border:none;">
+                                <i id="toggleIcon" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <button type="submit"
-                        class="inline-flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20">
-                        Iniciar Sesión
+                    <!-- ✏️ MODIFICADO: Botón con estado de carga -->
+                    <button id="loginBtn" type="submit"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition-all hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                        <span id="loginBtnText">Iniciar Sesión</span>
+                        <i id="loginBtnIcon" class="fa-solid fa-arrow-right-to-bracket"></i>
                     </button>
                 </form>
             </div>
@@ -68,12 +80,53 @@
     </main>
 
     <script src="js/config.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/notifications.js"></script>
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const loginForm = document.getElementById("loginForm");
             const errorContainer = document.getElementById("errorMessage");
+            const loginBtn = document.getElementById("loginBtn");
+            const loginBtnText = document.getElementById("loginBtnText");
+            const loginBtnIcon = document.getElementById("loginBtnIcon");
+            const emailInput = document.getElementById("email");
+            const passwordInput = document.getElementById("password");
+
+            // ✏️ MODIFICADO: Toggle mostrar/ocultar contraseña
+            document.getElementById('togglePassword').addEventListener('click', () => {
+                const input = document.getElementById('password');
+                const icon = document.getElementById('toggleIcon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fa-solid fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fa-solid fa-eye';
+                }
+            });
+
+            // ✏️ MODIFICADO: Validación en tiempo real del email
+            emailInput.addEventListener('blur', function() {
+                if (this.value && typeof validarEmail === 'function') {
+                    const v = validarEmail(this.value);
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
+                    }
+                } else if (this.value) {
+                    if (typeof setFieldState === 'function') setFieldState(this, 'valido');
+                }
+            });
+
+            emailInput.addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
+
+            // ✏️ MODIFICADO: Limpiar estado del password al focus
+            passwordInput.addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
 
             if (loginForm) {
                 loginForm.addEventListener("submit", async (e) => {
@@ -82,16 +135,48 @@
                     errorContainer.classList.add("hidden");
                     errorContainer.innerHTML = "";
 
-                    const email = document.getElementById("email").value;
-                    const contrasena = document.getElementById("password").value;
+                    const email = emailInput.value;
+                    const contrasena = passwordInput.value;
 
-                    const result = await loginUsuario(email, contrasena);
+                    // Validar email antes de enviar
+                    if (typeof validarEmail === 'function') {
+                        const vEmail = validarEmail(email);
+                        if (!vEmail.valido) {
+                            errorContainer.classList.remove("hidden");
+                            errorContainer.textContent = vEmail.mensaje;
+                            if (typeof setFieldState === 'function') setFieldState(emailInput, 'invalido', vEmail.mensaje);
+                            return;
+                        }
+                    }
 
-                    if (result.success) {
-                        window.location.href = "pages/dashboard.html";
-                    } else {
+                    // ✏️ MODIFICADO: Estado de carga en el botón
+                    loginBtn.disabled = true;
+                    loginBtnText.textContent = 'Verificando...';
+                    loginBtnIcon.className = 'fa-solid fa-spinner fa-spin';
+
+                    try {
+                        const result = await loginUsuario(email, contrasena);
+
+                        if (result.success) {
+                            loginBtnText.textContent = '¡Bienvenido!';
+                            loginBtnIcon.className = 'fa-solid fa-check';
+                            setTimeout(() => {
+                                window.location.href = "pages/dashboard.html";
+                            }, 500);
+                        } else {
+                            errorContainer.classList.remove("hidden");
+                            errorContainer.textContent = result.message;
+                            // Restaurar botón
+                            loginBtn.disabled = false;
+                            loginBtnText.textContent = 'Iniciar Sesión';
+                            loginBtnIcon.className = 'fa-solid fa-arrow-right-to-bracket';
+                        }
+                    } catch (err) {
                         errorContainer.classList.remove("hidden");
-                        errorContainer.textContent = result.message;
+                        errorContainer.textContent = "Error de conexión con el servidor";
+                        loginBtn.disabled = false;
+                        loginBtnText.textContent = 'Iniciar Sesión';
+                        loginBtnIcon.className = 'fa-solid fa-arrow-right-to-bracket';
                     }
                 });
             }

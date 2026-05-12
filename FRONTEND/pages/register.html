@@ -36,6 +36,7 @@
             <form id="registerForm" class="mt-8 space-y-6">
                 <div id="registerError" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
 
+                <!-- Sección: Documento -->
                 <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
                     <div class="mb-4 flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
@@ -48,24 +49,26 @@
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
+                        <!-- ✏️ MODIFICADO: field-wrapper -->
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_tipoDoc" class="text-sm font-semibold text-slate-700">Tipo Documento <span class="text-red-500">*</span></label>
                             <select id="reg_tipoDoc" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                                 <option value="">Selecciona un tipo</option>
                                 <option value="CC">Cédula de Ciudadanía</option>
                                 <option value="TI">Tarjeta de Identidad</option>
                                 <option value="CE">Cédula de Extranjería</option>
                             </select>
                         </div>
-                        <div class="space-y-2">
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_numDoc" class="text-sm font-semibold text-slate-700">Número Documento <span class="text-red-500">*</span></label>
-                            <input type="number" id="reg_numDoc" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                            <input type="text" id="reg_numDoc" required
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
                     </div>
                 </div>
 
+                <!-- Sección: Datos de contacto -->
                 <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
                     <div class="mb-4 flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
@@ -78,34 +81,35 @@
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_nombre" class="text-sm font-semibold text-slate-700">Nombre <span class="text-red-500">*</span></label>
                             <input type="text" id="reg_nombre" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
-                        <div class="space-y-2">
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_apellido" class="text-sm font-semibold text-slate-700">Apellido <span class="text-red-500">*</span></label>
                             <input type="text" id="reg_apellido" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
-                        <div class="space-y-2">
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_telefono" class="text-sm font-semibold text-slate-700">Teléfono</label>
                             <input type="text" id="reg_telefono"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
-                        <div class="space-y-2">
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_pais" class="text-sm font-semibold text-slate-700">País</label>
                             <input type="text" id="reg_pais"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
-                        <div class="space-y-2 md:col-span-2">
+                        <div class="field-wrapper space-y-2 relative md:col-span-2">
                             <label for="reg_direccion" class="text-sm font-semibold text-slate-700">Dirección</label>
                             <input type="text" id="reg_direccion"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
                     </div>
                 </div>
 
+                <!-- Sección: Credenciales -->
                 <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
                     <div class="mb-4 flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
@@ -118,22 +122,55 @@
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div class="space-y-2">
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_email" class="text-sm font-semibold text-slate-700">Correo Electrónico <span class="text-red-500">*</span></label>
                             <input type="email" id="reg_email" required autocomplete="email"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
                         </div>
-                        <div class="space-y-2">
+
+                        <!-- ✏️ MODIFICADO: Password con toggle + indicador de fortaleza -->
+                        <div class="field-wrapper space-y-2 relative">
                             <label for="reg_password" class="text-sm font-semibold text-slate-700">Contraseña <span class="text-red-500">*</span></label>
-                            <input type="password" id="reg_password" required autocomplete="new-password"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                            <div class="relative">
+                                <input type="password" id="reg_password" required autocomplete="new-password"
+                                    class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                <button type="button" id="toggleRegPassword"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" style="background:none;border:none;">
+                                    <i id="toggleRegIcon" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                            <!-- ✏️ MODIFICADO: Indicador de fortaleza de contraseña -->
+                            <div id="password-strength" class="mt-2 hidden">
+                                <div class="flex gap-1 mb-1">
+                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-1"></div>
+                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-2"></div>
+                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-3"></div>
+                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-4"></div>
+                                </div>
+                                <p id="str-label" class="text-xs text-slate-500"></p>
+                            </div>
+                        </div>
+
+                        <!-- ✏️ MODIFICADO: Campo confirmar contraseña -->
+                        <div class="field-wrapper space-y-2 relative md:col-span-2">
+                            <label for="reg_confirmar" class="text-sm font-semibold text-slate-700">Confirmar Contraseña <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <input type="password" id="reg_confirmar" required autocomplete="new-password"
+                                    class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                <button type="button" id="toggleRegConfirm"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" style="background:none;border:none;">
+                                    <i id="toggleConfirmIcon" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit"
-                    class="inline-flex w-full items-center justify-center rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20">
-                    Registrarse
+                <!-- ✏️ MODIFICADO: Botón con estado de carga -->
+                <button id="registerBtn" type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition-all hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                    <span id="registerBtnText">Registrarse</span>
+                    <i id="registerBtnIcon" class="fa-solid fa-user-plus"></i>
                 </button>
             </form>
 
@@ -143,12 +180,155 @@
         </section>
     </main>
 
+    <script src="../js/config.js"></script>
+    <script src="../js/validation.js"></script>
+    <script src="../js/notifications.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/auth.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const registerForm = document.getElementById("registerForm");
             const registerError = document.getElementById("registerError");
+            const registerBtn = document.getElementById("registerBtn");
+            const registerBtnText = document.getElementById("registerBtnText");
+            const registerBtnIcon = document.getElementById("registerBtnIcon");
+
+            // ✏️ MODIFICADO: Toggle mostrar/ocultar contraseña principal
+            document.getElementById('toggleRegPassword').addEventListener('click', () => {
+                const input = document.getElementById('reg_password');
+                const icon = document.getElementById('toggleRegIcon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fa-solid fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fa-solid fa-eye';
+                }
+            });
+
+            // ✏️ MODIFICADO: Toggle mostrar/ocultar confirmar contraseña
+            document.getElementById('toggleRegConfirm').addEventListener('click', () => {
+                const input = document.getElementById('reg_confirmar');
+                const icon = document.getElementById('toggleConfirmIcon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fa-solid fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fa-solid fa-eye';
+                }
+            });
+
+            // ✏️ MODIFICADO: Indicador de fortaleza de contraseña
+            const passwordInput = document.getElementById('reg_password');
+            const labels = ['', 'Débil', 'Regular', 'Buena', 'Fuerte'];
+            const colors = ['', 'bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-green-500'];
+            const textColors = ['', 'text-red-500', 'text-amber-500', 'text-blue-500', 'text-green-600'];
+
+            passwordInput.addEventListener('input', function() {
+                if (typeof calcularFortaleza !== 'function') return;
+                const score = calcularFortaleza(this.value);
+                document.getElementById('password-strength').classList.toggle('hidden', !this.value);
+
+                [1,2,3,4].forEach(i => {
+                    const bar = document.getElementById(`str-bar-${i}`);
+                    bar.className = `h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= score ? colors[score] : 'bg-slate-200'}`;
+                });
+
+                const label = document.getElementById('str-label');
+                label.textContent = this.value ? labels[score] : '';
+                label.className = `text-xs font-medium ${textColors[score] || 'text-slate-500'}`;
+            });
+
+            // ✏️ MODIFICADO: Validación de contraseña al blur
+            passwordInput.addEventListener('blur', function() {
+                if (this.value && typeof validarContrasena === 'function') {
+                    const v = validarContrasena(this.value);
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
+                    }
+                }
+            });
+            passwordInput.addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
+
+            // ✏️ MODIFICADO: Validación de que contraseñas coinciden en tiempo real
+            document.getElementById('reg_confirmar').addEventListener('input', function() {
+                const pass = document.getElementById('reg_password').value;
+                if (typeof setFieldState === 'function') {
+                    if (this.value && this.value !== pass) {
+                        setFieldState(this, 'invalido', 'Las contraseñas no coinciden');
+                    } else if (this.value && this.value === pass) {
+                        setFieldState(this, 'valido');
+                    }
+                }
+            });
+
+            // ✏️ MODIFICADO: Validación del email en blur
+            document.getElementById('reg_email').addEventListener('blur', function() {
+                if (this.value && typeof validarEmail === 'function') {
+                    const v = validarEmail(this.value);
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
+                    }
+                }
+            });
+            document.getElementById('reg_email').addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
+
+            // ✏️ MODIFICADO: Validación del nombre en blur
+            document.getElementById('reg_nombre').addEventListener('blur', function() {
+                if (this.value && typeof validarNombrePersona === 'function') {
+                    const v = validarNombrePersona(this.value, 'Nombre');
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
+                    }
+                }
+            });
+            document.getElementById('reg_nombre').addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
+
+            // ✏️ MODIFICADO: Validación del apellido en blur
+            document.getElementById('reg_apellido').addEventListener('blur', function() {
+                if (this.value && typeof validarNombrePersona === 'function') {
+                    const v = validarNombrePersona(this.value, 'Apellido');
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
+                    }
+                }
+            });
+            document.getElementById('reg_apellido').addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
+
+            // ✏️ MODIFICADO: Validación del teléfono en blur
+            document.getElementById('reg_telefono').addEventListener('blur', function() {
+                if (this.value && typeof validarTelefono === 'function') {
+                    const v = validarTelefono(this.value);
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
+                    }
+                }
+            });
+            document.getElementById('reg_telefono').addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
+
+            // ✏️ MODIFICADO: Validación del documento en blur
+            document.getElementById('reg_numDoc').addEventListener('blur', function() {
+                if (this.value && typeof validarDocumento === 'function') {
+                    const v = validarDocumento(this.value);
+                    if (typeof setFieldState === 'function') {
+                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
+                    }
+                }
+            });
+            document.getElementById('reg_numDoc').addEventListener('focus', function() {
+                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            });
 
             if (registerForm) {
                 registerForm.addEventListener("submit", async (e) => {
@@ -159,16 +339,44 @@
 
                     const nombre = document.getElementById("reg_nombre").value.trim();
                     const apellido = document.getElementById("reg_apellido").value.trim();
-                    const password = document.getElementById("reg_password").value.trim();
+                    const password = document.getElementById("reg_password").value;
+                    const confirmar = document.getElementById("reg_confirmar").value;
                     const email = document.getElementById("reg_email").value.trim();
                     const tipoDoc = document.getElementById("reg_tipoDoc").value.trim();
                     const numDoc = document.getElementById("reg_numDoc").value.trim();
 
-                    if (!nombre || !apellido || !password || !email || !tipoDoc || !numDoc) {
+                    // ✏️ MODIFICADO: Usar validarFormularioRegistro si está disponible
+                    if (typeof validarFormularioRegistro === 'function') {
+                        const validacion = validarFormularioRegistro({
+                            nombre, apellido, email,
+                            contrasena: password,
+                            confirmar: confirmar,
+                            telefono: document.getElementById("reg_telefono").value.trim()
+                        });
+
+                        if (!validacion.valido) {
+                            registerError.classList.remove("hidden");
+                            registerError.innerHTML = validacion.errores.map(e => `<p>${e}</p>`).join('');
+                            return;
+                        }
+                    } else {
+                        if (!nombre || !apellido || !password || !email || !tipoDoc || !numDoc) {
+                            registerError.classList.remove("hidden");
+                            registerError.textContent = "Por favor, completa todos los campos obligatorios (marcados con *)";
+                            return;
+                        }
+                    }
+
+                    if (!tipoDoc || !numDoc) {
                         registerError.classList.remove("hidden");
-                        registerError.textContent = "Por favor, completa todos los campos obligatorios (marcados con *)";
+                        registerError.textContent = "El tipo y número de documento son obligatorios";
                         return;
                     }
+
+                    // ✏️ MODIFICADO: Estado de carga en el botón
+                    registerBtn.disabled = true;
+                    registerBtnText.textContent = 'Registrando...';
+                    registerBtnIcon.className = 'fa-solid fa-spinner fa-spin';
 
                     const userData = {
                         Contrasena: password,
@@ -183,15 +391,31 @@
                         IDRol: 2,
                     };
 
-                    const result = await registrarUsuario(userData);
+                    try {
+                        const result = await registrarUsuario(userData);
 
-                    if (result.success) {
-                        registerError.classList.add("hidden");
-                        alert("¡Registro exitoso! Redirigiendo a login...");
-                        window.location.href = "../login.html";
-                    } else {
+                        if (result.success) {
+                            registerBtnText.textContent = '¡Registrado!';
+                            registerBtnIcon.className = 'fa-solid fa-check';
+                            if (typeof showSuccess === 'function') {
+                                showSuccess('¡Registro exitoso! Redirigiendo a login...');
+                            }
+                            setTimeout(() => {
+                                window.location.href = "../login.html";
+                            }, 1500);
+                        } else {
+                            registerError.classList.remove("hidden");
+                            registerError.textContent = result.message;
+                            registerBtn.disabled = false;
+                            registerBtnText.textContent = 'Registrarse';
+                            registerBtnIcon.className = 'fa-solid fa-user-plus';
+                        }
+                    } catch (err) {
                         registerError.classList.remove("hidden");
-                        registerError.textContent = result.message;
+                        registerError.textContent = "Error de conexión con el servidor";
+                        registerBtn.disabled = false;
+                        registerBtnText.textContent = 'Registrarse';
+                        registerBtnIcon.className = 'fa-solid fa-user-plus';
                     }
                 });
             }

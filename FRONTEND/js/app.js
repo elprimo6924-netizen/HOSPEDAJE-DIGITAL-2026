@@ -655,6 +655,7 @@ async function guardarClienteAdmin(evento) {
     }
 }
 
+// ✏️ MODIFICADO: Reemplazado confirm() nativo por confirmarAccion() Tailwind
 async function eliminarClienteAdmin(id) {
     const cliente = clientesCargados.find((item) => String(obtenerIdCliente(item)) === String(id));
     if (!cliente) {
@@ -663,21 +664,39 @@ async function eliminarClienteAdmin(id) {
     }
 
     const nombreCliente = `${cliente.Nombre || ''} ${cliente.Apellido || ''}`.trim() || obtenerIdCliente(cliente);
-    const confirmacion = confirm(`¿Estás seguro de que deseas eliminar el cliente "${nombreCliente}"?`);
-    if (!confirmacion) return;
 
-    try {
-        const resultado = await eliminarCliente(id);
-        if (!resultado) {
-            throw new Error('No se pudo eliminar el cliente');
+    if (typeof confirmarAccion === 'function') {
+        confirmarAccion({
+            titulo: '¿Eliminar cliente?',
+            mensaje: `Esta acción no se puede deshacer. El cliente "${nombreCliente}" será removido del sistema.`,
+            onConfirmar: async () => {
+                try {
+                    const resultado = await eliminarCliente(id);
+                    if (!resultado) {
+                        throw new Error('No se pudo eliminar el cliente');
+                    }
+                    mostrarMensajeClienteAdmin('Cliente eliminado correctamente.', 'ok');
+                    limpiarFormularioClienteAdmin(false);
+                    await cargarClientesAdmin();
+                } catch (error) {
+                    console.error('Error al eliminar cliente:', error);
+                    mostrarMensajeClienteAdmin(error.message || 'No se pudo eliminar el cliente', 'error');
+                }
+            }
+        });
+    } else {
+        // Fallback si confirmarAccion no está disponible
+        if (!confirm(`¿Estás seguro de que deseas eliminar el cliente "${nombreCliente}"?`)) return;
+        try {
+            const resultado = await eliminarCliente(id);
+            if (!resultado) throw new Error('No se pudo eliminar el cliente');
+            mostrarMensajeClienteAdmin('Cliente eliminado correctamente.', 'ok');
+            limpiarFormularioClienteAdmin(false);
+            await cargarClientesAdmin();
+        } catch (error) {
+            console.error('Error al eliminar cliente:', error);
+            mostrarMensajeClienteAdmin(error.message || 'No se pudo eliminar el cliente', 'error');
         }
-
-        mostrarMensajeClienteAdmin('Cliente eliminado correctamente.', 'ok');
-        limpiarFormularioClienteAdmin(false);
-        await cargarClientesAdmin();
-    } catch (error) {
-        console.error('Error al eliminar cliente:', error);
-        mostrarMensajeClienteAdmin(error.message || 'No se pudo eliminar el cliente', 'error');
     }
 }
 
@@ -1880,9 +1899,30 @@ async function guardarHabitacionAdmin(event) {
     }
 }
 
+// ✏️ MODIFICADO: Reemplazado confirm() nativo por confirmarAccion() Tailwind
 async function eliminarHabitacionAdmin(id) {
     const habitacion = habitacionesAdminCargadas.find((item) => String(obtenerIdHabitacion(item)) === String(id));
     const nombre = habitacion?.NombreHabitacion || `ID ${id}`;
+
+    if (typeof confirmarAccion === 'function') {
+        confirmarAccion({
+            titulo: '¿Eliminar habitación?',
+            mensaje: `Esta acción no se puede deshacer. La habitación "${nombre}" será removida del sistema.`,
+            onConfirmar: async () => {
+                try {
+                    mostrarMensajeHabitacionAdmin(`Eliminando ${nombre}...`);
+                    const resultado = await eliminarHabitacion(id);
+                    if (!resultado) throw new Error('No se pudo eliminar la habitación');
+                    await cargarHabitacionesAdmin();
+                    mostrarMensajeHabitacionAdmin('Habitación eliminada correctamente.', 'ok');
+                } catch (error) {
+                    console.error('Error al eliminar habitación:', error);
+                    mostrarMensajeHabitacionAdmin(error.message || 'No se pudo eliminar la habitación', 'error');
+                }
+            }
+        });
+        return;
+    }
 
     if (!confirm(`¿Seguro que deseas eliminar la habitación ${nombre}?`)) {
         return;
@@ -2492,6 +2532,7 @@ async function guardarServicioAdmin(evento) {
     }
 }
 
+// ✏️ MODIFICADO: Reemplazado confirm() nativo por confirmarAccion() Tailwind
 async function eliminarServicioAdmin(id) {
     const servicio = serviciosCargados.find((item) => String(obtenerIdServicio(item)) === String(id));
     if (!servicio) {
@@ -2499,21 +2540,35 @@ async function eliminarServicioAdmin(id) {
         return;
     }
 
-    const confirmacion = confirm(`¿Estás seguro de que deseas eliminar el servicio "${servicio.NombreServicio}"?`);
-    if (!confirmacion) return;
-
-    try {
-        const resultado = await eliminarServicio(id);
-        if (!resultado) {
-            throw new Error('No se pudo eliminar el servicio');
+    if (typeof confirmarAccion === 'function') {
+        confirmarAccion({
+            titulo: '¿Eliminar servicio?',
+            mensaje: `Esta acción no se puede deshacer. El servicio "${servicio.NombreServicio}" será removido del sistema.`,
+            onConfirmar: async () => {
+                try {
+                    const resultado = await eliminarServicio(id);
+                    if (!resultado) throw new Error('No se pudo eliminar el servicio');
+                    mostrarMensajeServicioAdmin(`Servicio "${servicio.NombreServicio}" eliminado correctamente.`, 'ok');
+                    limpiarFormularioServicioAdmin(false);
+                    await cargarServiciosAdmin();
+                } catch (error) {
+                    console.error('Error al eliminar servicio:', error);
+                    mostrarMensajeServicioAdmin(error.message || 'No se pudo eliminar el servicio', 'error');
+                }
+            }
+        });
+    } else {
+        if (!confirm(`¿Estás seguro de que deseas eliminar el servicio "${servicio.NombreServicio}"?`)) return;
+        try {
+            const resultado = await eliminarServicio(id);
+            if (!resultado) throw new Error('No se pudo eliminar el servicio');
+            mostrarMensajeServicioAdmin(`Servicio "${servicio.NombreServicio}" eliminado correctamente.`, 'ok');
+            limpiarFormularioServicioAdmin(false);
+            await cargarServiciosAdmin();
+        } catch (error) {
+            console.error('Error al eliminar servicio:', error);
+            mostrarMensajeServicioAdmin(error.message || 'No se pudo eliminar el servicio', 'error');
         }
-
-        mostrarMensajeServicioAdmin(`Servicio "${servicio.NombreServicio}" eliminado correctamente.`, 'ok');
-        limpiarFormularioServicioAdmin(false);
-        await cargarServiciosAdmin();
-    } catch (error) {
-        console.error('Error al eliminar servicio:', error);
-        mostrarMensajeServicioAdmin(error.message || 'No se pudo eliminar el servicio', 'error');
     }
 }
 

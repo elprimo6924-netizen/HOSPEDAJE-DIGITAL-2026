@@ -1,117 +1,46 @@
-/**
- * Sistema de notificaciones Toast
- * Uso: showToast('Operación exitosa', 'success')
- */
+// ============================================
+// toast.js — DEPRECADO
+// ✏️ MODIFICADO: Este archivo ahora redirige al sistema
+// unificado de notificaciones en notifications.js
+// Mantenido por compatibilidad con imports existentes.
+// Bug #1 fix: eliminado export { showToast }
+// ============================================
 
-let toastContainer = null;
+// Si showToast ya fue definido por notifications.js, no hacer nada.
+// Si no, definir una versión standalone como fallback.
+if (typeof window.showToast !== 'function') {
+    let toastContainer = null;
 
-/**
- * Muestra una notificación toast flotante
- * @param {String} message - Mensaje a mostrar
- * @param {String} type - Tipo: 'success', 'error', 'info'
- * @param {Number} duration - Duración en ms (default 3000)
- */
-function showToast(message, type = 'info', duration = 3000) {
-  // Crear contenedor si no existe
-  if (!toastContainer) {
-    toastContainer = document.createElement('div');
-    toastContainer.id = 'toast-container';
-    toastContainer.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    `;
-    document.body.appendChild(toastContainer);
-  }
+    function showToast(message, type = 'info', duration = 3000) {
+        // Intentar usar el sistema unificado
+        if (typeof showNotification === 'function') {
+            return showNotification({ type, message, duration });
+        }
 
-  // Crear elemento del toast
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  
-  // Estilos según tipo
-  const typeStyles = {
-    success: {
-      bg: 'bg-green-50',
-      border: 'border-green-200',
-      text: 'text-green-700',
-      icon: '✓'
-    },
-    error: {
-      bg: 'bg-red-50',
-      border: 'border-red-200',
-      text: 'text-red-700',
-      icon: '✕'
-    },
-    info: {
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
-      text: 'text-blue-700',
-      icon: 'ℹ'
+        // Fallback mínimo si notifications.js no está cargado
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        const colors = { success: '#16a34a', error: '#dc2626', info: '#2563eb', warning: '#ca8a04' };
+        const color = colors[type] || colors.info;
+
+        toast.style.cssText = `background:white;border-left:4px solid ${color};padding:12px 16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-family:sans-serif;font-size:14px;color:#1f2937;min-width:280px;animation:fadeIn 0.3s ease-out;`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100px)';
+            toast.style.transition = 'all 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
     }
-  };
 
-  const style = typeStyles[type] || typeStyles.info;
-  
-  toast.innerHTML = `
-    <div class="${style.bg} ${style.border} ${style.text} border px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-80">
-      <span class="text-lg font-bold">${style.icon}</span>
-      <span class="flex-1">${message}</span>
-      <button class="text-lg font-bold opacity-70 hover:opacity-100 cursor-pointer">×</button>
-    </div>
-  `;
-
-  // Agregar al contenedor
-  toastContainer.appendChild(toast);
-
-  // Manejador para cerrar
-  const closeBtn = toast.querySelector('button');
-  closeBtn.addEventListener('click', () => {
-    toast.style.animation = 'fadeOut 0.3s ease-out';
-    setTimeout(() => toast.remove(), 300);
-  });
-
-  // Auto-cerrar después de duration ms
-  setTimeout(() => {
-    if (toast.parentElement) {
-      toast.style.animation = 'fadeOut 0.3s ease-out';
-      setTimeout(() => toast.remove(), 300);
-    }
-  }, duration);
+    // ✏️ MODIFICADO: Exponer globalmente sin export (Bug #1)
+    window.showToast = showToast;
 }
-
-// Agregar estilos de animación
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateX(100px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateX(100px);
-    }
-  }
-  
-  .toast {
-    animation: fadeIn 0.3s ease-out;
-  }
-`;
-document.head.appendChild(style);
-
-export { showToast };
