@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Reserva — Hospedaje Digital</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --panel-bg:  #0d1b2a;
+            --accent:    #e07b39;
+            --green:     #1b4332;
+            --green-md:  #2d6a4f;
+            --card:      #ffffff;
+            --input-bg:  #f8fafc;
+            --border:    #e2e8f0;
+            --text:      #0f172a;
+            --text2:     #334155;
+            --muted:     #64748b;
+            --radius:    12px;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* ═══════════════════════════════════════
+           LAYOUT — 3 columns
+        ═══════════════════════════════════════ */
+        .rf-layout {
+            display: grid;
+            grid-template-columns: 270px 1fr 290px;
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════
+           LEFT PANEL
+        ═══════════════════════════════════════ */
+        .rf-panel {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            background: var(--panel-bg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.6rem;
+            color: #fff;
+        }
+
+        .rf-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 10%, rgba(224,123,57,.42) 0%, transparent 52%),
+                radial-gradient(ellipse at 85% 90%, rgba(27,67,50,.65) 0%, transparent 52%);
+            pointer-events: none;
+        }
+
+        .rf-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(55px);
+            opacity: .2;
+            animation: blobMove 12s ease-in-out infinite alternate;
+        }
+        .rf-blob:nth-child(1) { width:230px;height:230px;background:#e07b39;top:-70px;left:-55px;animation-delay:0s; }
+        .rf-blob:nth-child(2) { width:190px;height:190px;background:#22c55e;bottom:30px;right:-70px;animation-delay:-5s; }
+        .rf-blob:nth-child(3) { width:130px;height:130px;background:#3b82f6;top:48%;left:38%;animation-delay:-3s; }
+
+        @keyframes blobMove {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(16px,22px) scale(1.1); }
+        }
+
+        .rf-panel-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .rf-logo {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            margin-bottom: 2rem;
+        }
+        .rf-logo i { font-size: 1.35rem; color: var(--accent); }
+        .rf-logo span { font-size: .88rem; font-weight: 700; letter-spacing: .02em; }
+
+        .rf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .3rem .75rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            font-size: .69rem;
+            font-weight: 700;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: .9rem;
+            width: fit-content;
+        }
+
+        .rf-panel-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1.18;
+            margin-bottom: .8rem;
+        }
+        .rf-panel-title em { font-style: normal; color: var(--accent); }
+
+        .rf-panel-sub {
+            font-size: .78rem;
+            color: rgba(255,255,255,.52);
+            line-height: 1.65;
+            margin-bottom: 2rem;
+        }
+
+        .rf-steps {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+            flex: 1;
+        }
+        .rf-steps li {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            font-size: .79rem;
+            color: rgba(255,255,255,.68);
+        }
+        .rf-step-dot {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.11);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .75rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .rf-back {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            margin-top: 1.5rem;
+            padding: .58rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,.13);
+            background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.72);
+            font-size: .8rem;
+            text-decoration: none;
+            transition: background .2s, color .2s;
+            width: fit-content;
+        }
+        .rf-back:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+        /* ═══════════════════════════════════════
+           CENTER — scrollable form (sin max-width)
+        ═══════════════════════════════════════ */
+        .rf-center {
+            overflow-y: auto;
+            padding: 1.5rem 1rem 3rem;
+            background: #f1f5f9;
+        }
+
+        /* Secciones en grid de 2 columnas */
+        .rf-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .9rem;
+        }
+        .rf-span2 { grid-column: span 2; }
+
+        .rf-form-header {
+            margin-bottom: 1.4rem;
+        }
+        .rf-form-header h2 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: .2rem;
+        }
+        .rf-form-header p {
+            font-size: .78rem;
+            color: var(--muted);
+        }
+        .rf-form-header .req { color: #ef4444; }
+
+        /* Cards */
+        .rf-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.03);
+        }
+
+        .rf-card-head {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .8rem 1.3rem;
+            background: #fafbfc;
+            border-bottom: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .rf-icon {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem;
+            flex-shrink: 0;
+        }
+        .rf-icon.green  { background: #dcfce7; color: #16a34a; }
+        .rf-icon.blue   { background: #dbeafe; color: #2563eb; }
+        .rf-icon.amber  { background: #fef3c7; color: #d97706; }
+        .rf-icon.purple { background: #ede9fe; color: #7c3aed; }
+        .rf-icon.teal   { background: #ccfbf1; color: #0d9488; }
+
+        .rf-card-head h3 {
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--text2);
+        }
+        .rf-card-head small {
+            font-size: .7rem;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--muted);
+            margin-left: .25rem;
+        }
+
+        .rf-card-body { padding: 1.1rem 1.3rem; }
+
+        /* Fields */
+        .rf-field {
+            display: flex;
+            flex-direction: column;
+            gap: .28rem;
+            margin-bottom: .8rem;
+        }
+        .rf-field:last-child { margin-bottom: 0; }
+        .rf-field > label { font-size: .75rem; font-weight: 600; color: var(--text2); }
+        .rf-field .req { color: #ef4444; }
+
+        .rf-field input[type="text"],
+        .rf-field input[type="date"],
+        .rf-field input[type="number"],
+        .rf-field select {
+            width: 100%;
+            padding: .58rem .82rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            font-size: .875rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            font-family: inherit;
+        }
+        .rf-field input:focus,
+        .rf-field select:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(27,67,50,.09);
+        }
+
+        .rf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+        /* Autocomplete */
+        .rf-auto-wrap { position: relative; }
+        .cliente-autocomplete {
+            position: absolute;
+            top: calc(100% + 4px); left: 0; right: 0;
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.1);
+            z-index: 200;
+            max-height: 200px;
+            overflow-y: auto;
+            list-style: none;
+            padding: .3rem 0;
+        }
+        .cliente-autocomplete li {
+            padding: .52rem .88rem;
+            cursor: pointer;
+            font-size: .85rem;
+            color: var(--text);
+            transition: background .14s;
+        }
+        .cliente-autocomplete li:hover,
+        .cliente-autocomplete li.activo { background: #f0fdf4; color: #16a34a; }
+        .cliente-autocomplete.hidden { display: none; }
+
+        /* Grids reutilizados por app.js */
+        .paquetes-cards-grid   { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px,1fr)); gap: .55rem; }
+        .servicios-botones-grid { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+        /* Mensaje */
+        .crud-reservas-mensaje { padding: .58rem .95rem; border-radius: 8px; font-size: .82rem; margin-bottom: 1rem; }
+        .crud-reservas-mensaje.exito { background: #dcfce7; color: #166534; }
+        .crud-reservas-mensaje.error { background: #fee2e2; color: #991b1b; }
+        .crud-reservas-mensaje:empty { display: none; }
+
+        /* ═══════════════════════════════════════
+           RIGHT SIDEBAR — sticky summary
+        ═══════════════════════════════════════ */
+        .rf-sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            background: #fff;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.6rem 1.35rem 1.6rem;
+        }
+
+        .rf-sidebar-label {
+            font-size: .69rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+            color: var(--muted);
+            margin-bottom: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+        .rf-sidebar-label i { color: var(--green); }
+
+        .rf-sblock {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .85rem 1rem;
+            margin-bottom: .65rem;
+        }
+        .rf-sblock-title {
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--muted);
+            margin-bottom: .55rem;
+        }
+        .rf-srow {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: .2rem 0;
+            font-size: .8rem;
+        }
+        .rf-srow .lbl { color: var(--muted); }
+        .rf-srow .val { font-weight: 600; color: var(--text2); }
+
+        .rf-room-name {
+            font-size: .83rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.35;
+        }
+        .rf-room-name.empty { color: #c0cfe0; font-weight: 400; font-style: italic; font-size: .8rem; }
+
+        .rf-sep { height: 1px; background: var(--border); margin: .45rem 0; }
+
+        .rf-pblock {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .85rem 1rem;
+            margin-bottom: .65rem;
+        }
+        .rf-pblock-title {
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--muted);
+            margin-bottom: .55rem;
+        }
+        .rf-prow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .2rem 0;
+            font-size: .79rem;
+        }
+        .rf-prow .lbl { color: var(--muted); }
+        .rf-prow .val { font-weight: 600; color: var(--text2); }
+
+        .rf-desc-field { margin: .5rem 0; }
+        .rf-desc-field label { display: block; font-size: .71rem; font-weight: 600; color: var(--text2); margin-bottom: .25rem; }
+        .rf-desc-field input {
+            width: 100%;
+            padding: .46rem .7rem;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            font-size: .83rem;
+            color: var(--text);
+            background: #fff;
+            outline: none;
+            transition: border-color .18s;
+            font-family: inherit;
+        }
+        .rf-desc-field input:focus { border-color: var(--green); }
+
+        .rf-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .5rem 0 0;
+            margin-top: .3rem;
+            border-top: 1.5px solid var(--border);
+        }
+        .rf-total-row .lbl { font-size: .84rem; font-weight: 700; color: var(--text); }
+        .rf-total-row .val { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+
+        /* Actions */
+        .rf-actions {
+            margin-top: auto;
+            padding-top: .8rem;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .rf-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .42rem;
+            padding: .72rem 1.1rem;
+            border-radius: 9px;
+            border: none;
+            font-size: .86rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity .18s, transform .14s;
+            text-decoration: none;
+            font-family: inherit;
+            width: 100%;
+        }
+        .rf-btn:hover { opacity: .87; transform: translateY(-1px); }
+        .rf-btn:active { transform: translateY(0); }
+
+        .rf-btn-primary {
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-md) 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(27,67,50,.28);
+        }
+        .rf-btn-secondary {
+            background: #f1f5f9;
+            color: var(--text2);
+            border: 1px solid var(--border);
+        }
+        .rf-btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            font-size: .8rem;
+            padding: .45rem;
+        }
+
+        /* Neutraliza la regla global form { max-width:600px } de styles.css */
+        #form-reserva-admin {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            max-width: none;
+            margin: 0;
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 1080px) {
+            .rf-layout { grid-template-columns: 230px 1fr 260px; }
+        }
+        @media (max-width: 860px) {
+            .rf-layout { grid-template-columns: 1fr; }
+            .rf-panel, .rf-sidebar { display: none; }
+            .rf-center { padding: 1.25rem; }
+            .rf-sections { grid-template-columns: 1fr; }
+            .rf-span2 { grid-column: span 1; }
+        }
+        @media (max-width: 580px) {
+            .rf-grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="rf-layout">
+
+    <!-- ══ LEFT PANEL ════════════════════════════════════ -->
+    <aside class="rf-panel">
+        <div class="rf-blob"></div>
+        <div class="rf-blob"></div>
+        <div class="rf-blob"></div>
+
+        <div class="rf-panel-inner">
+            <div class="rf-logo">
+                <i class="fa-solid fa-hotel"></i>
+                <span>Hospedaje Digital</span>
+            </div>
+
+            <span class="rf-badge">
+                <i class="fa-solid fa-calendar-plus"></i> Gestión de reservas
+            </span>
+
+            <h1 class="rf-panel-title">
+                Gestiona tus<br><em>reservas</em><br>con facilidad
+            </h1>
+            <p class="rf-panel-sub">
+                Registra o actualiza una reserva de forma rápida. Los cambios se guardan de forma segura en el sistema.
+            </p>
+
+            <ul class="rf-steps">
+                <li>
+                    <span class="rf-step-dot"><i class="fa-solid fa-user"></i></span>
+                    Busca el cliente por documento o nombre
+                </li>
+                <li>
+                    <span class="rf-step-dot"><i class="fa-solid fa-bed"></i></span>
+                    Selecciona habitación y fechas de estancia
+                </li>
+                <li>
+                    <span class="rf-step-dot"><i class="fa-solid fa-credit-card"></i></span>
+                    Define el método de pago y estado
+                </li>
+                <li>
+                    <span class="rf-step-dot"><i class="fa-solid fa-box-open"></i></span>
+                    Agrega paquetes y servicios adicionales
+                </li>
+                <li>
+                    <span class="rf-step-dot"><i class="fa-solid fa-floppy-disk"></i></span>
+                    Revisa el resumen y guarda la reserva
+                </li>
+            </ul>
+
+            <a href="#" id="btn-volver-panel" class="rf-back">
+                <i class="fa-solid fa-arrow-left"></i> Volver a reservas
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══ CENTER FORM ════════════════════════════════════ -->
+    <div class="rf-center">
+
+        <div class="rf-form-header">
+            <h2 id="rf-subtitulo">Nueva reserva</h2>
+            <p>Los campos marcados con <span class="req">*</span> son obligatorios.</p>
+        </div>
+
+        <div id="mensaje-reserva-admin-modal" class="crud-reservas-mensaje"></div>
+
+        <form id="form-reserva-admin">
+            <input type="hidden" id="reserva-admin-id">
+            <input type="hidden" id="reserva-admin-iva"      value="0">
+            <input type="hidden" id="reserva-admin-subtotal" value="0">
+            <input type="hidden" id="reserva-admin-total"    value="0">
+
+            <div class="rf-sections">
+
+                <!-- CLIENTE — ancho completo -->
+                <div class="rf-card rf-span2">
+                    <div class="rf-card-head">
+                        <span class="rf-icon green"><i class="fa-solid fa-user"></i></span>
+                        <h3>Datos del cliente</h3>
+                    </div>
+                    <div class="rf-card-body">
+                        <input type="hidden" id="reserva-admin-cliente-id">
+                        <div class="rf-field">
+                            <label>Buscar cliente por documento o nombre <span class="req">*</span></label>
+                            <div class="rf-auto-wrap">
+                                <input type="text" id="reserva-admin-cliente-buscar"
+                                    placeholder="Escribe documento, nombre o apellido..."
+                                    autocomplete="off" required>
+                                <ul id="reserva-admin-cliente-lista" class="cliente-autocomplete hidden"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HABITACIÓN Y FECHAS -->
+                <div class="rf-card">
+                    <div class="rf-card-head">
+                        <span class="rf-icon blue"><i class="fa-solid fa-bed"></i></span>
+                        <h3>Habitación y fechas</h3>
+                    </div>
+                    <div class="rf-card-body">
+                        <div class="rf-field">
+                            <label>Habitación <span class="req">*</span></label>
+                            <select id="reserva-admin-habitacion" required>
+                                <option value="">— Selecciona habitación —</option>
+                            </select>
+                        </div>
+                        <div class="rf-grid-2">
+                            <div class="rf-field">
+                                <label>Fecha inicio <span class="req">*</span></label>
+                                <input type="date" id="reserva-admin-fecha-inicio" required>
+                            </div>
+                            <div class="rf-field">
+                                <label>Fecha fin <span class="req">*</span></label>
+                                <input type="date" id="reserva-admin-fecha-fin" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGO Y ESTADO -->
+                <div class="rf-card">
+                    <div class="rf-card-head">
+                        <span class="rf-icon amber"><i class="fa-solid fa-credit-card"></i></span>
+                        <h3>Pago y estado</h3>
+                    </div>
+                    <div class="rf-card-body">
+                        <div class="rf-field">
+                            <label>Método de pago</label>
+                            <select id="reserva-admin-metodo-pago">
+                                <option value="1">Efectivo</option>
+                                <option value="2">Tarjeta</option>
+                                <option value="3">Transferencia</option>
+                                <option value="4">PSE</option>
+                            </select>
+                        </div>
+                        <div class="rf-field">
+                            <label>Estado de la reserva</label>
+                            <select id="reserva-admin-estado">
+                                <option value="1">Activo</option>
+                                <option value="2">Pendiente</option>
+                                <option value="3">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAQUETES — ancho completo -->
+                <div class="rf-card rf-span2">
+                    <div class="rf-card-head">
+                        <span class="rf-icon purple"><i class="fa-solid fa-box-open"></i></span>
+                        <h3>Paquetes <small>solo activos — clic para seleccionar</small></h3>
+                    </div>
+                    <div class="rf-card-body">
+                        <div id="reserva-admin-paquetes-grid" class="paquetes-cards-grid">
+                            <p style="color:var(--muted);font-size:.82rem;">Cargando paquetes...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SERVICIOS — ancho completo -->
+                <div class="rf-card rf-span2">
+                    <div class="rf-card-head">
+                        <span class="rf-icon teal"><i class="fa-solid fa-concierge-bell"></i></span>
+                        <h3>Servicios adicionales <small>solo activos — clic para agregar</small></h3>
+                    </div>
+                    <div class="rf-card-body">
+                        <div id="reserva-admin-servicios-grid" class="servicios-botones-grid">
+                            <p style="color:var(--muted);font-size:.82rem;">Cargando servicios...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /rf-sections -->
+        </form>
+    </div>
+
+    <!-- ══ RIGHT SIDEBAR ══════════════════════════════════ -->
+    <aside class="rf-sidebar">
+        <div class="rf-sidebar-label">
+            <i class="fa-solid fa-receipt"></i> Resumen de reserva
+        </div>
+
+        <div class="rf-sblock">
+            <div class="rf-sblock-title">Habitación</div>
+            <div id="sb-room" class="rf-room-name empty">Sin seleccionar</div>
+        </div>
+
+        <div class="rf-sblock">
+            <div class="rf-sblock-title">Estancia</div>
+            <div class="rf-srow">
+                <span class="lbl">Entrada</span>
+                <span id="sb-fi" class="val">—</span>
+            </div>
+            <div class="rf-srow">
+                <span class="lbl">Salida</span>
+                <span id="sb-ff" class="val">—</span>
+            </div>
+            <div class="rf-sep"></div>
+            <div class="rf-srow">
+                <span class="lbl">Noches</span>
+                <span id="sb-noches" class="val">—</span>
+            </div>
+        </div>
+
+        <div class="rf-pblock">
+            <div class="rf-pblock-title">Desglose de precio</div>
+
+            <div class="rf-prow">
+                <span class="lbl">Habitación</span>
+                <span id="sb-costo-hab" class="val">$0</span>
+            </div>
+            <div class="rf-prow">
+                <span class="lbl">Paquetes</span>
+                <span id="sb-costo-paq" class="val">$0</span>
+            </div>
+            <div class="rf-prow">
+                <span class="lbl">Servicios</span>
+                <span id="sb-costo-svc" class="val">$0</span>
+            </div>
+
+            <div class="rf-desc-field">
+                <label for="reserva-admin-descuento">Descuento ($)</label>
+                <input type="number" id="reserva-admin-descuento" min="0" step="1" value="0" placeholder="0">
+            </div>
+
+            <div class="rf-prow">
+                <span class="lbl">IVA</span>
+                <span id="sb-iva" class="val">$0</span>
+            </div>
+
+            <div class="rf-total-row">
+                <span class="lbl">Total a pagar</span>
+                <span id="sb-total" class="val">$0</span>
+            </div>
+        </div>
+
+        <div class="rf-actions">
+            <button type="submit" form="form-reserva-admin"
+                    class="rf-btn rf-btn-primary" id="btn-reserva-admin-guardar">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar reserva
+            </button>
+            <button type="button" class="rf-btn rf-btn-secondary" id="btn-reserva-admin-limpiar">
+                <i class="fa-solid fa-broom"></i> Limpiar campos
+            </button>
+            <a href="#" id="btn-cancelar-sidebar" class="rf-btn rf-btn-ghost">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+        </div>
+    </aside>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+function actualizarSidebar() {
+    const fmt = v => '$' + Number(v || 0).toLocaleString('es-CO');
+    const el  = id => document.getElementById(id);
+
+    // Room
+    const habSel = el('reserva-admin-habitacion');
+    const roomEl = el('sb-room');
+    if (roomEl && habSel) {
+        const opt = habSel.options[habSel.selectedIndex];
+        const ok  = opt && opt.value;
+        roomEl.textContent = ok ? opt.text : 'Sin seleccionar';
+        roomEl.classList.toggle('empty', !ok);
+    }
+
+    // Dates
+    const fi = el('reserva-admin-fecha-inicio')?.value;
+    const ff = el('reserva-admin-fecha-fin')?.value;
+    const fmtD = d => d ? d.split('-').reverse().join('/') : '—';
+    if (el('sb-fi')) el('sb-fi').textContent = fmtD(fi);
+    if (el('sb-ff')) el('sb-ff').textContent = fmtD(ff);
+    if (el('sb-noches')) {
+        if (fi && ff) {
+            const n = Math.ceil((new Date(ff) - new Date(fi)) / 86400000);
+            el('sb-noches').textContent = n > 0 ? `${n} noche${n !== 1 ? 's' : ''}` : '—';
+        } else { el('sb-noches').textContent = '—'; }
+    }
+
+    // Costs
+    const hab = (() => {
+        if (!habSel?.value || !fi || !ff) return 0;
+        const h = (window.habitacionesParaReserva || []).find(h => String(h.IDHabitacion) === String(habSel.value));
+        if (!h) return 0;
+        const n = Math.max(1, Math.round((new Date(ff) - new Date(fi)) / 86400000));
+        return Number(h.Costo || 0) * n;
+    })();
+    const paq = Array.from(document.querySelectorAll('#reserva-admin-paquetes-grid .paquete-card.seleccionado'))
+                     .reduce((s, e) => s + Number(e.dataset.precio || 0), 0);
+    const svc = Array.from(document.querySelectorAll('#reserva-admin-servicios-grid .servicio-toggle-btn.seleccionado'))
+                     .reduce((s, e) => s + Number(e.dataset.costo || 0), 0);
+    const desc  = parseFloat(el('reserva-admin-descuento')?.value) || 0;
+    const iva   = parseFloat(el('reserva-admin-iva')?.value) || 0;
+    const total = Math.max(0, hab + paq + svc - desc + iva);
+
+    if (el('sb-costo-hab')) el('sb-costo-hab').textContent = fmt(hab);
+    if (el('sb-costo-paq')) el('sb-costo-paq').textContent = fmt(paq);
+    if (el('sb-costo-svc')) el('sb-costo-svc').textContent = fmt(svc);
+    if (el('sb-iva'))       el('sb-iva').textContent       = fmt(iva);
+    if (el('sb-total'))     el('sb-total').textContent     = fmt(total);
+
+    if (el('reserva-admin-subtotal')) el('reserva-admin-subtotal').value = hab + paq + svc;
+    if (el('reserva-admin-total'))    el('reserva-admin-total').value    = total;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const raw    = sessionStorage.getItem('reserva_form_data');
+    const reserva = raw ? JSON.parse(raw) : null;
+    sessionStorage.removeItem('reserva_form_data');
+
+    if (reserva) {
+        document.getElementById('rf-subtitulo').textContent = `Editar reserva #${reserva.IDReserva}`;
+        document.title = `Editar reserva #${reserva.IDReserva} — Hospedaje Digital`;
+
+        document.getElementById('reserva-admin-id').value           = reserva.IDReserva           || '';
+        document.getElementById('reserva-admin-fecha-inicio').value = reserva.FechaInicio          ? reserva.FechaInicio.split('T')[0]       : '';
+        document.getElementById('reserva-admin-fecha-fin').value    = reserva.FechaFinalizacion    ? reserva.FechaFinalizacion.split('T')[0] : '';
+        document.getElementById('reserva-admin-subtotal').value     = reserva.SubTotal             || 0;
+        document.getElementById('reserva-admin-descuento').value    = reserva.Descuento            || 0;
+        document.getElementById('reserva-admin-iva').value          = reserva.IVA                 || 0;
+        document.getElementById('reserva-admin-total').value        = reserva.MontoTotal           || 0;
+        document.getElementById('reserva-admin-metodo-pago').value  = reserva.MetodoPago           || 1;
+        document.getElementById('reserva-admin-estado').value       = reserva.IdEstadoReserva      || 1;
+
+        const clienteBuscar = document.getElementById('reserva-admin-cliente-buscar');
+        const clienteId     = document.getElementById('reserva-admin-cliente-id');
+        if (clienteBuscar && reserva.NroDocumento) {
+            const nombre = `${reserva.Nombre || ''} ${reserva.Apellido || ''}`.trim();
+            clienteBuscar.value = nombre ? `${nombre} — ${reserva.NroDocumento}` : reserva.NroDocumento;
+            clienteBuscar.dataset.documentoSeleccionado = reserva.NroDocumento;
+        }
+        if (clienteId) clienteId.value = reserva.NroDocumento || '';
+
+        const paqIds = reserva.PaquetesIds  ? String(reserva.PaquetesIds).split(',').map(s => s.trim())  : [];
+        const svcIds = reserva.ServiciosIds ? String(reserva.ServiciosIds).split(',').map(s => s.trim()) : [];
+        await cargarSelectsReserva(paqIds, svcIds);
+
+        const selectHab = document.getElementById('reserva-admin-habitacion');
+        if (selectHab && reserva.IDHabitacion) selectHab.value = reserva.IDHabitacion;
+    } else {
+        await cargarSelectsReserva([], []);
+        limpiarFormularioReservaAdmin();
+    }
+
+    configurarBuscadorCliente();
+
+    // Patch recalcularPrecio para sincronizar sidebar
+    if (typeof recalcularPrecio === 'function') {
+        const _orig = recalcularPrecio;
+        window.recalcularPrecio = function () { _orig(); actualizarSidebar(); };
+        ['reserva-admin-habitacion','reserva-admin-fecha-inicio','reserva-admin-fecha-fin'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.removeEventListener('change', _orig); el.addEventListener('change', window.recalcularPrecio); }
+        });
+        const descEl = document.getElementById('reserva-admin-descuento');
+        if (descEl) { descEl.removeEventListener('input', _orig); descEl.addEventListener('input', window.recalcularPrecio); }
+    }
+
+    // Observar selección de paquetes/servicios
+    const obs = new MutationObserver(actualizarSidebar);
+    ['reserva-admin-paquetes-grid','reserva-admin-servicios-grid'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) obs.observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
+
+    document.getElementById('form-reserva-admin')?.addEventListener('submit', guardarReservaAdmin);
+
+    actualizarSidebar();
+
+    // ── Validación de salida sin guardar ─────────────────────────────────────
+    let formularioModificado = false;
+    let guardadoExitoso = false;
+
+    // Marca el formulario como modificado ante cualquier interacción
+    const marcarModificado = () => { formularioModificado = true; };
+
+    document.getElementById('form-reserva-admin')
+        ?.addEventListener('input',  marcarModificado);
+    document.getElementById('form-reserva-admin')
+        ?.addEventListener('change', marcarModificado);
+
+    // También al seleccionar paquetes / servicios (clicks en el grid)
+    ['reserva-admin-paquetes-grid','reserva-admin-servicios-grid'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', marcarModificado);
+    });
+
+    // Cuando el formulario se guarda exitosamente, desactivar la guardia
+    const formEl = document.getElementById('form-reserva-admin');
+    if (formEl) {
+        formEl.addEventListener('submit', () => {
+            guardadoExitoso = true;
+        });
+    }
+
+    // Función central: pregunta al usuario si realmente desea salir
+    async function confirmarSalida() {
+        if (!formularioModificado || guardadoExitoso) return true;
+        return await confirmarAccion(
+            'Tienes cambios sin guardar. Si sales ahora, perderás la información ingresada.',
+            '¿Salir sin guardar?'
+        );
+    }
+
+    // Helper: navega a reservas después de confirmar
+    function navegarAReservas() {
+        sessionStorage.setItem('volver_a_seccion', 'administrar-reservas');
+        window.location.href = 'index.html';
+    }
+
+    // Botón "Volver a reservas" (panel izquierdo)
+    document.getElementById('btn-volver-panel')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (await confirmarSalida()) navegarAReservas();
+    });
+
+    // Botón "Cancelar" (sidebar)
+    document.getElementById('btn-cancelar-sidebar')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (await confirmarSalida()) navegarAReservas();
+    });
+
+    // Botón "Limpiar": también advierte si hay datos
+    document.getElementById('btn-reserva-admin-limpiar')?.addEventListener('click', async () => {
+        if (formularioModificado) {
+            const ok = await confirmarAccion(
+                'Se borrarán todos los campos del formulario.',
+                '¿Limpiar formulario?'
+            );
+            if (!ok) return;
+        }
+        limpiarFormularioReservaAdmin();
+        formularioModificado = false;
+        setTimeout(actualizarSidebar, 50);
+    }, { once: false });   // reemplaza el listener anterior
+
+});
+</script>
+</body>
+</html>
