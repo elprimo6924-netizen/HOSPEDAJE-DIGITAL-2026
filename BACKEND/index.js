@@ -3,7 +3,7 @@
  * API REST con Express
  */
 
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
 const app = require('./src/app');
 const db = require('./src/database/connection');
@@ -33,8 +33,14 @@ const shutdown = (signal) => {
 
 const startServer = async () => {
     try {
-        await db.query('SELECT 1');
-        console.log('Conexión a base de datos verificada.');
+        try {
+            await db.query('SELECT 1');
+            console.log('Conexión a base de datos verificada.');
+        } catch (dbError) {
+            const detail = dbError && (dbError.message || dbError.code) ? (dbError.message || dbError.code) : String(dbError);
+            console.warn('No se pudo verificar la base de datos al iniciar:', detail);
+            console.warn('El servidor seguirá arrancando, pero las rutas que dependan de MySQL pueden fallar hasta corregir la conexión.');
+        }
 
         server = app.listen(port, () => {
             console.log(`Servidor corriendo en http://localhost:${port}`);

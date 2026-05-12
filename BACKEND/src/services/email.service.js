@@ -1,6 +1,16 @@
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+const enviarCorreo = async (payload) => {
+  if (!resend) {
+    console.warn("RESEND_API_KEY no está configurada; se omite el envío de correo.");
+    return { data: null, error: null };
+  }
+
+  return await resend.emails.send(payload);
+};
 
 const EmailService = {
   enviarRecuperacionContrasena: async ({ usuarioNombre, usuarioEmail, nuevaContrasena }) => {
@@ -10,7 +20,7 @@ const EmailService = {
       return false;
     }
     try {
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await enviarCorreo({
         from: process.env.EMAIL_FROM,
         to: usuarioEmail,
         subject: `Recuperación de contraseña - Hospedaje Digital`,
@@ -53,7 +63,7 @@ const EmailService = {
       return false;
     }
     try {
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await enviarCorreo({
         from: process.env.EMAIL_FROM,
         to: clienteEmail,
         subject: `Confirmación de Reserva #${reservaId} - Hospedaje Digital`,

@@ -5,7 +5,7 @@
  */
 
 // Cargar variables de entorno desde .env
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
 const config = {
     // Configuración de la base de datos

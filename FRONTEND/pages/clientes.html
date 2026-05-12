@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hospedaje Digital - Administración de Clientes">
+    <title>Administración de Clientes - Hospedaje Digital</title>
+    
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        html, body {
+            background-color: var(--color-background) !important;
+            color: var(--color-text) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body { font-family: var(--font-family); }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; }
+        main { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar placeholder (será reemplazado dinámicamente) -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Wrapper para el contenido principal -->
+    <div id="main-wrapper" class="main-wrapper">
+        <!-- Header y Navegación -->
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main>
+            <!-- Sección de Administración de Clientes -->
+            <section id="seccion-administrar-clientes" class="crud-clientes-section">
+                <div class="crud-clientes-toolbar">
+                    <button type="button" class="btn-accion-crud btn-accion-principal" id="btn-nuevo-cliente-admin">+ NUEVO CLIENTE</button>
+                    <div id="mensaje-cliente-admin" class="crud-clientes-mensaje" aria-live="polite"></div>
+                </div>
+
+                <div class="crud-clientes-summary">
+                    <article>
+                        <span>Total</span>
+                        <strong id="clientes-admin-total">0</strong>
+                    </article>
+                    <article>
+                        <span>Activos</span>
+                        <strong id="clientes-admin-activos">0</strong>
+                    </article>
+                    <article>
+                        <span>Inactivos</span>
+                        <strong id="clientes-admin-inactivos">0</strong>
+                    </article>
+                </div>
+
+                <div class="crud-clientes-layout">
+                    <section class="crud-clientes-panel crud-clientes-panel-lista">
+                        <div class="crud-clientes-lista-top">
+                            <div class="crud-clientes-filtros">
+                                <input type="search" id="busqueda-clientes-admin" placeholder="Buscar por documento, nombre, email o teléfono">
+                                <select id="filtro-estado-clientes-admin" aria-label="Filtrar clientes por estado">
+                                    <option value="all">Todos</option>
+                                    <option value="active">Activos</option>
+                                    <option value="inactive">Inactivos</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="crud-clientes-tabla-wrap">
+                            <table class="crud-clientes-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Documento</th>
+                                        <th>Nombre</th>
+                                        <th>Apellido</th>
+                                        <th>Email</th>
+                                        <th>Teléfono</th>
+                                        <th>Dirección</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientes-admin-tbody">
+                                    <tr>
+                                        <td colspan="8" class="mensaje-vacio">Cargando clientes...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <!-- Modal de Formulario para Clientes -->
+            <div id="modal-cliente-admin" class="crud-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cliente-admin-form-title">
+                <div class="crud-modal-content">
+                    <button type="button" class="crud-modal-close" id="btn-cerrar-modal-cliente" aria-label="Cerrar formulario">&times;</button>
+                    <h4 id="cliente-admin-form-title">Crear cliente</h4>
+                    <p class="crud-clientes-note">Los campos están alineados con la estructura real de la base de datos.</p>
+                    <div id="mensaje-cliente-admin-modal" class="crud-clientes-mensaje" aria-live="polite"></div>
+
+                    <form id="form-cliente-admin" class="crud-clientes-form">
+                        <input type="hidden" id="cliente-admin-id">
+
+                        <label>
+                            <span>Documento <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="text" id="cliente-admin-documento" required maxlength="50" placeholder="Ej. 1234567890">
+                        </label>
+
+                        <label>
+                            <span>Nombre <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="text" id="cliente-admin-nombre" required maxlength="50" placeholder="Ej. Carlos">
+                        </label>
+
+                        <label>
+                            <span>Apellido</span>
+                            <input type="text" id="cliente-admin-apellido" maxlength="50" placeholder="Ej. López">
+                        </label>
+
+                        <label>
+                            <span>Dirección</span>
+                            <input type="text" id="cliente-admin-direccion" maxlength="50" placeholder="Ej. Calle 10 # 12-34">
+                        </label>
+
+                        <label>
+                            <span>Email <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="email" id="cliente-admin-email" required maxlength="50" placeholder="Ej. cliente@email.com">
+                        </label>
+
+                        <label>
+                            <span>Teléfono</span>
+                            <input type="text" id="cliente-admin-telefono" maxlength="50" placeholder="Ej. 3001234567">
+                        </label>
+
+                        <label>
+                            <span>Estado <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <select id="cliente-admin-estado" required>
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Rol</span>
+                            <select id="cliente-admin-idrol" required>
+                                <option value="">Selecciona un rol</option>
+                            </select>
+                        </label>
+
+                        <div class="crud-clientes-form-actions">
+                            <button type="submit" class="btn-accion-crud btn-accion-principal" id="btn-cliente-admin-guardar">Guardar cliente</button>
+                            <button type="button" class="btn-accion-crud btn-accion-secundaria" id="btn-cliente-admin-limpiar">Limpiar formulario</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Detalle para Clientes -->
+            <div id="modal-detalle-admin" class="crud-modal hidden" role="dialog" aria-modal="true" aria-labelledby="detalle-admin-titulo">
+                <div class="crud-modal-content crud-detalle-modal-content">
+                    <button type="button" class="crud-modal-close" id="btn-cerrar-modal-detalle" aria-label="Cerrar detalle">&times;</button>
+                    <h4 id="detalle-admin-titulo">Detalle</h4>
+                    <div id="detalle-admin-contenido" class="detalle-admin-contenido"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p>
+            <p>Conectado al backend en: http://localhost:3000</p>
+        </footer>
+    </div>
+
+    <!-- Scripts JavaScript -->
+    <!-- ⭐ IMPORTANTE: Cargar en este orden -->
+    <script src="../js/config.js"></script>
+    <script src="../js/constants.js"></script>
+    <script src="../js/validation.js"></script>
+    <script src="../js/notifications.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/eventos.js"></script>
+    <script src="../js/main.js"></script>
+    
+    <!-- Script para cargar sidebar y inicializar página -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
+                if (!session) {
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                await window.loadSidebarComponent('sidebar-placeholder');
+                await window.filterSidebarByPermissions();
+
+                if (typeof cargarClientesAdmin === 'function') {
+                    cargarClientesAdmin();
+                }
+            } catch (error) {
+                console.error('Error en clientes.html:', error);
+            }
+        });
+    </script>
+</body>
+</html>

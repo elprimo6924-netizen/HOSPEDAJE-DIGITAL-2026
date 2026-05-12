@@ -1976,7 +1976,7 @@ form button[type="submit"]:hover {
 }
 
 .main-wrapper.sidebar-open {
-    margin-left: 280px;
+    margin-left: 16.5rem;
 }
 
 @media (max-width: 768px) {

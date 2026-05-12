@@ -4,7 +4,7 @@
   "scripts": {
     "start": "node serve-frontend.js",
     "backend": "cd BACKEND && node src/server.js",
-    "dev": "start cmd /k \"cd BACKEND && node src/server.js\" && node serve-frontend.js"
+    "dev": "node scripts/dev.js"
   },
   "dependencies": {
     "express": "^5.2.1"

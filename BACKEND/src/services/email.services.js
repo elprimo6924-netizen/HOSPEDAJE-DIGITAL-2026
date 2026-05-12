@@ -3,9 +3,19 @@
  */
 
 const { Resend } = require('resend');
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+const sendEmail = async (payload) => {
+    if (!resend) {
+        console.warn('RESEND_API_KEY no está configurada; se omite el envío de correo.');
+        return { id: null };
+    }
+
+    return await resend.emails.send(payload);
+};
 
 /**
  * Envía email con código de recuperación de contraseña
@@ -22,7 +32,7 @@ const sendPasswordResetEmail = async (email, code) => {
         // Si no está configurado, envía al email real del usuario
         const sendToEmail = process.env.RESEND_TEST_EMAIL || email;
 
-        const response = await resend.emails.send({
+        const response = await sendEmail({
             from: fromEmail,
             to: [sendToEmail],
             subject: '🔐 Código para Recuperar tu Contraseña - Hospedaje Digital',
@@ -80,7 +90,9 @@ const sendPasswordResetEmail = async (email, code) => {
             `
         });
 
-        console.log('✅ Email enviado:', response.id);
+        if (response.id) {
+            console.log('✅ Email enviado:', response.id);
+        }
         return response;
     } catch (error) {
         console.error('❌ Error enviando email:', error.message);

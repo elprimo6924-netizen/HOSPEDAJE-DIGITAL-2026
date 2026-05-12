@@ -1,5 +1,5 @@
 // Cargar variables de entorno desde .env
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
 const mysql = require('mysql2/promise'); // usar mysql2/promise para promesas
 

@@ -301,11 +301,19 @@
             const estado = document.getElementById('filtro-estado-reservas').value;
             listaFiltrada = reservasCargadas;
             if (estado !== 'all') listaFiltrada = listaFiltrada.filter(r => String(r.IdEstadoReserva) === estado);
-            if (texto) listaFiltrada = listaFiltrada.filter(r =>
-                (r.Nombre||'').toLowerCase().includes(texto) ||
-                (r.Apellido||'').toLowerCase().includes(texto) ||
-                (r.NroDocumentoCliente||'').toLowerCase().includes(texto)
-            );
+            if (texto) {
+                const norm = (v) => String(v || '').toLowerCase();
+                listaFiltrada = listaFiltrada.filter(r => {
+                    const nombre = norm(r.Nombre);
+                    const apellido = norm(r.Apellido);
+                    const nombreCompleto = `${nombre} ${apellido}`.trim();
+                    const doc = norm(r.NroDocumentoCliente || r.NroDocumento || r.Documento || r.DocumentoCliente);
+                    return nombre.includes(texto)
+                        || apellido.includes(texto)
+                        || nombreCompleto.includes(texto)
+                        || doc.includes(texto);
+                });
+            }
             paginaActual = 1;
             renderTabla(listaFiltrada);
         }
@@ -389,7 +397,6 @@
                 if (!session) { window.location.href = '../login.html'; return; }
 
                 await window.loadSidebarComponent('sidebar-placeholder');
-                await window.filterSidebarByPermissions();
 
                 document.getElementById('busqueda-reservas').addEventListener('input', filtrar);
                 document.getElementById('filtro-estado-reservas').addEventListener('change', filtrar);

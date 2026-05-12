@@ -210,6 +210,11 @@ function cargarSeccion(seccion, event) {
         return;
     }
 
+    if (seccion === 'clientes') {
+        window.location.href = getModuleHref('clientes.html');
+        return;
+    }
+
     if (seccion === 'roles') {
         window.location.href = getModuleHref('roles.html');
         return;
@@ -413,6 +418,25 @@ async function fillUserInfoInSidebar() {
     }
 }
 
+function markActiveSidebarItem() {
+    const page = window.location.pathname.split('/').pop().replace('.html', '');
+    const pageToModule = {
+        dashboard: 'dashboard',
+        habitaciones: 'habitaciones',
+        paquetes: 'paquetes',
+        servicios: 'servicios',
+        usuarios: 'usuarios',
+        clientes: 'clientes',
+        roles: 'roles',
+        reservas: 'reservas',
+        perfil: 'perfil',
+    };
+    const module = pageToModule[page];
+    if (!module) return;
+    const item = document.querySelector(`.sidebar-item[data-module="${module}"]`);
+    if (item) item.classList.add('sidebar-item-active');
+}
+
 async function initSidebarControls() {
     const sidebar = document.getElementById('sidebar');
     const toggle = document.getElementById('sidebar-toggle');
@@ -432,6 +456,9 @@ async function initSidebarControls() {
 
     // Filtrar sidebar según permisos del rol
     await filterSidebarByPermissions();
+
+    // Marcar ítem activo según la página actual
+    markActiveSidebarItem();
 
     const labels = () => sidebar.querySelectorAll('.sidebar-label');
 
@@ -554,6 +581,7 @@ async function initSidebarControls() {
 })();
 
 window.getAppBasePath = getAppBasePath;
+window.markActiveSidebarItem = markActiveSidebarItem;
 window.getStoredSession = getStoredSession;
 window.getRoleName = getRoleName;
 window.loadSidebarComponent = loadSidebarComponent;
