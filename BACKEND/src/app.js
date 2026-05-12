@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
@@ -40,37 +41,4 @@ app.use('/api/password-reset', passwordResetRoutes);
 // Rutas de administración
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/roles', rolesRoutes);
-app.use('/api/permisos', permisosRoutes);
-
-// Rutas de la API (hotel)
-app.use("/api/dashboard", verificarToken, dashboardRoutes);
-app.use("/api/reservas", reservasRoutes);
-app.use("/api/paquetes", paquetesRoutes);
-app.use("/api/habitaciones", habitacionesRoutes);
-app.use("/api/servicios", serviciosRoutes);
-app.use("/api/clientes", clientesRoutes);
-
-// =============================
-// FRONTEND ESTÁTICO
-// =============================
-app.use(express.static(path.join(__dirname, '../../FRONTEND')));
-
-// =============================
-// HEALTH CHECK
-// =============================
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: 'hospedaje_digital_backend',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// =============================
-// TODAS LAS DEMÁS RUTAS → FRONTEND
-// =============================
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../FRONTEND', 'pages', 'landingPage.html'));
-});
-
-module.exports = app;
+app.use('/api/permisos',
