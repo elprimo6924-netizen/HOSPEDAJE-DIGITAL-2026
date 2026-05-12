@@ -51,19 +51,26 @@ app.use("/api/servicios", serviciosRoutes);
 app.use("/api/clientes", clientesRoutes);
 
 // =============================
+// FRONTEND ESTÁTICO
+// =============================
+app.use(express.static(path.join(__dirname, '../../FRONTEND')));
+
+// =============================
 // HEALTH CHECK
 // =============================
-app.get("/", (req, res) => {
-  res.json({ mensaje: "API Hospedaje Digital funcionando correctamente" });
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'hospedaje_digital_backend',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Health check básico para monitoreo y smoke tests
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'ok',
-        service: 'hospedaje_digital_backend',
-        timestamp: new Date().toISOString()
-    });
+// =============================
+// TODAS LAS DEMÁS RUTAS → FRONTEND
+// =============================
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../FRONTEND', 'pages', 'landingPage.html'));
 });
 
 module.exports = app;
