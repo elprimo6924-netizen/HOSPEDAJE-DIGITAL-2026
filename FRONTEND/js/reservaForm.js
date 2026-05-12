@@ -70,22 +70,60 @@ async function cargarSelectsReserva(selectedPaqIds = [], selectedSvcIds = []) {
     const servicios = await requestJson('/servicios');
     const activos   = (Array.isArray(servicios) ? servicios : []).filter(s => s.Estado == 1);
     const grid      = rfEl('reserva-admin-servicios-grid');
+    const horariosPorNombre = {
+      'Spa y Masajes': 'Lun–Dom 9:00 am – 9:00 pm',
+      'Restaurante': 'Desayuno 6:30–10:30 | Cena 6:30–11:00',
+      'Piscina': 'Lun–Dom 6:00 am – 10:00 pm',
+      'WiFi': 'Disponible 24 horas',
+      'Gimnasio': 'Lun–Sab 5:00 am – 11:00 pm',
+      'Servicio a la Habitación': 'Disponible 24 horas',
+      'Tour Guiado': 'Salidas 8:00 am y 2:00 pm',
+      'Lavandería': 'Recepción 7:00 am – 6:00 pm',
+      'Transporte': 'Disponible 24 horas',
+      'Bar y Cocktails': '5:00 pm – 1:00 am'
+    };
     if (grid) {
       if (!activos.length) {
         grid.innerHTML = '<p style="color:#64748b;font-size:.82rem">No hay servicios activos</p>';
       } else {
         grid.innerHTML = activos.map(s => {
           const sel = selectedSvcIds.includes(String(s.IDServicio));
+          const rawDesc = String(s.Descripcion || '').trim();
+          const shortDesc = rawDesc
+            ? (rawDesc.length > 90 ? `${rawDesc.slice(0, 87)}...` : rawDesc)
+            : 'Sin descripcion';
+          const nombreServicio = String(s.NombreServicio || '').trim();
+          const horario = horariosPorNombre[nombreServicio] || 'Horario: 8:00 am – 8:00 pm';
+          const baseClasses = [
+            'servicio-toggle-btn',
+            'px-4', 'py-2', 'rounded-lg',
+            'border-2', 'border-lime-300/80',
+            'bg-slate-50', 'text-slate-700',
+            'shadow-[0_0_0_1px_rgba(163,230,53,.25)]',
+            'hover:border-lime-400/90',
+            'hover:shadow-[0_0_10px_rgba(163,230,53,.3)]',
+            'transition', 'duration-200'
+          ];
+          const selectedClasses = [
+            'seleccionado',
+            'border-lime-400',
+            'bg-lime-50',
+            'text-lime-900',
+            'ring-2', 'ring-lime-300/60',
+            'shadow-[0_0_14px_rgba(163,230,53,.55)]'
+          ];
+          const classList = sel
+            ? baseClasses.concat(selectedClasses).join(' ')
+            : baseClasses.join(' ');
           return `<button type="button"
-                          class="servicio-toggle-btn${sel ? ' seleccionado' : ''}"
+                          class="${classList}"
                           data-id="${s.IDServicio}" data-costo="${s.Costo || 0}"
                           onclick="toggleServicio(this)"
-                          style="padding:.45rem .9rem;border-radius:999px;cursor:pointer;font-size:.82rem;
-                                 border:1.5px solid ${sel ? '#1b4332' : '#e2e8f0'};
-                                 background:${sel ? '#f0fdf4' : '#f8fafc'};
-                                 color:${sel ? '#14532d' : '#334155'};
-                                 font-weight:600;transition:all .2s;font-family:inherit">
-                    ${s.NombreServicio} — ${rfFmt(s.Costo)}
+                          title="${rawDesc || 'Sin descripcion'}"
+                          style="cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit">
+                    <span class="svc-title">${s.NombreServicio} — ${rfFmt(s.Costo)}</span>
+                    <span class="svc-desc">${shortDesc}</span>
+                    <span class="svc-hours">${horario}</span>
                   </button>`;
         }).join('');
       }
@@ -129,9 +167,24 @@ function togglePaquete(el) {
 function toggleServicio(el) {
   el.classList.toggle('seleccionado');
   const s = el.classList.contains('seleccionado');
-  el.style.borderColor = s ? '#1b4332' : '#e2e8f0';
-  el.style.background  = s ? '#f0fdf4' : '#f8fafc';
-  el.style.color       = s ? '#14532d' : '#334155';
+  const add = (cls) => el.classList.add(cls);
+  const remove = (cls) => el.classList.remove(cls);
+  const selectedClasses = [
+    'border-lime-400', 'bg-lime-50', 'text-lime-900',
+    'ring-2', 'ring-lime-300/60', 'shadow-[0_0_14px_rgba(163,230,53,.55)]'
+  ];
+  const baseClasses = [
+    'border-lime-300/80', 'bg-slate-50', 'text-slate-700',
+    'shadow-[0_0_0_1px_rgba(163,230,53,.25)]'
+  ];
+
+  if (s) {
+    baseClasses.forEach(remove);
+    selectedClasses.forEach(add);
+  } else {
+    selectedClasses.forEach(remove);
+    baseClasses.forEach(add);
+  }
   recalcularPrecio();
 }
 

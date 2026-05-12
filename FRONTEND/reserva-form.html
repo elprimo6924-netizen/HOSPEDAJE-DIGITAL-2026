@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Reserva — Hospedaje Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
@@ -29,13 +30,9 @@
         }
 
         /* ═══════════════════════════════════════
-           LAYOUT — 3 columns
+           LAYOUT — handled by Tailwind utilities
         ═══════════════════════════════════════ */
-        .rf-layout {
-            display: grid;
-            grid-template-columns: 270px 1fr 290px;
-            min-height: 100vh;
-        }
+        .rf-layout { display: grid; min-height: 100vh; }
 
         /* ═══════════════════════════════════════
            LEFT PANEL
@@ -174,7 +171,7 @@
         ═══════════════════════════════════════ */
         .rf-center {
             overflow-y: auto;
-            padding: 1.5rem 1rem 3rem;
+            padding: 2rem 2.5rem 3rem;
             background: #f1f5f9;
         }
 
@@ -357,6 +354,27 @@
 
         /* Servicios */
         .servicios-botones-grid { display: flex; flex-wrap: wrap; gap: .4rem; }
+        .servicio-toggle-btn {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: .2rem;
+            min-width: 12.5rem;
+            max-width: 100%;
+        }
+        .servicio-toggle-btn .svc-title { font-size: .82rem; font-weight: 600; }
+        .servicio-toggle-btn .svc-desc,
+        .servicio-toggle-btn .svc-hours {
+            font-size: .72rem;
+            color: #64748b;
+            line-height: 1.35;
+            display: none;
+        }
+        .servicio-toggle-btn.seleccionado .svc-desc,
+        .servicio-toggle-btn.seleccionado .svc-hours {
+            display: block;
+        }
 
         /* Mensaje */
         .crud-reservas-mensaje { padding: .58rem .95rem; border-radius: 8px; font-size: .82rem; margin-bottom: 1rem; }
@@ -376,7 +394,7 @@
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 1.6rem 1.35rem 1.6rem;
+            padding: 2rem 1.8rem 2rem;
         }
 
         .rf-sidebar-label {
@@ -612,12 +630,7 @@
         }
 
         /* Responsive */
-        @media (max-width: 1080px) {
-            .rf-layout { grid-template-columns: 230px 1fr 260px; }
-        }
         @media (max-width: 860px) {
-            .rf-layout { grid-template-columns: 1fr; }
-            .rf-panel, .rf-sidebar { display: none; }
             .rf-center { padding: 1.25rem; }
             .rf-sections { grid-template-columns: 1fr; }
             .rf-span2 { grid-column: span 1; }
@@ -629,59 +642,315 @@
 </head>
 <body>
 
-<div class="rf-layout">
+<div id="main-wrapper" class="rf-layout grid min-h-screen grid-cols-[16.5rem_1fr_16rem] max-[1080px]:grid-cols-[14.5rem_1fr_14rem] max-[860px]:grid-cols-[1fr]">
 
-    <!-- ══ LEFT PANEL ════════════════════════════════════ -->
-    <aside class="rf-panel">
-        <div class="rf-blob"></div>
-        <div class="rf-blob"></div>
-        <div class="rf-blob"></div>
+    <!-- ══ LEFT: Global sidebar (from components/sidebar.html) ═══════════════ -->
+    <aside id="sidebar"
+        class="sticky top-0 h-screen sidebar-shell sidebar-open max-[860px]:hidden
+               flex flex-col overflow-y-auto overflow-x-hidden
+               shadow-[4px_0_20px_rgba(0,0,0,0.3)] transition-[width] duration-300">
 
-        <div class="rf-panel-inner">
-            <div class="rf-logo">
-                <i class="fa-solid fa-hotel"></i>
-                <span>Hospedaje Digital</span>
+        <div class="sidebar-header flex items-center justify-between px-4 pt-3 pb-3 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/8 ring-1 ring-white/10 text-[#ff6a1a] shadow-[0_0_24px_rgba(255,106,26,.18)]">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <h2 class="text-white text-[0.72rem] font-semibold m-0 uppercase tracking-[0.45em] opacity-70"
+                        style="font-family:'Oswald',sans-serif;">
+                        Menú
+                    </h2>
+                    <p class="m-0 text-[0.72rem] text-white/45">Control central</p>
+                </div>
             </div>
+            <div class="pl-3">
+                <button id="sidebar-toggle"
+                    class="flex items-center justify-center
+                        w-11 h-11 rounded-2xl shrink-0
+                        border-0 cursor-pointer bg-[#ff6a1a] hover:bg-[#ff853c]
+                        shadow-[0_0_0_1px_rgba(255,255,255,.08),0_10px_30px_rgba(255,106,26,.28)] transition-all duration-200 hover:-translate-y-0.5"
+                    aria-label="Abrir o cerrar menú">
+                    <i class="fa-solid fa-bars text-white text-lg"></i>
+                </button>
+            </div>
+        </div>
 
-            <span class="rf-badge">
-                <i class="fa-solid fa-calendar-plus"></i> Gestión de reservas
-            </span>
+        <nav class="sidebar-nav flex-1 px-3 pt-1 pb-3">
+            <ul class="list-none p-0 m-0 space-y-1.5">
 
-            <h1 class="rf-panel-title">
-                Gestiona tus<br><em>reservas</em><br>con facilidad
-            </h1>
-            <p class="rf-panel-sub">
-                Registra o actualiza una reserva de forma rápida. Los cambios se guardan de forma segura en el sistema.
-            </p>
+                <li class="sidebar-item" data-module="dashboard">
+                    <a href="#" onclick="cargarSeccion('dashboard', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Dashboard
+                        </span>
+                    </a>
+                </li>
 
-            <ul class="rf-steps">
-                <li>
-                    <span class="rf-step-dot"><i class="fa-solid fa-user"></i></span>
-                    Busca el cliente por documento o nombre
+                <li class="sidebar-item" data-module="habitaciones">
+                    <a href="#" onclick="cargarSeccion('administrar-habitaciones', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-bed"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Habitaciones
+                        </span>
+                    </a>
                 </li>
-                <li>
-                    <span class="rf-step-dot"><i class="fa-solid fa-bed"></i></span>
-                    Selecciona habitación y fechas de estancia
+
+                <li class="sidebar-item" data-module="paquetes">
+                    <a href="#" onclick="cargarSeccion('paquetes', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-box-open"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Paquetes
+                        </span>
+                    </a>
                 </li>
-                <li>
-                    <span class="rf-step-dot"><i class="fa-solid fa-credit-card"></i></span>
-                    Define el método de pago y estado
+
+                <li class="sidebar-item" data-module="usuarios">
+                    <a href="#" onclick="cargarSeccion('usuarios', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-users"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Usuarios
+                        </span>
+                    </a>
                 </li>
-                <li>
-                    <span class="rf-step-dot"><i class="fa-solid fa-box-open"></i></span>
-                    Agrega paquetes y servicios adicionales
+
+                <li class="sidebar-item" data-module="roles">
+                    <a href="#" onclick="cargarSeccion('roles', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Roles
+                        </span>
+                    </a>
                 </li>
-                <li>
-                    <span class="rf-step-dot"><i class="fa-solid fa-floppy-disk"></i></span>
-                    Revisa el resumen y guarda la reserva
+
+                <li class="sidebar-item" data-module="reservas">
+                    <a href="#" onclick="cargarSeccion('reservas', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Reservas
+                        </span>
+                    </a>
                 </li>
+
+                <li class="sidebar-item" data-module="perfil">
+                    <a href="#" onclick="cargarSeccion('perfil', event)"
+                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                            <i class="fa-solid fa-circle-user"></i>
+                        </span>
+                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                            Mi Perfil
+                        </span>
+                    </a>
+                </li>
+
             </ul>
+        </nav>
 
-            <a href="#" id="btn-volver-panel" class="rf-back">
-                <i class="fa-solid fa-arrow-left"></i> Volver a reservas
-            </a>
+        <div class="sidebar-footer block px-3 py-3 shrink-0">
+            <div class="rounded-[22px] border border-white/10 bg-white/5 p-3 shadow-[0_12px_30px_rgba(0,0,0,.18)] backdrop-blur-sm">
+                <p class="text-white/45 text-[0.65rem] m-0 p-0 uppercase tracking-[0.35em]"
+                   style="font-family:'Oswald',sans-serif;">Bienvenido</p>
+                <div class="mt-2 rounded-2xl border border-white/8 bg-black/10 px-3 py-2">
+                    <p id="sidebar-user-name" class="text-white/90 text-sm font-semibold m-0 p-0 wrap-break-word leading-tight"></p>
+                    <p id="sidebar-user-role" class="text-white/55 text-xs m-0 p-0 mt-1"
+                       style="font-family:'Oswald',sans-serif; letter-spacing:.04em;"></p>
+                </div>
+                <div class="mt-3 flex gap-2">
+                    <button id="sidebar-btn-perfil"
+                        onclick="cargarSeccion('perfil', event)"
+                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2
+                               bg-[#4A90E2] hover:bg-[#3A7BC8] text-white text-xs font-semibold
+                               rounded-xl border-0 cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_10px_18px_rgba(74,144,226,.18)]">
+                        <i class="fa-solid fa-user"></i> Perfil
+                    </button>
+                    <button id="sidebar-btn-logout"
+                        onclick="cerrarSesion()"
+                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2
+                               bg-[#E74C3C] hover:bg-[#C0392B] text-white text-xs font-semibold
+                               rounded-xl border-0 cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_10px_18px_rgba(231,76,60,.16)]">
+                        <i class="fa-solid fa-right-from-bracket"></i> Salir
+                    </button>
+                </div>
+            </div>
         </div>
     </aside>
+
+    <div id="sidebar-overlay" class="hidden"></div>
+
+    <style>
+        #sidebar.sidebar-shell {
+            z-index: 1002;
+            background:
+                radial-gradient(circle at 20% 12%, rgba(255,106,26,.14), transparent 32%),
+                radial-gradient(circle at 82% 18%, rgba(38,212,255,.10), transparent 28%),
+                linear-gradient(to bottom, #0f3d3e 0%, #082427 52%, #071b1d 100%);
+            color: rgba(255, 255, 255, 0.92);
+            overflow-x: hidden;
+            border-right: 1px solid rgba(255,255,255,.06);
+        }
+
+        #sidebar.sidebar-open {
+            width: 16.5rem;
+        }
+
+        #sidebar .sidebar-item + .sidebar-item {
+            margin-top: 0.25rem !important;
+        }
+
+        #sidebar .sidebar-link {
+            padding-top: 0.625rem !important;
+            padding-bottom: 0.625rem !important;
+        }
+
+        #sidebar .sidebar-label {
+            margin-left: 0.5rem !important;
+        }
+
+        #sidebar:not(.sidebar-open) {
+            width: 5rem;
+            overflow: hidden;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-nav {
+            display: block;
+            padding-top: 0.35rem;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-nav ul {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-nav .sidebar-item {
+            width: 100%;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-footer {
+            display: none;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 0.5rem 0.9rem;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-header > div:first-child {
+            display: none;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-header > div:last-child {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            width: 100%;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-header #sidebar-toggle {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #sidebar .sidebar-nav {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,.16) transparent;
+        }
+
+        #sidebar .sidebar-nav::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,.16);
+            border-radius: 999px;
+        }
+
+        #sidebar .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sidebar.sidebar-open .sidebar-label {
+            opacity: 1;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-label {
+            opacity: 0;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-link {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            justify-content: center;
+        }
+
+        #sidebar.sidebar-open .sidebar-link {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            justify-content: flex-start;
+        }
+
+        #sidebar:not(.sidebar-open) .sidebar-link {
+            flex-direction: column;
+        }
+
+        #sidebar.sidebar-open .sidebar-link {
+            flex-direction: row;
+        }
+
+        #sidebar-toggle {
+            backdrop-filter: blur(8px);
+        }
+    </style>
 
     <!-- ══ CENTER FORM ════════════════════════════════════ -->
     <div class="rf-center">
@@ -805,7 +1074,7 @@
     </div>
 
     <!-- ══ RIGHT SIDEBAR ══════════════════════════════════ -->
-    <aside class="rf-sidebar">
+    <aside class="rf-sidebar max-[860px]:hidden">
         <div class="rf-sidebar-label">
             <i class="fa-solid fa-receipt"></i> Resumen de reserva
         </div>
@@ -897,6 +1166,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/main.js"></script>
 <script src="js/api.js"></script>
 <script src="js/notifications.js"></script>
 <script src="js/reservaForm.js"></script>
@@ -956,6 +1226,9 @@ function actualizarSidebar() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof window.initSidebarControls === 'function') {
+        await window.initSidebarControls();
+    }
     const raw    = sessionStorage.getItem('reserva_form_data');
     const reserva = raw ? JSON.parse(raw) : null;
     sessionStorage.removeItem('reserva_form_data');
