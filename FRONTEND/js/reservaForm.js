@@ -232,9 +232,9 @@ function configurarBuscadorCliente() {
     const q = input.value.toLowerCase().trim();
     if (q.length < 2) { lista.classList.add('hidden'); return; }
     const found = clientes.filter(c =>
-      (c.NroDocumento || '').toLowerCase().includes(q) ||
-      (c.Nombre || '').toLowerCase().includes(q) ||
-      (c.Apellido || '').toLowerCase().includes(q)
+      String(c.NroDocumento || '').toLowerCase().includes(q) ||
+      String(c.Nombre || '').toLowerCase().includes(q) ||
+      String(c.Apellido || '').toLowerCase().includes(q)
     ).slice(0, 8);
     if (!found.length) { lista.classList.add('hidden'); return; }
     lista.innerHTML = found.map(c =>
