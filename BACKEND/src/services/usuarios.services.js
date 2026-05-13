@@ -11,14 +11,14 @@ const listUsuarios = async (page = 1, limit = 10) => {
         const offset = (page - 1) * limit;
         
         // Obtener total de usuarios
-        const [countResult] = await database.query("SELECT COUNT(*) as total FROM Usuarios");
+        const [countResult] = await database.query("SELECT COUNT(*) as total FROM usuarios");
         const total = countResult[0].total;
 
         // Obtener usuarios con paginación
         const query = `
             SELECT u.*, r.Nombre as NombreRol
-            FROM Usuarios u
-            LEFT JOIN Roles r ON u.IDRol = r.IDRol
+            FROM usuarios u
+            LEFT JOIN roles r ON u.IDRol = r.IDRol
             ORDER BY u.IDUsuario DESC
             LIMIT ? OFFSET ?
         `;
@@ -40,8 +40,8 @@ const listUsuarios = async (page = 1, limit = 10) => {
 const getUsuarioById = async (id) => {
     const query = `
         SELECT u.*, r.Nombre as NombreRol
-        FROM Usuarios u
-        LEFT JOIN Roles r ON u.IDRol = r.IDRol
+        FROM usuarios u
+        LEFT JOIN roles r ON u.IDRol = r.IDRol
         WHERE u.IDUsuario = ?
     `;
     const [rows] = await database.query(query, [id]);
@@ -60,7 +60,7 @@ const createUsuario = async (data) => {
     const isActive = IsActive !== undefined ? IsActive : 1;
     
     const [result] = await database.query(
-        `INSERT INTO Usuarios (Contrasena, Nombre, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive) 
+        `INSERT INTO usuarios (Contrasena, Nombre, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [Contrasena, Nombre, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, rol, isActive]
     );
@@ -89,13 +89,13 @@ const updateUsuario = async (id, data) => {
     // Agregar el ID al final
     updateValues.push(id);
     
-    const query = `UPDATE Usuarios SET ${updateFields.join(', ')} WHERE IDUsuario = ?`;
+    const query = `UPDATE usuarios SET ${updateFields.join(', ')} WHERE IDUsuario = ?`;
     const [result] = await database.query(query, updateValues);
     return result;
 };
 
 const deleteUsuario = async (id) => {
-    const [result] = await database.query("DELETE FROM Usuarios WHERE IDUsuario = ?", [id]);
+    const [result] = await database.query("DELETE FROM usuarios WHERE IDUsuario = ?", [id]);
     return result;
 };
 
@@ -107,7 +107,7 @@ const deleteUsuario = async (id) => {
  */
 const toggleUsuarioStatus = async (id, isActive) => {
     const [result] = await database.query(
-        "UPDATE Usuarios SET IsActive = ? WHERE IDUsuario = ?",
+        "UPDATE usuarios SET IsActive = ? WHERE IDUsuario = ?",
         [isActive ? 1 : 0, id]
     );
     return result;
@@ -127,7 +127,7 @@ const searchUsuarios = async (searchTerm, page = 1, limit = 10) => {
 
         // Contar total de resultados
         const [countResult] = await database.query(
-            `SELECT COUNT(*) as total FROM Usuarios 
+            `SELECT COUNT(*) as total FROM usuarios 
              WHERE Nombre LIKE ? OR Email LIKE ?`,
             [search, search]
         );
@@ -136,8 +136,8 @@ const searchUsuarios = async (searchTerm, page = 1, limit = 10) => {
         // Obtener resultados con paginación
         const query = `
             SELECT u.*, r.Nombre as NombreRol
-            FROM Usuarios u
-            LEFT JOIN Roles r ON u.IDRol = r.IDRol
+            FROM usuarios u
+            LEFT JOIN roles r ON u.IDRol = r.IDRol
             WHERE u.Nombre LIKE ? OR u.Email LIKE ?
             ORDER BY u.IDUsuario DESC
             LIMIT ? OFFSET ?

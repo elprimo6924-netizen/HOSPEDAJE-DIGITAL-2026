@@ -28,7 +28,7 @@ const requestPasswordReset = async (email) => {
     try {
         // 1. Verificar que el email existe
         const [users] = await database.query(
-            "SELECT IDUsuario FROM Usuarios WHERE Email = ?",
+            "SELECT IDUsuario FROM usuarios WHERE Email = ?",
             [email]
         );
 
@@ -45,12 +45,12 @@ const requestPasswordReset = async (email) => {
 
         // 4. Guardar en BD (limpiar códigos previos expirados)
         await database.query(
-            "DELETE FROM PasswordResets WHERE Email = ? AND ExpiresAt < NOW()",
+            "DELETE FROM passwordresets WHERE Email = ? AND ExpiresAt < NOW()",
             [email]
         );
 
         await database.query(
-            "INSERT INTO PasswordResets (Email, Code, ExpiresAt) VALUES (?, ?, ?)",
+            "INSERT INTO passwordresets (Email, Code, ExpiresAt) VALUES (?, ?, ?)",
             [email, code, expiresAt]
         );
 
@@ -77,7 +77,7 @@ const verifyCode = async (email, code) => {
     try {
         // 1. Buscar el código válido (no expirado, no usado)
         const [reset] = await database.query(
-            "SELECT IDReset FROM PasswordResets WHERE Email = ? AND Code = ? AND ExpiresAt > NOW() AND UsedAt IS NULL LIMIT 1",
+            "SELECT IDReset FROM passwordresets WHERE Email = ? AND Code = ? AND ExpiresAt > NOW() AND UsedAt IS NULL LIMIT 1",
             [email, code]
         );
 
@@ -94,7 +94,7 @@ const verifyCode = async (email, code) => {
         // 3. Guardar token en BD (válido por 15 minutos más)
         const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
         await database.query(
-            "UPDATE PasswordResets SET Token = ?, ExpiresAt = ? WHERE IDReset = ?",
+            "UPDATE passwordresets SET Token = ?, ExpiresAt = ? WHERE IDReset = ?",
             [token, tokenExpiresAt, reset[0].IDReset]
         );
 
@@ -118,7 +118,7 @@ const resetPassword = async (token, newPassword) => {
     try {
         // 1. Buscar el token válido
         const [reset] = await database.query(
-            "SELECT IDReset, Email FROM PasswordResets WHERE Token = ? AND ExpiresAt > NOW() AND UsedAt IS NULL LIMIT 1",
+            "SELECT IDReset, Email FROM passwordresets WHERE Token = ? AND ExpiresAt > NOW() AND UsedAt IS NULL LIMIT 1",
             [token]
         );
 
@@ -133,13 +133,13 @@ const resetPassword = async (token, newPassword) => {
 
         // 2. Actualizar contraseña del usuario
         await database.query(
-            "UPDATE Usuarios SET Contrasena = ? WHERE Email = ?",
+            "UPDATE usuarios SET Contrasena = ? WHERE Email = ?",
             [newPassword, Email]
         );
 
         // 3. Marcar token como usado
         await database.query(
-            "UPDATE PasswordResets SET UsedAt = NOW() WHERE IDReset = ?",
+            "UPDATE passwordresets SET UsedAt = NOW() WHERE IDReset = ?",
             [IDReset]
         );
 

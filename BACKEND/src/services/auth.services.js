@@ -9,8 +9,8 @@ const login = async (email, contrasena) => {
 
   const query = `
         SELECT u.*, r.Nombre as RolNombre, r.IsActive as RolIsActive, r.Permisos
-        FROM Usuarios u
-        LEFT JOIN Roles r ON u.IDRol = r.IDRol
+        FROM usuarios u
+        LEFT JOIN roles r ON u.IDRol = r.IDRol
         WHERE u.Email = ?
     `;
   const [rows] = await database.query(query, [email]);

@@ -36,12 +36,12 @@ const listRoles = async (page = 1, limit = 10) => {
         const offset = (page - 1) * limit;
         
         // Obtener total de roles (activos e inactivos)
-        const [countResult] = await database.query("SELECT COUNT(*) as total FROM Roles");
+        const [countResult] = await database.query("SELECT COUNT(*) as total FROM roles");
         const total = countResult[0].total;
 
         // Obtener roles con paginación (todos, no filtrar por IsActive)
         const query = `
-            SELECT * FROM Roles 
+            SELECT * FROM roles 
             ORDER BY IsActive DESC, IDRol ASC
             LIMIT ? OFFSET ?
         `;
@@ -67,7 +67,7 @@ const listRoles = async (page = 1, limit = 10) => {
 };
 
 const getRolById = async (id) => {
-    const [rows] = await database.query("SELECT * FROM Roles WHERE IDRol = ? AND IsActive = 1", [id]);
+    const [rows] = await database.query("SELECT * FROM roles WHERE IDRol = ? AND IsActive = 1", [id]);
     const rol = rows[0];
     if (!rol) return null;
     
@@ -81,7 +81,7 @@ const createRol = async (data) => {
     const { NombreRol, IsActive, Permisos } = data;
     const permisosJSON = Permisos ? JSON.stringify(Permisos) : null;
     const [result] = await database.query(
-        "INSERT INTO Roles (Nombre, IsActive, Permisos) VALUES (?, ?, ?)",
+        "INSERT INTO roles (Nombre, IsActive, Permisos) VALUES (?, ?, ?)",
         [NombreRol, IsActive, permisosJSON]
     );
     return result;
@@ -91,7 +91,7 @@ const updateRol = async (id, data) => {
     const { NombreRol, IsActive, Permisos } = data;
     const permisosJSON = Permisos ? JSON.stringify(Permisos) : null;
     const [result] = await database.query(
-        "UPDATE Roles SET Nombre = ?, IsActive = ?, Permisos = ? WHERE IDRol = ?",
+        "UPDATE roles SET Nombre = ?, IsActive = ?, Permisos = ? WHERE IDRol = ?",
         [NombreRol, IsActive, permisosJSON, id]
     );
     return result;
@@ -102,7 +102,7 @@ const deleteRol = async (id) => {
     try {
         // DELETE real de la base de datos
         const [result] = await database.query(
-            "DELETE FROM Roles WHERE IDRol = ?", 
+            "DELETE FROM roles WHERE IDRol = ?", 
             [id]
         );
         console.log(`✅ Rol ${id} eliminado completamente. Affected rows: ${result.affectedRows}`);
@@ -124,7 +124,7 @@ const deleteRol = async (id) => {
  */
 const toggleRolStatus = async (id, isActive) => {
     const [result] = await database.query(
-        "UPDATE Roles SET IsActive = ? WHERE IDRol = ?",
+        "UPDATE roles SET IsActive = ? WHERE IDRol = ?",
         [isActive ? 1 : 0, id]
     );
     return result;
@@ -144,14 +144,14 @@ const searchRoles = async (searchTerm, page = 1, limit = 10) => {
 
         // Contar total de resultados (activos e inactivos)
         const [countResult] = await database.query(
-            "SELECT COUNT(*) as total FROM Roles WHERE Nombre LIKE ?",
+            "SELECT COUNT(*) as total FROM roles WHERE Nombre LIKE ?",
             [search]
         );
         const total = countResult[0].total;
 
         // Obtener resultados con paginación (todos, no filtrar por IsActive)
         const query = `
-            SELECT * FROM Roles
+            SELECT * FROM roles
             WHERE Nombre LIKE ?
             ORDER BY IsActive DESC, IDRol ASC
             LIMIT ? OFFSET ?

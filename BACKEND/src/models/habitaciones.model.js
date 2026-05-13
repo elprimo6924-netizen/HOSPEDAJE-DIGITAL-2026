@@ -1,10 +1,10 @@
 const db = require("../config/db");
 
-const Habitaciones = {
+const habitaciones = {
 
     obtenerTodas: async () => {
 
-        const [rows] = await db.query("SELECT * FROM Habitacion");
+        const [rows] = await db.query("SELECT * FROM habitacion");
         return rows.map(r => ({
             ...r,
             ImagenHabitacion: Buffer.isBuffer(r.ImagenHabitacion)
@@ -17,7 +17,7 @@ const Habitaciones = {
     obtenerPorId: async (id) => {
 
         const [rows] = await db.query(
-            "SELECT * FROM Habitacion WHERE IDHabitacion = ?",
+            "SELECT * FROM habitacion WHERE IDHabitacion = ?",
             [id]
         );
 
@@ -37,7 +37,7 @@ const Habitaciones = {
         const { NombreHabitacion, Descripcion, Costo, Estado } = habitacion;
 
         const sql = `
-            INSERT INTO Habitacion 
+            INSERT INTO habitacion 
             (NombreHabitacion, Descripcion, Costo, Estado)
             VALUES (?, ?, ?, ?)
         `;
@@ -58,7 +58,7 @@ const Habitaciones = {
         const { NombreHabitacion, Descripcion, Costo, Estado } = habitacion;
 
         const sql = `
-            UPDATE Habitacion
+            UPDATE habitacion
             SET NombreHabitacion=?, Descripcion=?, Costo=?, Estado=?
             WHERE IDHabitacion=?
         `;
@@ -78,7 +78,7 @@ const Habitaciones = {
     eliminar: async (id) => {
 
         const [result] = await db.query(
-            "DELETE FROM Habitacion WHERE IDHabitacion=?",
+            "DELETE FROM habitacion WHERE IDHabitacion=?",
             [id]
         );
 
@@ -88,4 +88,4 @@ const Habitaciones = {
 
 };
 
-module.exports = Habitaciones;
+module.exports = habitaciones;
