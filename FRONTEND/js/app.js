@@ -2304,7 +2304,6 @@ const renderizarServiciosAdmin = () => {
                 <td><strong>${servicio.Duracion || '—'}</strong></td>
                 <td>${servicio.CantidadMaximaPersonas || '—'}</td>
                 <td><strong>${formatearCostoServicio(servicio.Costo)}</strong></td>
-                <td class="crud-servicios-descripcion">${escaparHtml(servicio.Descripcion || 'Sin descripción')}</td>
                 <td>
                     <div class="crud-estado-control">
                         <label class="switch-estado-servicio" for="${escaparHtml(switchId)}">
@@ -2320,6 +2319,7 @@ const renderizarServiciosAdmin = () => {
                         </label>
                     </div>
                 </td>
+                <td class="crud-servicios-descripcion">${escaparHtml(servicio.Descripcion || 'Sin descripción')}</td>
                 <td>
                     <div class="crud-servicios-acciones">
                         ${obtenerBotonIcono('ver', 'btn-mini-ver', 'Ver detalle', `Ver detalle de ${servicio.NombreServicio || 'servicio'}`, 'accion-servicio', idServicio)}
