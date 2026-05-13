@@ -4,6 +4,7 @@
   "scripts": {
     "start": "node serve-frontend.js",
     "backend": "cd BACKEND && node src/server.js",
+    "render-start": "cd BACKEND && node index.js",
     "dev": "node scripts/dev.js"
   },
   "dependencies": {
