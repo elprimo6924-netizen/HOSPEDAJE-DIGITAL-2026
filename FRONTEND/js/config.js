@@ -4,7 +4,9 @@
 
 const CONFIG = {
     // URL base del backend
-    API_URL: `http://${typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost'}:3000/api`,
+    API_URL: (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') 
+        ? `${window.location.origin}/api` 
+        : 'http://localhost:3000/api',
     
     // Timeout para peticiones fetch (en milisegundos)
     FETCH_TIMEOUT: 10000,
