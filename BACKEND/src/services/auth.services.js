@@ -19,6 +19,11 @@ const login = async (email, contrasena) => {
 
   const usuario = rows[0];
 
+  // U4: Usuario desactivado por el administrador
+  if (usuario.IsActive === 0) {
+    return { error: "Tu cuenta está desactivada. Contacta al administrador." };
+  }
+
   if (usuario.RolIsActive === 0) {
     return { error: "El rol asociado a esta cuenta está desactivado" };
   }
@@ -62,6 +67,7 @@ const login = async (email, contrasena) => {
       IDRol: usuario.IDRol,
       rolNombre: usuario.RolNombre,
       permisos: permisos,
+      requiereCambioPassword: usuario.requiereCambioPassword === 1,
     },
   };
 };

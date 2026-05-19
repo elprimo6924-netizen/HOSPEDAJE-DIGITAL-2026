@@ -18,11 +18,11 @@ const getAll = async (req, res) => {
   }
 };
 
-/* ================= DISPONIBLES ================= */
+/* ================= DISPONIBLES (activas, Estado=1) ================= */
 
 const disponibles = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM habitacion WHERE Estado = 1");
+    const [rows] = await db.query("SELECT * FROM habitacion WHERE Estado = 1 ORDER BY NombreHabitacion ASC");
     res.json(rows.map(mapHabitacion));
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo habitaciones disponibles", detalle: error.message });
@@ -91,6 +91,20 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
   try {
     const { id } = req.params;
+
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total
+       FROM detallereservapaquetes drp
+       JOIN paquetes p ON drp.IDPaquete = p.IDPaquete
+       WHERE p.IDHabitacion = ?`,
+      [id]
+    );
+    if (total > 0) {
+      return res.status(409).json({
+        error: "No se puede eliminar esta habitación porque tiene reservas asociadas."
+      });
+    }
+
     await db.query("DELETE FROM habitacion WHERE IDHabitacion = ?", [id]);
     res.json({ mensaje: "Habitación eliminada" });
   } catch (error) {

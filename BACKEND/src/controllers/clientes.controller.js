@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const bcrypt = require("bcryptjs");
 
 /* ================= LISTAR CLIENTES ================= */
 exports.getAll = async (req, res) => {
@@ -17,6 +18,16 @@ exports.getAll = async (req, res) => {
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo clientes", detalle: error.message });
+  }
+};
+
+/* ================= LISTAR CLIENTES ACTIVOS (para selector de reservas C6) ================= */
+exports.getActivos = async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM cliente WHERE Estado = 1 ORDER BY Nombre ASC");
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo clientes activos", detalle: error.message });
   }
 };
 
@@ -66,13 +77,28 @@ exports.obtenerPorId = async (req, res) => {
 /* ================= CREAR CLIENTE ================= */
 exports.create = async (req, res) => {
   try {
-    const { NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol } = req.body;
+    const { NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol, Password } = req.body;
+
+    if (!NroDocumento || !Nombre || !Email) {
+      return res.status(400).json({ error: "NroDocumento, Nombre y Email son obligatorios." });
+    }
 
     const [result] = await db.query(
       `INSERT INTO cliente (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [NroDocumento, Nombre, Apellido, Direccion || null, Email, Telefono || null, Estado || 1, IDRol || 3]
     );
+
+    /* C4: Crear usuario asociado con rol Cliente si se proporcionó contraseña */
+    if (Password && Password.length >= 8) {
+      const hashPass = await bcrypt.hash(Password, 10);
+      await db.query(
+        `INSERT INTO usuarios (Nombre, Apellido, Email, Contrasena, IDRol, Estado, requiereCambioPassword)
+         VALUES (?, ?, ?, ?, 3, 1, 1)
+         ON DUPLICATE KEY UPDATE Nombre = VALUES(Nombre)`,
+        [Nombre, Apellido || '', Email, hashPass]
+      );
+    }
 
     res.status(201).json({ mensaje: "Cliente creado", data: result });
   } catch (error) {
@@ -103,6 +129,17 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const id = req.params.id; // NroDocumento
+
+    const [[{ total }]] = await db.query(
+      "SELECT COUNT(*) AS total FROM reserva WHERE NroDocumentoCliente = ?",
+      [id]
+    );
+    if (total > 0) {
+      return res.status(409).json({
+        error: "No se puede eliminar este cliente porque tiene reservas registradas."
+      });
+    }
+
     await db.query("DELETE FROM cliente WHERE NroDocumento = ?", [id]);
     res.json({ mensaje: "Cliente eliminado" });
   } catch (error) {

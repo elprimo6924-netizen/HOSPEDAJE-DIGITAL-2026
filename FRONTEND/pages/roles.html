@@ -5,29 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Roles - Hospedaje Digital</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'hospedaje-green': '#064e3b',
-                        'hospedaje-blue': '#2563eb',
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } };</script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
         /* Estilo para el Switch de Estado */
         .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ef4444; transition: .4s; border-radius: 34px;
+            background-color: #cbd5e1; transition: .4s; border-radius: 34px;
         }
         .slider:before {
             position: absolute; content: ""; height: 16px; width: 16px;
@@ -37,42 +33,37 @@
         input:checked + .slider:before { transform: translateX(22px); }
     </style>
 </head>
-<body class="bg-[#f1f5f9] min-h-screen font-sans text-slate-800">
+<body>
 
     <div id="sidebar-placeholder"></div>
 
-    <div id="main-wrapper" class="main-wrapper flex flex-col min-h-screen">
-        
-        <header class="bg-hospedaje-green text-white p-4 shadow-md">
-            <div class="container mx-auto flex items-center gap-3">
-                <i class="fa-solid fa-hotel text-xl"></i>
-                <h1 class="text-lg font-semibold tracking-tight">Hospedaje Digital</h1>
-            </div>
+    <div id="main-wrapper" class="main-wrapper">
+
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
         </header>
 
-        <main class="flex-1 p-4 md:p-8">
-            
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-user-shield text-hospedaje-green"></i> Gestión de Roles
-                    </h2>
-                    <p class="text-slate-500 text-sm mt-1">Configura los niveles de acceso y permisos del sistema.</p>
+        <main>
+
+            <div class="mod-toolbar">
+                <div class="mod-toolbar-left">
+                    <h2 class="mod-toolbar-title"><i class="fa-solid fa-shield-halved mod-icon" aria-hidden="true"></i> Gestión de Roles</h2>
+                    <p class="mod-toolbar-subtitle">Configura los niveles de acceso y permisos del sistema.</p>
                 </div>
-                <button id="btn-crear-rol" class="bg-gradient-to-r from-[#c2410c] to-[#ea580c] hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all uppercase text-xs tracking-widest">
-                    + NUEVO ROL
-                </button>
+                <button id="btn-crear-rol" class="btn-mod-nuevo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Rol</button>
             </div>
 
             <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
                 <div class="flex flex-col md:flex-row gap-3">
                     <div class="relative flex-1">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="busqueda-roles" placeholder="Buscar por nombre del rol..." 
-                            class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-hospedaje-green focus:outline-none text-slate-700">
+                        <input type="text" id="busqueda-roles" placeholder="Buscar por nombre del rol..."
+                            class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--color-secondary)] focus:outline-none text-slate-700">
                     </div>
                     <div class="flex gap-2">
-                        <button id="btn-buscar" class="bg-hospedaje-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
+                        <button id="btn-buscar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
                         <button id="btn-limpiar" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Limpiar</button>
                     </div>
                 </div>
@@ -109,14 +100,13 @@
             </div>
         </main>
 
-        <footer class="bg-hospedaje-green text-white/40 text-center py-4 text-[10px] uppercase tracking-widest">
-            &copy; 2026 Hospedaje Digital. Todos los derechos reservados.
-        </footer>
+        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
     </div>
 
     <script src="../js/config.js"></script>
     <script src="../js/main.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/validation.js"></script>
     <script src="../js/rolFormModal.js"></script>
     <script src="../js/roles.js"></script>
 </body>

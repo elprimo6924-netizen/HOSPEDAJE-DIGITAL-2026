@@ -185,7 +185,7 @@
 .switch-slider {
     position: absolute;
     inset: 0;
-    background: #ef4444;
+    background: #cbd5e1;
     border-radius: 999px;
     transition: background-color var(--transition-base);
     cursor: pointer;
@@ -233,7 +233,7 @@
 .switch-slider-servicio {
     position: absolute;
     inset: 0;
-    background: #ef4444;
+    background: #cbd5e1;
     border-radius: 999px;
     transition: background-color var(--transition-base);
     cursor: pointer;
@@ -307,4 +307,78 @@
 .pagination-btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+}
+
+/* ============================================
+   MÓDULOS — BARRA SUPERIOR ESTÁNDAR
+   ============================================ */
+
+.mod-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.mod-toolbar-left { min-width: 0; }
+
+.mod-toolbar-title {
+    font-family: var(--font-family-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text-dark);
+    margin: 0 0 .2rem;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    line-height: 1.2;
+}
+
+.mod-toolbar-title .mod-icon { color: var(--color-secondary); }
+
+.mod-toolbar-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    margin: 0;
+}
+
+.mod-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+
+/* Botón primario estándar — "Nuevo X" */
+.btn-mod-nuevo {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .7rem 1.4rem;
+    background: var(--color-secondary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-family);
+    font-size: .88rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    transition: background .2s, transform .15s, box-shadow .15s;
+}
+
+.btn-mod-nuevo:hover {
+    background: #9a3412;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 140, 66, .28);
+}
+
+.btn-mod-nuevo:active { transform: translateY(0); }
+
+@media (max-width: 600px) {
+    .mod-toolbar { flex-direction: column; align-items: flex-start; }
+    .mod-toolbar-actions { width: 100%; justify-content: flex-end; }
 }

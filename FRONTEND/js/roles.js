@@ -64,11 +64,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </td>
                     <td class="p-4">
                         <div class="flex justify-center gap-2">
-                            <button class="p-2 bg-blue-50 text-blue-600 rounded-lg ${isProtected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100'} transition-colors shadow-sm"  
+                            <button class="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
+                                    data-action="view" data-id="${item.IDRol}" title="Ver detalle">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button class="p-2 bg-blue-50 text-blue-600 rounded-lg ${isProtected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100'} transition-colors shadow-sm"
                                     data-action="edit" data-id="${item.IDRol}" title="${isProtected ? 'No editable' : 'Editar'}" ${isProtected ? 'disabled' : ''}>
                                 <i class="fa-solid fa-pencil"></i>
                             </button>
-                            <button class="p-2 bg-red-50 text-red-600 rounded-lg ${isProtected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100'} transition-colors shadow-sm"  
+                            <button class="p-2 bg-red-50 text-red-600 rounded-lg ${isProtected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100'} transition-colors shadow-sm"
                                     data-action="delete" data-id="${item.IDRol}" title="${isProtected ? 'No eliminable' : 'Eliminar'}" ${isProtected ? 'disabled' : ''}>
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
@@ -124,11 +128,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         try {
+            if (action === "view") {
+                await mostrarDetalleRol(id);
+                return;
+            }
+
             if (action === "delete") {
-                if (!confirm("¿Eliminar este rol?")) return;
-                await window.apiRequest(`/roles/${id}`, { method: "DELETE" });
-                if (typeof showAlert === 'function') showAlert('Rol eliminado correctamente.', 'success');
-                await loadRoles();
+                if (typeof confirmarAccion === 'function') {
+                    confirmarAccion({
+                        titulo: '¿Eliminar rol?',
+                        mensaje: `El rol "${rolName}" será desactivado y no podrá usarse para nuevos usuarios.`,
+                        textoConfirmar: 'Eliminar',
+                        tipo: 'danger',
+                        onConfirmar: async () => {
+                            try {
+                                await window.apiRequest(`/roles/${id}`, { method: "DELETE" });
+                                if (typeof showAlert === 'function') showAlert('Rol eliminado correctamente.', 'success');
+                                await loadRoles();
+                            } catch (err) {
+                                if (typeof showAlert === 'function') showAlert(err.message || 'Error al eliminar.', 'error');
+                            }
+                        }
+                    });
+                } else {
+                    if (!confirm("¿Eliminar este rol?")) return;
+                    await window.apiRequest(`/roles/${id}`, { method: "DELETE" });
+                    if (typeof showAlert === 'function') showAlert('Rol eliminado correctamente.', 'success');
+                    await loadRoles();
+                }
+                return;
             }
 
             if (action === "toggle") {
@@ -180,3 +208,103 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await loadRoles();
 });
+
+/* ── Modal de detalle de rol (R3) ── */
+async function mostrarDetalleRol(rolId) {
+    const session = window.getStoredSession ? window.getStoredSession() : null;
+    if (!session) return;
+
+    let rolData;
+    try {
+        rolData = await window.apiRequest(`/roles/${rolId}`);
+    } catch (e) {
+        if (typeof showAlert === 'function') showAlert('No se pudo cargar el detalle del rol.', 'error');
+        return;
+    }
+
+    const nombre = rolData.Nombre || rolData.NombreRol || `Rol #${rolId}`;
+    const isActive = Number(rolData.IsActive) === 1 || rolData.Estado === 'Activo';
+    const permisos = rolData.permisos || [];
+
+    const ICON_MAP = {
+        dashboard:    'fa-chart-line',
+        usuarios:     'fa-users',
+        roles:        'fa-shield-halved',
+        habitaciones: 'fa-bed',
+        servicios:    'fa-bell-concierge',
+        reservas:     'fa-calendar-check',
+        paquetes:     'fa-box-open',
+        clientes:     'fa-address-book',
+    };
+
+    const permisosHtml = permisos.length
+        ? permisos.map(p => {
+            const n = (p.nombre || '').toLowerCase().trim();
+            const icon = ICON_MAP[n] || 'fa-lock';
+            return `<span style="display:inline-flex;align-items:center;gap:6px;
+                         background:#f5f3ff;color:#6d28d9;border:1px solid #ede9fe;
+                         border-radius:8px;padding:5px 11px;font-size:.78rem;font-weight:600;">
+                        <i class="fa-solid ${icon}" style="font-size:.75rem"></i>
+                        ${p.nombre || '—'}
+                    </span>`;
+        }).join('')
+        : '<span style="color:#94a3b8;font-size:.82rem">Sin permisos asignados</span>';
+
+    const overlay = document.createElement('div');
+    overlay.id = '_rd_overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;animation:_rf_bg .2s ease';
+    overlay.innerHTML = `
+        <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;
+                    box-shadow:0 24px 64px rgba(15,23,42,.22);overflow:hidden;animation:_rf_up .25s ease">
+            <div style="padding:20px 24px 16px;border-bottom:1px solid #f1f5f9;
+                        display:flex;align-items:center;justify-content:space-between">
+                <h2 style="font-size:1.05rem;font-weight:800;color:#0f172a;margin:0;display:flex;align-items:center;gap:10px">
+                    <span style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#6d28d9);
+                                 display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </span>
+                    Detalle del Rol
+                </h2>
+                <button id="_rd_close" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:1.3rem;line-height:1;padding:4px 6px;border-radius:6px">&times;</button>
+            </div>
+            <div style="padding:22px 24px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+                    <div>
+                        <div style="font-size:1.25rem;font-weight:800;color:#0f172a">${nombre}</div>
+                        <div style="font-size:.78rem;color:#94a3b8;margin-top:2px">ID: ${rolId}</div>
+                    </div>
+                    <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:.75rem;font-weight:700;
+                                 ${isActive ? 'background:#dcfce7;color:#166534' : 'background:#f1f5f9;color:#64748b'}">
+                        <i class="fa-solid ${isActive ? 'fa-circle-check' : 'fa-circle-xmark'}" style="font-size:.7rem"></i>
+                        ${isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                </div>
+                <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:10px">
+                    <i class="fa-solid fa-lock" style="margin-right:5px;color:#7c3aed"></i>Permisos asignados (${permisos.length})
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">${permisosHtml}</div>
+            </div>
+            <div style="padding:14px 24px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end">
+                <button id="_rd_cerrar_btn"
+                    style="padding:8px 22px;background:#f1f5f9;border:none;border-radius:8px;
+                           font-weight:700;font-size:.83rem;cursor:pointer;color:#475569;transition:background .15s">
+                    Cerrar
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(overlay);
+
+    const close = () => {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity .2s';
+        setTimeout(() => overlay.remove(), 200);
+    };
+
+    overlay.querySelector('#_rd_close').addEventListener('click', close);
+    overlay.querySelector('#_rd_cerrar_btn').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function onEsc(e) {
+        if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
+    });
+}

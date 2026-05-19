@@ -32,7 +32,7 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
             #_uf_header h2 { font-size:1.15rem; font-weight:800; color:#0f172a; margin:0;
                 display:flex; align-items:center; gap:10px; }
             #_uf_header h2 span.uf-icon { width:34px; height:34px; border-radius:9px;
-                background:linear-gradient(135deg,#c2410c,#ea580c);
+                background:linear-gradient(135deg,var(--color-secondary),#ea580c);
                 display:inline-flex; align-items:center; justify-content:center;
                 color:#fff; font-size:.9rem; flex-shrink:0; }
             #_uf_close { background:none; border:none; cursor:pointer; color:#94a3b8;
@@ -47,7 +47,7 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
                 font-size:.7rem; font-weight:800; color:#64748b; text-transform:uppercase;
                 letter-spacing:.08em; margin-bottom:14px; }
             .uf-section-title::after { content:''; flex:1; height:1px; background:#f1f5f9; }
-            .uf-section-title i { color:#c2410c; font-size:.8rem; }
+            .uf-section-title i { color:var(--color-secondary); font-size:.8rem; }
 
             .uf-grid  { display:grid; gap:12px; }
             .uf-col2  { grid-template-columns:1fr 1fr; }
@@ -66,8 +66,8 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
                 transition:border-color .18s, box-shadow .18s, background .18s; }
             .uf-input.has-pre { padding-left:34px; }
             .uf-input.has-suf { padding-right:38px; }
-            .uf-input:focus { border-color:#c2410c; background:#fff;
-                box-shadow:0 0 0 3px rgba(194,65,12,.1); }
+            .uf-input:focus { border-color:var(--color-secondary); background:#fff;
+                box-shadow:0 0 0 3px rgba(255, 140, 66, .1); }
             .uf-input:hover:not(:focus) { border-color:#cbd5e1; }
             select.uf-input { cursor:pointer; }
 
@@ -105,9 +105,9 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
                 border:1.5px solid #e2e8f0; cursor:pointer; transition:all .15s; }
             .uf-btn-cancel:hover { background:#f1f5f9; border-color:#cbd5e1; }
             .uf-btn-submit { padding:10px 26px; border-radius:9px;
-                background:linear-gradient(135deg,#c2410c,#ea580c);
+                background:linear-gradient(135deg,var(--color-secondary),#ea580c);
                 color:#fff; font-weight:700; font-size:.85rem; border:none;
-                cursor:pointer; box-shadow:0 4px 14px rgba(194,65,12,.3);
+                cursor:pointer; box-shadow:0 4px 14px rgba(255, 140, 66, .3);
                 transition:opacity .15s, transform .15s; display:flex; align-items:center; gap:7px; }
             .uf-btn-submit:hover { opacity:.9; transform:translateY(-1px); }
             .uf-btn-submit:disabled { opacity:.6; cursor:not-allowed; transform:none; }

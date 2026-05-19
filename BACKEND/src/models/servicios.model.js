@@ -28,13 +28,14 @@ const servicio = {
             Duracion,
             CantidadMaximaPersonas,
             Costo,
-            Estado
+            Estado,
+            imagen_url
         } = servicio;
 
         const sql = `
             INSERT INTO servicio
-            (NombreServicio, Descripcion, Duracion, CantidadMaximaPersonas, Costo, Estado)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (NombreServicio, Descripcion, Duracion, CantidadMaximaPersonas, Costo, Estado, imagen_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
 
         const [result] = await db.query(sql, [
@@ -43,7 +44,8 @@ const servicio = {
             Duracion,
             CantidadMaximaPersonas,
             Costo,
-            Estado
+            Estado,
+            imagen_url || null
         ]);
 
         return result;
@@ -58,12 +60,13 @@ const servicio = {
             Duracion,
             CantidadMaximaPersonas,
             Costo,
-            Estado
+            Estado,
+            imagen_url
         } = servicio;
 
         const sql = `
             UPDATE servicio
-            SET NombreServicio=?, Descripcion=?, Duracion=?, CantidadMaximaPersonas=?, Costo=?, Estado=?
+            SET NombreServicio=?, Descripcion=?, Duracion=?, CantidadMaximaPersonas=?, Costo=?, Estado=?, imagen_url=?
             WHERE IDServicio=?
         `;
 
@@ -74,6 +77,7 @@ const servicio = {
             CantidadMaximaPersonas,
             Costo,
             Estado,
+            imagen_url ?? null,
             id
         ]);
 

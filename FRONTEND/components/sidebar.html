@@ -1,7 +1,7 @@
 <!-- SIDEBAR - Menú Lateral -->
 <aside id="sidebar"
     class="fixed top-0 left-0 h-screen sidebar-shell sidebar-open
-           flex flex-col overflow-y-auto overflow-x-hidden
+           flex flex-col overflow-y-auto overflow-x-visible
            shadow-[4px_0_20px_rgba(0,0,0,0.3)] transition-[width] duration-300">
 
     <!-- Header: visible siempre -->
@@ -35,7 +35,7 @@
         <ul class="list-none p-0 m-0 space-y-1.5">
 
             <li class="sidebar-item" data-module="dashboard">
-                <a href="#" onclick="cargarSeccion('dashboard', event)"
+                <a href="#" onclick="cargarSeccion('dashboard', event)" data-tooltip="Dashboard" title="Dashboard"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -51,7 +51,7 @@
             </li>
 
             <li class="sidebar-item" data-module="habitaciones">
-                <a href="#" onclick="cargarSeccion('administrar-habitaciones', event)"
+                <a href="#" onclick="cargarSeccion('administrar-habitaciones', event)" data-tooltip="Habitaciones" title="Habitaciones"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -67,7 +67,7 @@
             </li>
 
             <li class="sidebar-item" data-module="paquetes">
-                <a href="#" onclick="cargarSeccion('paquetes', event)"
+                <a href="#" onclick="cargarSeccion('paquetes', event)" data-tooltip="Paquetes" title="Paquetes"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -83,7 +83,7 @@
             </li>
 
             <li class="sidebar-item" data-module="servicios">
-                <a href="#" onclick="cargarSeccion('servicios', event)"
+                <a href="#" onclick="cargarSeccion('servicios', event)" data-tooltip="Servicios" title="Servicios"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -99,7 +99,7 @@
             </li>
 
             <li class="sidebar-item" data-module="usuarios">
-                <a href="#" onclick="cargarSeccion('usuarios', event)"
+                <a href="#" onclick="cargarSeccion('usuarios', event)" data-tooltip="Usuarios" title="Usuarios"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -115,7 +115,7 @@
             </li>
 
             <li class="sidebar-item" data-module="clientes">
-                <a href="#" onclick="cargarSeccion('clientes', event)"
+                <a href="#" onclick="cargarSeccion('clientes', event)" data-tooltip="Clientes" title="Clientes"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -131,7 +131,7 @@
             </li>
 
             <li class="sidebar-item" data-module="roles">
-                <a href="#" onclick="cargarSeccion('roles', event)"
+                <a href="#" onclick="cargarSeccion('roles', event)" data-tooltip="Roles" title="Roles"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -147,7 +147,7 @@
             </li>
 
             <li class="sidebar-item" data-module="reservas">
-                <a href="#" onclick="cargarSeccion('reservas', event)"
+                <a href="#" onclick="cargarSeccion('reservas', event)" data-tooltip="Reservas" title="Reservas"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -163,7 +163,7 @@
             </li>
 
             <li class="sidebar-item" data-module="perfil">
-                <a href="#" onclick="cargarSeccion('perfil', event)"
+                <a href="#" onclick="cargarSeccion('perfil', event)" data-tooltip="Mi Perfil" title="Mi Perfil"
                           class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
                               py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
                               bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
@@ -240,6 +240,8 @@
     #sidebar .sidebar-link {
         padding-top: 0.625rem !important;
         padding-bottom: 0.625rem !important;
+        width: 100%;
+        min-height: 3.1rem;
     }
 
     #sidebar .sidebar-label {
@@ -248,12 +250,92 @@
 
     #sidebar:not(.sidebar-open) {
         width: 5rem;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: visible;
     }
 
     #sidebar:not(.sidebar-open) .sidebar-nav {
         display: block;
-        padding-top: 0.35rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.35rem;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-nav ul {
+        padding-bottom: 0.5rem;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-item {
+        margin-top: 0.15rem !important;
+        display: flex;
+        justify-content: center;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link {
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+        text-align: center;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-label {
+        display: none !important;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link > span:first-child {
+        margin: 0 auto;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link {
+        position: relative;
+        justify-content: center;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link > span:first-child {
+        margin: 0 auto;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 14px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(7, 16, 22, 0.95);
+        color: #fff;
+        font-size: 0.74rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 0.45rem 0.7rem;
+        border-radius: 10px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 2005;
+        box-shadow: 0 10px 22px rgba(0,0,0,.35);
+        transition: opacity .15s ease, transform .15s ease;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link::before {
+        content: '';
+        position: absolute;
+        left: calc(100% + 6px);
+        top: 50%;
+        transform: translateY(-50%);
+        border-width: 6px 6px 6px 0;
+        border-style: solid;
+        border-color: transparent rgba(7, 16, 22, 0.95) transparent transparent;
+        opacity: 0;
+        transition: opacity .15s ease, transform .15s ease;
+        z-index: 2004;
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link:hover::after {
+        opacity: 1;
+        transform: translateY(-50%) translateX(4px);
+    }
+
+    #sidebar:not(.sidebar-open) .sidebar-link:hover::before {
+        opacity: 1;
+        transform: translateY(-50%) translateX(2px);
     }
 
     #sidebar:not(.sidebar-open) .sidebar-nav ul {

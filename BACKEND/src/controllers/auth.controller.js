@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 const EmailService = require("../services/email.service");
 const { login: loginService } = require("../services/auth.services");
 
@@ -250,15 +251,17 @@ exports.register = async (req, res) => {
             return res.status(409).json({ error: 'Ya existe un usuario con ese correo o documento' });
         }
 
+        const hashPass = await bcrypt.hash(Contrasena, 10);
+
         const [result] = await db.query(
             `INSERT INTO usuarios
-                (NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive, requiereCambioPassword)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
             [
                 NombreUsuario,
                 Apellido || null,
                 Email,
-                Contrasena,
+                hashPass,
                 TipoDocumento || null,
                 NumeroDocumento || null,
                 Telefono || null,
@@ -269,7 +272,11 @@ exports.register = async (req, res) => {
             ]
         );
 
-        res.status(201).json({ 
+        // REG1: Send welcome email in background
+        EmailService.enviarBienvenida({ usuarioNombre: NombreUsuario, usuarioEmail: Email })
+            .catch(err => console.error("Error enviando bienvenida:", err.message));
+
+        res.status(201).json({
             success: true,
             mensaje: 'Usuario registrado exitosamente',
             usuario: {
@@ -306,10 +313,11 @@ exports.forgotPassword = async (req, res) => {
 
         const usuario = usuarios[0];
         const nuevaContrasena = crypto.randomBytes(4).toString("hex");
+        const hashTemp = await bcrypt.hash(nuevaContrasena, 10);
 
         await db.query(
-            "UPDATE usuarios SET Contrasena = ? WHERE IDUsuario = ?",
-            [nuevaContrasena, usuario.IDUsuario]
+            "UPDATE usuarios SET Contrasena = ?, requiereCambioPassword = 1 WHERE IDUsuario = ?",
+            [hashTemp, usuario.IDUsuario]
         );
 
         const correoEnviado = await EmailService.enviarRecuperacionContrasena({

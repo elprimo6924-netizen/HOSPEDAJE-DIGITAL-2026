@@ -4,31 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil - Hospedaje Digital</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/styles.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } };</script>
+
     <style>
-        /* Mantenemos solo las animaciones y estados de visibilidad que Tailwind no maneja por defecto en clases estáticas */
-        .hidden { display: none; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
         input:disabled, select:disabled { cursor: not-allowed; background-color: #f1f5f9; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800">
+<body>
     <!-- Sidebar placeholder -->
     <div id="sidebar-placeholder"></div>
 
-    <div id="main-wrapper" class="main-wrapper flex flex-col min-h-screen">
+    <div id="main-wrapper" class="main-wrapper">
         <!-- Header y Navegación -->
-        <header class="bg-hospedaje-green text-white p-4 shadow-md">
-            <div class="container mx-auto flex items-center gap-3">
-                <i class="fa-solid fa-hotel text-xl"></i>
-                <h1 class="text-lg font-semibold tracking-tight">Hospedaje Digital</h1>
-            </div>
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
         </header>
 
-        <main class="flex-grow p-6 md:p-12">
+        <main>
             <div class="max-w-4xl mx-auto">
                 <!-- Encabezado de Perfil -->
                 <div class="text-center mb-10">

@@ -1,4 +1,5 @@
 const ServiciosService = require("../services/servicios.service");
+const db = require("../config/db");
 
 const ServiciosController = {
 
@@ -17,6 +18,24 @@ const ServiciosController = {
             res.status(500).json({
                 error: "Error obteniendo servicios"
             });
+
+        }
+
+    },
+
+    listarActivos: async (req, res) => {
+
+        try {
+
+            const [rows] = await db.query(
+                "SELECT * FROM servicio WHERE Estado = 1 ORDER BY NombreServicio ASC"
+            );
+
+            res.json(rows);
+
+        } catch (error) {
+
+            res.status(500).json({ error: "Error obteniendo servicios activos" });
 
         }
 
@@ -94,7 +113,19 @@ crear: async (req, res) => {
 
         try {
 
-            const data = await ServiciosService.eliminar(req.params.id);
+            const id = req.params.id;
+
+            const [[{ totalReservas }]] = await db.query(
+                `SELECT COUNT(*) AS totalReservas FROM detallereservaservicio WHERE IDServicio = ?`,
+                [id]
+            );
+            if (totalReservas > 0) {
+                return res.status(409).json({
+                    error: "No se puede eliminar este servicio porque está asociado a reservas existentes."
+                });
+            }
+
+            const data = await ServiciosService.eliminar(id);
 
             res.json({
                 mensaje: "Servicio eliminado",

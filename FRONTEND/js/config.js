@@ -19,7 +19,10 @@ const CONFIG = {
     
     // Configuración de la aplicación
     APP_NAME: 'Hospedaje Digital',
-    VERSION: '1.0.0'
+    VERSION: '1.0.0',
+
+    // Número WhatsApp para botón flotante (formato internacional sin + ni espacios)
+    WHATSAPP_NUMBER: '573000000000'
 };
 
 // Exportar configuración (para uso en módulos)

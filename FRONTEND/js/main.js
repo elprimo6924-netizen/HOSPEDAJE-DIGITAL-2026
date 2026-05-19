@@ -5,6 +5,26 @@
 
 window.API_URL = window.API_URL || ((typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : 'http://localhost:3000/api');
 
+// Fondo del main con Tailwind (azul oscuro del dashboard)
+(() => {
+    document.querySelectorAll('main').forEach(el => {
+        el.classList.add('bg-[#0f172a]');
+    });
+})();
+
+// Titulos estandarizados en naranja (Tailwind)
+(() => {
+    const titleSelectors = [
+        '.mod-toolbar-title',
+        '.db-title',
+        'main h4',
+    ];
+    document.querySelectorAll(titleSelectors.join(',')).forEach(el => {
+        el.classList.add('!text-[#ff8c42]');
+    });
+})();
+
+
 // Cargar Oswald (fuente gótica condensada para el sidebar)
 if (!document.getElementById('_oswald_font')) {
     const link = document.createElement('link');
@@ -133,18 +153,35 @@ async function loadSidebarComponent(containerId = 'sidebar-placeholder') {
 }
 
 /**
- * Filtra los elementos del sidebar basado en los permisos del usuario
+ * Filtra los elementos del sidebar basado en los permisos del rol del usuario.
+ * Módulos sin permiso equivalente (perfil, clientes) siempre son visibles.
+ * IDRol=1 (Administrador) siempre ve todo.
  */
 async function filterSidebarByPermissions() {
+    // Mapeo: nombre de permiso en BD → data-module del sidebar
+    const PERM_TO_MODULE = {
+        'dashboard':    'dashboard',
+        'usuarios':     'usuarios',
+        'roles':        'roles',
+        'habitaciones': 'habitaciones',
+        'servicios':    'servicios',
+        'reservas':     'reservas',
+        'paquetes':     'paquetes',
+        'clientes':     'clientes',
+    };
+    // Módulos que siempre se muestran sin importar permisos
+    const ALWAYS_VISIBLE = new Set(['perfil', 'dashboard']);
+
     try {
         const session = getStoredSession();
         if (!session) return;
 
-        // Obtener el rol del usuario actual
         const user = session.usuario;
         if (!user || !user.IDRol) return;
 
-        // Obtener los permisos del rol
+        // Administrador ve todo
+        if (Number(user.IDRol) === 1) return;
+
         const apiUrl = window.API_URL || 'http://localhost:3000/api';
         const response = await fetch(`${apiUrl}/roles/${user.IDRol}`, {
             headers: { 'Authorization': `Bearer ${session.token}` }
@@ -153,36 +190,67 @@ async function filterSidebarByPermissions() {
         if (!response.ok) return;
 
         const rol = await response.json();
-        let permisos = [];
-        
-        // Procesar permisos
-        if (rol.Permisos) {
-            permisos = typeof rol.Permisos === 'string' ? JSON.parse(rol.Permisos) : rol.Permisos;
-        }
 
-        // Administrador (IDRol=1) ve todos los módulos siempre
-        if (user.IDRol === 1) return;
+        // permisos es array de objetos { id, nombre, estado, descripcion }
+        const permisosArray = rol.permisos || rol.Permisos || [];
+        const permisos = Array.isArray(permisosArray) ? permisosArray : [];
 
-        // Si hay permisos definidos, filtrar elementos del sidebar
-        if (permisos && Array.isArray(permisos) && permisos.length > 0) {
-            const sidebarItems = document.querySelectorAll('.sidebar-item[data-module]');
-            sidebarItems.forEach(item => {
-                const module = item.getAttribute('data-module');
-                if (module && !permisos.includes(module)) {
-                    item.style.display = 'none';
-                }
-            });
-        }
-        // Si no hay permisos, mostrar todos (compatibilidad hacia atrás)
+        // Construir set de módulos permitidos
+        const modulosPermitidos = new Set();
+        permisos.forEach(p => {
+            const nombre = (p.nombre || p.NombrePermisos || String(p)).toLowerCase().trim();
+            const modulo = PERM_TO_MODULE[nombre];
+            if (modulo) modulosPermitidos.add(modulo);
+        });
+
+        // Si el rol no tiene ningún permiso definido, mostrar todo (evitar bloqueo total)
+        if (modulosPermitidos.size === 0) return;
+
+        document.querySelectorAll('.sidebar-item[data-module]').forEach(item => {
+            const modulo = item.getAttribute('data-module');
+            if (!modulo) return;
+            if (ALWAYS_VISIBLE.has(modulo)) return;
+            if (!modulosPermitidos.has(modulo)) {
+                item.style.display = 'none';
+            }
+        });
     } catch (error) {
         console.warn('No se pudo filtrar el sidebar:', error);
-        // En caso de error, mostrar todos los elementos
     }
 }
 
 function cargarSeccion(seccion, event) {
     if (event) {
         event.preventDefault();
+    }
+
+    const page = window.location.pathname.split('/').pop().replace('.html', '');
+    const currentToModule = {
+        dashboard: 'dashboard',
+        habitaciones: 'habitaciones',
+        servicios: 'servicios',
+        paquetes: 'paquetes',
+        usuarios: 'usuarios',
+        clientes: 'clientes',
+        roles: 'roles',
+        perfil: 'perfil',
+        reservas: 'reservas',
+    };
+    const currentModule = currentToModule[page];
+    const targetModule = seccion === 'administrar-habitaciones' ? 'habitaciones'
+        : seccion === 'administrar-servicios' ? 'servicios'
+        : seccion;
+
+    if (currentModule && targetModule === currentModule) {
+        const sidebar = document.getElementById('sidebar');
+        const mainWrapper = document.getElementById('main-wrapper');
+        if (sidebar) {
+            const willOpen = !sidebar.classList.contains('sidebar-open');
+            sidebar.classList.toggle('sidebar-open');
+            mainWrapper?.classList.toggle('sidebar-open');
+            try { localStorage.setItem('sidebar_open', String(willOpen)); } catch (e) { /* no-op */ }
+        }
+        return;
     }
 
     if (seccion === 'dashboard') {
@@ -487,6 +555,7 @@ async function initSidebarControls() {
         overlay.classList.remove('active');
         clearTimeout(_openTimer);
         _openTimer = setTimeout(showLabels, 0);
+        try { localStorage.setItem('sidebar_open', 'true'); } catch (e) { /* no-op */ }
     }
 
     function closeSidebar() {
@@ -495,6 +564,7 @@ async function initSidebarControls() {
         delete sidebar.dataset.manualOpen;
         sidebar.classList.remove('sidebar-open');
         mainWrapper?.classList.remove('sidebar-open');
+        try { localStorage.setItem('sidebar_open', 'false'); } catch (e) { /* no-op */ }
     }
 
     toggle.addEventListener('click', () => {
@@ -509,7 +579,15 @@ async function initSidebarControls() {
         if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) closeSidebar();
     });
 
-    openSidebar(false);
+    const stored = (() => {
+        try { return localStorage.getItem('sidebar_open'); } catch (e) { return null; }
+    })();
+
+    if (stored === 'false') {
+        closeSidebar();
+    } else {
+        openSidebar(false);
+    }
 }
 
 /* ── Soft Alert ── */

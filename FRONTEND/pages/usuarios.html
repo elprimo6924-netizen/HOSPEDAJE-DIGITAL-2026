@@ -8,33 +8,20 @@
 
     <title>Gestión de Usuarios - Hospedaje Digital</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="stylesheet" href="../css/reset.css" />
-
     <link rel="stylesheet" href="../css/variables.css" />
-
     <link rel="stylesheet" href="../css/styles.css" />
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              "hospedaje-green": "#064e3b",
-
-              "hospedaje-blue": "#2563eb",
-
-              "hospedaje-orange": "#ea580c",
-            },
-          },
-        },
-      };
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } };</script>
 
     <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+      body { font-family: var(--font-family); display: block !important; }
+      #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
+      main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+      footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
       /* Estilo para el Switch de Estado */
 
       .switch {
@@ -62,7 +49,7 @@
         right: 0;
         bottom: 0;
 
-        background-color: #ef4444;
+        background-color: #cbd5e1;
         transition: 0.4s;
 
         border-radius: 34px;
@@ -97,29 +84,20 @@
 
   <body>
     <div id="sidebar-placeholder"></div>
-    <div id="main-wrapper" class="main-wrapper flex flex-col min-h-screen" style="background-color: #f1f5f9; color: #1e293b; font-family: sans-serif">
-      <header class="bg-hospedaje-green text-white p-4 shadow-md">
-        <div class="container mx-auto flex items-center gap-3">
-          <i class="fa-solid fa-hotel text-xl"></i>
-
-          <h1 class="text-lg font-semibold tracking-tight">Hospedaje Digital</h1>
-        </div>
+    <div id="main-wrapper" class="main-wrapper">
+      <header>
+        <nav>
+          <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+        </nav>
       </header>
 
-      <main class="flex-1 p-4 md:p-8">
-        <!-- Encabezado con botón estilo Habitaciones -->
-
-        <div class="flex justify-between items-start mb-6">
-          <div>
-            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-users text-hospedaje-green"></i>
-              Gestión de Usuarios
-            </h2>
-
-            <p class="text-slate-500 text-sm mt-1">Administra el personal, sus roles y estados de acceso.</p>
+      <main>
+        <div class="mod-toolbar">
+          <div class="mod-toolbar-left">
+            <h2 class="mod-toolbar-title"><i class="fa-solid fa-users-gear mod-icon" aria-hidden="true"></i> Gestión de Usuarios</h2>
+            <p class="mod-toolbar-subtitle">Administra el personal, sus roles y estados de acceso.</p>
           </div>
-
-          <button id="btn-crear-usuario" class="bg-gradient-to-r from-[#c2410c] to-[#ea580c] hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all uppercase text-xs tracking-widest">+ NUEVO USUARIO</button>
+          <button id="btn-crear-usuario" class="btn-mod-nuevo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Usuario</button>
         </div>
 
         <!-- Buscador -->
@@ -129,11 +107,11 @@
             <div class="relative flex-1">
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
 
-              <input type="text" id="busqueda-usuarios" placeholder="Buscar por nombre, email o documento..." autocomplete="off" class="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-hospedaje-green focus:outline-none text-slate-700" />
+              <input type="text" id="busqueda-usuarios" placeholder="Buscar por nombre, email o documento..." autocomplete="off" class="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--color-secondary)] focus:outline-none text-slate-700" />
             </div>
 
             <div class="flex gap-2">
-              <button id="id-btn-buscar" class="bg-hospedaje-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
+              <button id="id-btn-buscar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
 
               <button id="btn-limpiar" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Limpiar</button>
             </div>
@@ -170,7 +148,7 @@
                   <td class="p-4 text-center">
                     <!-- 1. Lista desplegable de Rol -->
 
-                    <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-hospedaje-green outline-none text-slate-700">
+                    <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-[var(--color-secondary)] outline-none text-slate-700">
                       <option value="admin">example</option>
 
                       <option value="recep">example</option>
@@ -219,7 +197,7 @@
         </div>
       </main>
 
-      <footer class="bg-hospedaje-green text-white/40 text-center py-4 text-[10px] uppercase tracking-widest">&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</footer>
+      <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
     </div>
 
     <!-- Scripts -->

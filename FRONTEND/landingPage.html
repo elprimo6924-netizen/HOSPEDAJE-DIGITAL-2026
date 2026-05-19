@@ -42,7 +42,6 @@
                 <a href="#inicio" class="hover:text-primary transition-colors">Inicio</a>
                 <a href="#habitaciones" class="hover:text-primary transition-colors">Habitaciones</a>
                 <a href="#nosotros" class="hover:text-primary transition-colors">Nosotros</a>
-                <a href="#contacto" class="hover:text-primary transition-colors">Contacto</a>
             </div>
 
             <div class="flex items-center gap-3">
@@ -148,66 +147,6 @@
         </div>
     </section>
 
-    <!-- CONTACTO -->
-    <section id="contacto" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid lg:grid-cols-2 gap-16 items-start">
-                <div>
-                    <h2 class="text-4xl font-bold mb-6 tracking-tight">¿Necesitas ayuda?</h2>
-                    <p class="text-gray-500 text-lg mb-12 leading-relaxed">Ponte en contacto con nuestro equipo de soporte. Responderemos a tu consulta en menos de 24 horas.</p>
-                    
-                    <div class="space-y-8">
-                        <div class="flex items-center gap-6">
-                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-inner">
-                                <i class="fa-solid fa-phone"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400">Teléfono</h4>
-                                <p class="text-lg font-semibold text-secondary">+57 300 000 0000</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-6">
-                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-inner">
-                                <i class="fa-solid fa-envelope"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400">Email</h4>
-                                <p class="text-lg font-semibold text-secondary">contacto@hospedaje.com</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-6">
-                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-inner">
-                                <i class="fa-solid fa-map-pin"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold uppercase tracking-widest text-gray-400">Dirección</h4>
-                                <p class="text-lg font-semibold text-secondary">Calle 123, Ciudad Digital</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <form id="contact-form" class="bg-slate-50 p-8 rounded-3xl border border-gray-100 shadow-sm">
-                    <div class="grid sm:grid-cols-2 gap-6 mb-6">
-                        <div class="flex flex-col gap-2">
-                            <label class="text-xs font-bold uppercase text-gray-400 ml-1">Nombre</label>
-                            <input type="text" placeholder="Ej. Juan Pérez" required class="px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <label class="text-xs font-bold uppercase text-gray-400 ml-1">Correo</label>
-                            <input type="email" placeholder="juan@correo.com" required class="px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all">
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2 mb-8">
-                        <label class="text-xs font-bold uppercase text-gray-400 ml-1">Mensaje</label>
-                        <textarea placeholder="¿En qué podemos ayudarte?" required class="px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all min-h-[150px] resize-none"></textarea>
-                    </div>
-                    <button type="submit" class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">Enviar mensaje</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
     <!-- FOOTER -->
     <footer class="py-12 border-t border-gray-100">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
@@ -225,6 +164,26 @@
             </div>
         </div>
     </footer>
+
+    <!-- BOTÓN FLOTANTE WHATSAPP -->
+    <a id="wa-fab" href="#" target="_blank" rel="noopener"
+       aria-label="Contáctanos por WhatsApp"
+       title="Contáctanos"
+       style="
+           position:fixed; bottom:1.75rem; right:1.75rem; z-index:9999;
+           width:56px; height:56px; border-radius:50%;
+           background:#25D366; color:#fff;
+           display:flex; align-items:center; justify-content:center;
+           font-size:1.55rem;
+           box-shadow:0 4px 18px rgba(37,211,102,.45);
+           transition:transform .2s, box-shadow .2s;
+           text-decoration:none;
+       "
+       onmouseenter="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(37,211,102,.6)'"
+       onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(37,211,102,.45)'"
+    >
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
     <!-- SCRIPTS -->
     <script src="js/config.js"></script>
@@ -280,12 +239,13 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', loadHabitaciones);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHabitaciones();
 
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('¡Mensaje enviado con éxito! Nos comunicaremos pronto.');
-            this.reset();
+            const wn = (typeof CONFIG !== 'undefined' && CONFIG.WHATSAPP_NUMBER)
+                ? CONFIG.WHATSAPP_NUMBER
+                : '573000000000';
+            document.getElementById('wa-fab').href = `https://wa.me/${wn}`;
         });
     </script>
 </body>

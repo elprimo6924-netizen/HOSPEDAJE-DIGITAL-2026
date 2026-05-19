@@ -105,6 +105,10 @@ exports.create = async (req, res) => {
             return res.status(400).json({ error: "El nombre del rol es obligatorio" });
         }
 
+        if (!Array.isArray(Permisos) || Permisos.length === 0) {
+            return res.status(400).json({ error: "Debes asignar al menos un permiso al rol antes de guardarlo." });
+        }
+
         const [result] = await db.query(
             "INSERT INTO roles (Nombre, Estado, IsActive) VALUES (?, ?, ?)",
             [Nombre, Estado || "Activo", IsActive === false ? 0 : 1]

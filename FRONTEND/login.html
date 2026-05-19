@@ -161,7 +161,11 @@
                             loginBtnText.textContent = '¡Bienvenido!';
                             loginBtnIcon.className = 'fa-solid fa-check';
                             setTimeout(() => {
-                                window.location.href = "pages/dashboard.html";
+                                if (result.data?.usuario?.requiereCambioPassword) {
+                                    window.location.href = "pages/cambiar-contrasena.html";
+                                } else {
+                                    window.location.href = "pages/dashboard.html";
+                                }
                             }, 500);
                         } else {
                             errorContainer.classList.remove("hidden");

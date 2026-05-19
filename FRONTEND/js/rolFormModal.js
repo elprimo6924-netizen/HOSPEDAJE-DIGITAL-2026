@@ -343,6 +343,15 @@ async function saveRol(token, onSave) {
         const permisos = Array.from(form.querySelectorAll('.rf-perm-cb:checked'))
             .map(cb => Number(cb.value));
 
+        if (currentModeRol === 'create' && permisos.length === 0) {
+            if (typeof showAlert === 'function') showAlert('Debes asignar al menos un permiso al rol antes de guardarlo.', 'warning');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-plus"></i> Crear rol';
+            }
+            return;
+        }
+
         const data = {
             Nombre:   nombre,
             IsActive: isActive,

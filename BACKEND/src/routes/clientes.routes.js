@@ -3,6 +3,7 @@ const router = express.Router();
 const clientesController = require("../controllers/clientes.controller");
 
 router.get("/", clientesController.getAll);
+router.get("/activos", clientesController.getActivos);
 router.get("/search", clientesController.search);
 router.get("/buscar", clientesController.buscarPorDocumento);
 router.get("/:id", clientesController.obtenerPorId);

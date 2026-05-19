@@ -45,25 +45,17 @@
         <main>
             <!-- Sección de Administración de Clientes -->
             <section id="seccion-administrar-clientes" class="crud-clientes-section">
-                <div class="crud-clientes-toolbar">
-                    <button type="button" class="btn-accion-crud btn-accion-principal" id="btn-nuevo-cliente-admin">+ NUEVO CLIENTE</button>
-                    <div id="mensaje-cliente-admin" class="crud-clientes-mensaje" aria-live="polite"></div>
+                <div class="mod-toolbar">
+                    <div class="mod-toolbar-left">
+                        <h2 class="mod-toolbar-title"><i class="fa-solid fa-users mod-icon" aria-hidden="true"></i> Gestión de Clientes</h2>
+                        <p class="mod-toolbar-subtitle">Administra el registro y datos de contacto de los clientes.</p>
+                    </div>
+                    <div class="mod-toolbar-actions">
+                        <div id="mensaje-cliente-admin" class="crud-clientes-mensaje" aria-live="polite"></div>
+                        <button type="button" class="btn-mod-nuevo" id="btn-nuevo-cliente-admin"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Cliente</button>
+                    </div>
                 </div>
 
-                <div class="crud-clientes-summary">
-                    <article>
-                        <span>Total</span>
-                        <strong id="clientes-admin-total">0</strong>
-                    </article>
-                    <article>
-                        <span>Activos</span>
-                        <strong id="clientes-admin-activos">0</strong>
-                    </article>
-                    <article>
-                        <span>Inactivos</span>
-                        <strong id="clientes-admin-inactivos">0</strong>
-                    </article>
-                </div>
 
                 <div class="crud-clientes-layout">
                     <section class="crud-clientes-panel crud-clientes-panel-lista">
@@ -82,7 +74,7 @@
                             <table class="crud-clientes-tabla">
                                 <thead>
                                     <tr>
-                                        <th>Documento</th>
+                                        <th>Nro. Documento</th>
                                         <th>Nombre</th>
                                         <th>Apellido</th>
                                         <th>Email</th>
@@ -115,33 +107,33 @@
                         <input type="hidden" id="cliente-admin-id">
 
                         <label>
-                            <span>Documento <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="text" id="cliente-admin-documento" required maxlength="50" placeholder="Ej. 1234567890">
+                            <span>Nro. Documento <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="text" id="cliente-admin-documento" required maxlength="20" placeholder="Ej. 1234567890">
                         </label>
 
                         <label>
                             <span>Nombre <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="text" id="cliente-admin-nombre" required maxlength="50" placeholder="Ej. Carlos">
+                            <input type="text" id="cliente-admin-nombre" required maxlength="100" placeholder="Ej. Carlos">
                         </label>
 
                         <label>
                             <span>Apellido</span>
-                            <input type="text" id="cliente-admin-apellido" maxlength="50" placeholder="Ej. López">
+                            <input type="text" id="cliente-admin-apellido" maxlength="100" placeholder="Ej. López">
                         </label>
 
                         <label>
                             <span>Dirección</span>
-                            <input type="text" id="cliente-admin-direccion" maxlength="50" placeholder="Ej. Calle 10 # 12-34">
+                            <input type="text" id="cliente-admin-direccion" maxlength="200" placeholder="Ej. Calle 10 # 12-34">
                         </label>
 
                         <label>
                             <span>Email <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="email" id="cliente-admin-email" required maxlength="50" placeholder="Ej. cliente@email.com">
+                            <input type="email" id="cliente-admin-email" required maxlength="150" placeholder="Ej. cliente@email.com">
                         </label>
 
                         <label>
                             <span>Teléfono</span>
-                            <input type="text" id="cliente-admin-telefono" maxlength="50" placeholder="Ej. 3001234567">
+                            <input type="text" id="cliente-admin-telefono" maxlength="20" placeholder="Ej. 3001234567">
                         </label>
 
                         <label>
@@ -152,11 +144,14 @@
                             </select>
                         </label>
 
-                        <label>
-                            <span>Rol</span>
-                            <select id="cliente-admin-idrol" required>
-                                <option value="">Selecciona un rol</option>
-                            </select>
+                        <label id="label-cliente-contrasena" style="display:none">
+                            <span>Contraseña temporal <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                            <input type="password" id="cliente-admin-contrasena" minlength="8" maxlength="72"
+                                   placeholder="Mín. 8 caracteres — el cliente deberá cambiarla al primer ingreso"
+                                   autocomplete="new-password">
+                            <small class="crud-clientes-note" style="color:var(--color-secondary)">
+                                El cliente deberá cambiar esta contraseña en su primer inicio de sesión.
+                            </small>
                         </label>
 
                         <div class="crud-clientes-form-actions">
@@ -213,6 +208,20 @@
                 if (typeof cargarClientesAdmin === 'function') {
                     cargarClientesAdmin();
                 }
+
+                /* Mostrar campo contraseña solo al crear (no al editar) */
+                const btnNuevoCliente = document.getElementById('btn-nuevo-cliente-admin');
+                if (btnNuevoCliente) {
+                    btnNuevoCliente.addEventListener('click', () => {
+                        const labelPass = document.getElementById('label-cliente-contrasena');
+                        if (labelPass) labelPass.style.display = 'block';
+                    }, true);
+                }
+                /* Al editar se oculta (cargarClienteEnFormularioAdmin lo manejará via JS) */
+                document.addEventListener('cliente-editar', () => {
+                    const labelPass = document.getElementById('label-cliente-contrasena');
+                    if (labelPass) labelPass.style.display = 'none';
+                });
             } catch (error) {
                 console.error('Error en clientes.html:', error);
             }

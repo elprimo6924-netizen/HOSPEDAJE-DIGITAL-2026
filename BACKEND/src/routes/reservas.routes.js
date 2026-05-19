@@ -4,6 +4,7 @@ const router = express.Router();
 const reservasController = require("../controllers/reservas.controller");
 
 router.get("/", reservasController.obtener);
+router.get("/:id", reservasController.obtenerPorId);
 router.post("/", reservasController.crear);
 
 // ✅ Ruta que tu frontend está llamando

@@ -21,11 +21,11 @@
         /* ── Toolbar ── */
         .paq-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; margin-bottom:1.2rem; }
         .paq-title   { font-size:1.5rem; font-weight:800; color:#0f172a; margin:0; }
-        .paq-title span { color:#c2410c; }
+        .paq-title span { color:var(--color-secondary); }
 
         .btn-paq-nuevo {
             display:inline-flex; align-items:center; gap:.45rem;
-            padding:.7rem 1.4rem; background:#c2410c; color:#fff;
+            padding:.7rem 1.4rem; background:var(--color-secondary); color:#fff;
             border:none; border-radius:10px; font-size:.88rem; font-weight:700;
             cursor:pointer; letter-spacing:.02em; transition:background .2s, transform .15s;
         }
@@ -35,7 +35,7 @@
         .paq-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.4rem; }
         .paq-stat    { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 1px 4px rgba(0,0,0,.05); }
         .paq-stat-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#64748b; margin-bottom:.3rem; }
-        .paq-stat-value { font-size:2rem; font-weight:800; color:#c2410c; line-height:1; }
+        .paq-stat-value { font-size:2rem; font-weight:800; color:var(--color-secondary); line-height:1; }
         .paq-stat-value.green { color:#16a34a; }
         .paq-stat-value.gray  { color:#94a3b8; }
 
@@ -51,12 +51,12 @@
         }
         .paq-filtros input  { min-width:220px; }
         .paq-filtros select { min-width:150px; }
-        .paq-filtros input:focus, .paq-filtros select:focus { border-color:#c2410c; box-shadow:0 0 0 3px rgba(194,65,12,.1); }
+        .paq-filtros input:focus, .paq-filtros select:focus { border-color:var(--color-secondary); box-shadow:0 0 0 3px rgba(255, 140, 66, .1); }
 
         /* ── Tabla ── */
         .paq-tabla-wrap { overflow-x:auto; }
         .paq-tabla { width:100%; border-collapse:collapse; min-width:860px; }
-        .paq-tabla thead th { background:#f8fafc; color:#c2410c; text-align:left; padding:.85rem 1rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; border-bottom:1.5px solid #e2e8f0; white-space:nowrap; }
+        .paq-tabla thead th { background:#f8fafc; color:var(--color-secondary); text-align:left; padding:.85rem 1rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; border-bottom:1.5px solid #e2e8f0; white-space:nowrap; }
         .paq-tabla tbody td { padding:.85rem 1rem; border-bottom:1px solid #f1f5f9; vertical-align:middle; font-size:.875rem; color:#0f172a; }
         .paq-tabla tbody tr:hover td { background:#fafafa; }
         .paq-tabla tbody tr:last-child td { border-bottom:none; }
@@ -133,7 +133,7 @@
         .paq-modal-body { padding:1.5rem 1.6rem 1.8rem; }
         .paq-modal-nombre { font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:.3rem; }
         .paq-modal-precio { font-size:1.1rem; font-weight:800; color:#16a34a; margin-bottom:1rem; }
-        .paq-modal-desc   { font-size:.88rem; color:#475569; line-height:1.7; margin-bottom:1.2rem; padding:.8rem 1rem; background:#f8fafc; border-radius:10px; border-left:3px solid #c2410c; }
+        .paq-modal-desc   { font-size:.88rem; color:#475569; line-height:1.7; margin-bottom:1.2rem; padding:.8rem 1rem; background:#f8fafc; border-radius:10px; border-left:3px solid var(--color-secondary); }
         .paq-modal-grid   { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; }
         .paq-modal-field  { padding:.65rem .85rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; }
         .paq-modal-field span  { display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:#64748b; font-weight:700; margin-bottom:.2rem; }
@@ -152,10 +152,10 @@
         }
         .paq-form-section input:focus,
         .paq-form-section select:focus,
-        .paq-form-section textarea:focus { border-color:#c2410c; background:#fff; box-shadow:0 0 0 3px rgba(194,65,12,.09); }
+        .paq-form-section textarea:focus { border-color:var(--color-secondary); background:#fff; box-shadow:0 0 0 3px rgba(255, 140, 66, .09); }
         .paq-form-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }
         .paq-form-actions { display:flex; gap:.65rem; justify-content:flex-end; padding-top:1rem; border-top:1px solid #f1f5f9; margin-top:1rem; }
-        .btn-paq-guardar  { padding:.65rem 1.4rem; background:#c2410c; color:#fff; border:none; border-radius:9px; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .2s; }
+        .btn-paq-guardar  { padding:.65rem 1.4rem; background:var(--color-secondary); color:#fff; border:none; border-radius:9px; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .2s; }
         .btn-paq-guardar:hover  { background:#9a3412; }
         .btn-paq-cancelar { padding:.65rem 1.1rem; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:9px; font-size:.88rem; font-weight:600; cursor:pointer; }
 
@@ -166,7 +166,7 @@
         .pag-controls { display:flex; align-items:center; gap:.35rem; }
         .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#64748b; }
         .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e2e8f0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#0f172a; cursor:pointer; outline:none; }
-        .pag-per-page select:focus { border-color:#c2410c; }
+        .pag-per-page select:focus { border-color:var(--color-secondary); }
         .pag-btn {
             min-width:34px; height:34px; padding:0 .5rem;
             border:1.5px solid #e2e8f0; border-radius:8px;
@@ -174,8 +174,8 @@
             cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
             transition:all .15s;
         }
-        .pag-btn:hover:not(:disabled) { border-color:#c2410c; color:#c2410c; background:#fff7ed; }
-        .pag-btn.active  { background:#c2410c; color:#fff; border-color:#c2410c; }
+        .pag-btn:hover:not(:disabled) { border-color:var(--color-secondary); color:var(--color-secondary); background:#fff7ed; }
+        .pag-btn.active  { background:var(--color-secondary); color:#fff; border-color:var(--color-secondary); }
         .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
         .pag-btn.dots { cursor:default; border-color:transparent; background:transparent; }
 
@@ -189,7 +189,7 @@
             position:relative; bottom:-2px;
         }
         .img-tab:hover { color:#374151; }
-        .img-tab.active { background:#fff; color:#c2410c; border-color:#e2e8f0; border-bottom:2px solid #fff; }
+        .img-tab.active { background:#fff; color:var(--color-secondary); border-color:#e2e8f0; border-bottom:2px solid #fff; }
         .img-tab-content { display:none; }
         .img-tab-content.active { display:block; }
         .img-url-input {
@@ -197,18 +197,18 @@
             background:#fafafa; color:#0f172a; font-family:inherit; font-size:.88rem;
             outline:none; transition:border-color .2s;
         }
-        .img-url-input:focus { border-color:#c2410c; background:#fff; box-shadow:0 0 0 3px rgba(194,65,12,.09); }
+        .img-url-input:focus { border-color:var(--color-secondary); background:#fff; box-shadow:0 0 0 3px rgba(255, 140, 66, .09); }
         .img-dropzone {
             border:2px dashed #cbd5e1; border-radius:12px; background:#f8fafc;
             padding:1.6rem 1.2rem; text-align:center; cursor:pointer; transition:all .2s;
         }
-        .img-dropzone:hover, .img-dropzone.drag-over { border-color:#c2410c; background:#fff7ed; }
-        .img-dropzone i { font-size:2.2rem; color:#c2410c; margin-bottom:.4rem; display:block; }
+        .img-dropzone:hover, .img-dropzone.drag-over { border-color:var(--color-secondary); background:#fff7ed; }
+        .img-dropzone i { font-size:2.2rem; color:var(--color-secondary); margin-bottom:.4rem; display:block; }
         .img-dropzone p { font-size:.9rem; font-weight:700; color:#374151; margin:.25rem 0; }
         .img-dropzone span { font-size:.78rem; color:#94a3b8; }
         .btn-select-file {
             display:inline-flex; align-items:center; gap:.4rem; margin-top:.65rem;
-            padding:.45rem 1rem; background:#c2410c; color:#fff; border:none;
+            padding:.45rem 1rem; background:var(--color-secondary); color:#fff; border:none;
             border-radius:8px; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .2s;
         }
         .btn-select-file:hover { background:#9a3412; }
@@ -244,33 +244,22 @@
         </header>
 
         <main>
-            <div class="paq-toolbar">
-                <h2 class="paq-title">Gestión de <span>Paquetes</span></h2>
-                <button class="btn-paq-nuevo" id="btn-nuevo-paquete">
-                    <i class="fa-solid fa-plus"></i> Nuevo Paquete
+            <div class="mod-toolbar">
+                <div class="mod-toolbar-left">
+                    <h2 class="mod-toolbar-title"><i class="fa-solid fa-box-open mod-icon" aria-hidden="true"></i> Gestión de Paquetes</h2>
+                    <p class="mod-toolbar-subtitle">Combina habitaciones y servicios en paquetes atractivos.</p>
+                </div>
+                <button class="btn-mod-nuevo" id="btn-nuevo-paquete">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Paquete
                 </button>
             </div>
 
             <div id="paq-msg" class="paq-msg"></div>
 
-            <div class="paq-summary">
-                <div class="paq-stat">
-                    <div class="paq-stat-label">Total paquetes</div>
-                    <div class="paq-stat-value" id="stat-total">0</div>
-                </div>
-                <div class="paq-stat">
-                    <div class="paq-stat-label">Activos</div>
-                    <div class="paq-stat-value green" id="stat-activos">0</div>
-                </div>
-                <div class="paq-stat">
-                    <div class="paq-stat-label">Inactivos</div>
-                    <div class="paq-stat-value gray" id="stat-inactivos">0</div>
-                </div>
-            </div>
 
             <div class="paq-panel">
                 <div class="paq-panel-head">
-                    <h4><i class="fa-solid fa-box-open" style="color:#c2410c;margin-right:.4rem"></i> Listado de Paquetes</h4>
+                    <h4><i class="fa-solid fa-box-open" style="color:var(--color-secondary);margin-right:.4rem"></i> Listado de Paquetes</h4>
                     <div class="paq-filtros">
                         <input type="search" id="paq-buscar" placeholder="Buscar paquete...">
                         <select id="paq-filtro-estado">
@@ -290,12 +279,11 @@
                                 <th>Servicio incluido</th>
                                 <th>Precio</th>
                                 <th>Estado</th>
-                                <th>Habilitado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="paq-tbody">
-                            <tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8">Cargando paquetes...</td></tr>
+                            <tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8">Cargando paquetes...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -358,13 +346,6 @@
                             </label>
                         </div>
                         <div class="paq-form-section">
-                            <label>Servicio incluido *
-                                <select id="fpaq-servicio" required>
-                                    <option value="">— Selecciona —</option>
-                                </select>
-                            </label>
-                        </div>
-                        <div class="paq-form-section">
                             <label>Precio ($) *<input type="number" id="fpaq-precio" required min="0" step="1000" placeholder="350000"></label>
                         </div>
                         <div class="paq-form-section">
@@ -375,6 +356,25 @@
                                 </select>
                             </label>
                         </div>
+                    </div>
+                    <!-- P2: Multi-select de servicios -->
+                    <div class="paq-form-section">
+                        <span style="font-size:.82rem;font-weight:600;color:#334155;display:block;margin-bottom:.4rem">
+                            Servicios incluidos <span style="color:#ef4444">*</span>
+                        </span>
+                        <!-- Cart — chips de servicios seleccionados -->
+                        <div id="fpaq-servicios-cart"
+                             style="display:flex;flex-wrap:wrap;gap:.35rem;min-height:2.2rem;
+                                    background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;
+                                    padding:.5rem .65rem;margin-bottom:.5rem">
+                            <span id="fpaq-cart-empty" style="color:#94a3b8;font-size:.78rem;align-self:center">
+                                Ningún servicio seleccionado
+                            </span>
+                        </div>
+                        <!-- Lista de checkboxes -->
+                        <div id="fpaq-servicios-list"
+                             style="max-height:160px;overflow-y:auto;border:1.5px solid #e2e8f0;
+                                    border-radius:8px;padding:.35rem"></div>
                     </div>
                     <div class="paq-form-section">
                         <span class="img-picker-label">Imagen del paquete</span>
@@ -424,6 +424,7 @@
     <script src="../js/main.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/validation.js"></script>
     <script>
     /* ── Estado ── */
     let paquetesCargados = [];
@@ -476,11 +477,14 @@
             showAlert(texto, tipo === 'ok' ? 'success' : 'error');
     }
 
-    /* ── Contadores ── */
+    /* ── Contadores (stat cards removed; kept for internal state) ── */
     function updateStats(lista) {
-        document.getElementById('stat-total').textContent    = lista.length;
-        document.getElementById('stat-activos').textContent  = lista.filter(p => p.Estado == 1).length;
-        document.getElementById('stat-inactivos').textContent= lista.filter(p => p.Estado == 0).length;
+        const total    = document.getElementById('stat-total');
+        const activos  = document.getElementById('stat-activos');
+        const inactivos= document.getElementById('stat-inactivos');
+        if (total)     total.textContent     = lista.length;
+        if (activos)   activos.textContent   = lista.filter(p => p.Estado == 1).length;
+        if (inactivos) inactivos.textContent = lista.filter(p => p.Estado == 0).length;
     }
 
     /* ── Render tabla con paginación ── */
@@ -497,7 +501,7 @@
         const pagina = lista.slice(desde, hasta);
 
         if (!pagina.length) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2.5rem;color:#94a3b8">No hay paquetes.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:#94a3b8">No hay paquetes.</td></tr>';
         } else {
         tbody.innerHTML = pagina.map(p => {
             const foto = imgUrl(p.ImagenPaquete);
@@ -512,14 +516,8 @@
                 </td>
                 <td><strong>${p.NombrePaquete}</strong></td>
                 <td style="color:#475569">${p.NombreHabitacion || '—'}</td>
-                <td style="color:#475569">${p.NombreServicio   || '—'}</td>
+                <td style="color:#475569">${p.NombreServicio || p.NombresServicios || '—'}</td>
                 <td class="paq-precio">${fmtPrecio(p.Precio)}</td>
-                <td>
-                    <span class="${activo ? 'badge-activo' : 'badge-inactivo'}">
-                        <i class="fa-solid fa-circle" style="font-size:.45rem"></i>
-                        ${activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                </td>
                 <td>
                     <div class="toggle-wrap">
                         <label class="toggle-switch">
@@ -528,7 +526,7 @@
                             <span class="toggle-slider"></span>
                         </label>
                         <span class="toggle-label ${activo ? 'activo' : 'inactivo'}">
-                            ${activo ? 'ON' : 'OFF'}
+                            ${activo ? 'Activo' : 'Inactivo'}
                         </span>
                     </div>
                 </td>
@@ -625,14 +623,6 @@
                 labelEl.className = `toggle-label ${activar ? 'activo' : 'inactivo'}`;
             }
 
-            /* actualizar badge en la misma fila */
-            const row   = checkbox.closest('tr');
-            const badge = row?.querySelector('.badge-activo, .badge-inactivo');
-            if (badge) {
-                badge.className = activar ? 'badge-activo' : 'badge-inactivo';
-                badge.innerHTML = `<i class="fa-solid fa-circle" style="font-size:.45rem"></i> ${activar ? 'Activo' : 'Inactivo'}`;
-            }
-
             updateStats(paquetesCargados);
             showMsg(`Paquete "${paq.NombrePaquete}" ${activar ? 'activado' : 'desactivado'}.`, 'ok');
         } catch (e) {
@@ -655,39 +645,98 @@
         document.getElementById('detalle-nombre').textContent = p.NombrePaquete;
         document.getElementById('detalle-precio').textContent = fmtPrecio(p.Precio);
         document.getElementById('detalle-desc').textContent   = p.Descripcion || 'Sin descripción.';
+        const svcChips = (p.NombreServicio || '—').split(', ')
+            .map(s => `<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:5px;padding:2px 8px;font-size:.75rem;font-weight:600">${s}</span>`)
+            .join(' ');
         document.getElementById('detalle-grid').innerHTML = [
-            ['Habitación',    p.NombreHabitacion || '—'],
-            ['Servicio',      p.NombreServicio   || '—'],
-            ['ID Paquete',    `#${p.IDPaquete}`],
-            ['Estado',        p.Estado == 1 ? '✅ Activo' : '⚪ Inactivo'],
-        ].map(([l,v]) => `<div class="paq-modal-field"><span>${l}</span><strong>${v}</strong></div>`).join('');
+            ['Habitación',  p.NombreHabitacion || '—'],
+            ['ID Paquete',  `#${p.IDPaquete}`],
+            ['Estado',      p.Estado == 1 ? '✅ Activo' : '⚪ Inactivo'],
+        ].map(([l,v]) => `<div class="paq-modal-field"><span>${l}</span><strong>${v}</strong></div>`).join('') +
+        `<div class="paq-modal-field" style="grid-column:span 2"><span>Servicios incluidos</span><div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.25rem">${svcChips}</div></div>`;
         document.getElementById('modal-detalle-paq').classList.remove('hidden');
     }
+
+    /* ── Servicios multi-select cart (P2) ── */
+    let _svcsTodos = [];  // cache de servicios
+
+    function renderCartSvc() {
+        const cart     = document.getElementById('fpaq-servicios-cart');
+        const emptyMsg = document.getElementById('fpaq-cart-empty');
+        const checked  = [...document.querySelectorAll('#fpaq-servicios-list input[type=checkbox]:checked')];
+        // Remove old chips but keep the empty-msg span
+        cart.querySelectorAll('.svc-chip').forEach(c => c.remove());
+        if (checked.length === 0) {
+            if (emptyMsg) emptyMsg.style.display = 'inline';
+        } else {
+            if (emptyMsg) emptyMsg.style.display = 'none';
+            checked.forEach(chk => {
+                const chip = document.createElement('span');
+                chip.className = 'svc-chip';
+                chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:#eff6ff;' +
+                    'color:#1d4ed8;border:1px solid #bfdbfe;border-radius:6px;padding:3px 9px;' +
+                    'font-size:.76rem;font-weight:600;cursor:pointer;';
+                chip.innerHTML = `${chk.dataset.nombre} <i class="fa-solid fa-xmark" style="font-size:.65rem"></i>`;
+                chip.title = 'Clic para quitar';
+                chip.addEventListener('click', () => {
+                    chk.checked = false;
+                    renderCartSvc();
+                });
+                cart.insertBefore(chip, emptyMsg);
+            });
+        }
+    }
+
+    function buildSvcList(svcs, selectedIds = []) {
+        const list = document.getElementById('fpaq-servicios-list');
+        list.innerHTML = '';
+        (Array.isArray(svcs) ? svcs : []).filter(s => s.Estado == 1).forEach(s => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;' +
+                'padding:.45rem .7rem;border-radius:7px;cursor:pointer;transition:background .15s';
+            div.onmouseenter = () => { div.style.background = '#f8fafc'; };
+            div.onmouseleave = () => { div.style.background = 'transparent'; };
+            const checked = selectedIds.includes(Number(s.IDServicio));
+            div.innerHTML = `
+                <label style="display:flex;align-items:center;gap:.55rem;cursor:pointer;font-size:.83rem;color:#334155;flex:1">
+                    <input type="checkbox" class="accent-green-700" style="width:15px;height:15px;cursor:pointer"
+                           data-id="${s.IDServicio}" data-nombre="${s.NombreServicio}" ${checked ? 'checked' : ''}>
+                    ${s.NombreServicio}
+                </label>
+                <span style="font-size:.76rem;color:#64748b;font-weight:600">+${rfFmtPaq(s.Costo)}</span>
+            `;
+            div.querySelector('input').addEventListener('change', renderCartSvc);
+            list.appendChild(div);
+        });
+        renderCartSvc();
+    }
+
+    const rfFmtPaq = v => '$' + Number(v || 0).toLocaleString('es-CO');
 
     /* ── Abrir formulario ── */
     async function abrirForm(paquete = null) {
         /* poblar habitaciones y servicios */
         try {
             const [habs, svcs] = await Promise.all([requestJson('/habitaciones'), requestJson('/servicios')]);
+            _svcsTodos = svcs || [];
             const selH = document.getElementById('fpaq-habitacion');
-            const selS = document.getElementById('fpaq-servicio');
             selH.innerHTML = '<option value="">— Selecciona —</option>' +
                 (Array.isArray(habs) ? habs : []).map(h => `<option value="${h.IDHabitacion}">${h.NombreHabitacion}</option>`).join('');
-            selS.innerHTML = '<option value="">— Selecciona —</option>' +
-                (Array.isArray(svcs) ? svcs : []).map(s => `<option value="${s.IDServicio}">${s.NombreServicio}</option>`).join('');
+
+            const existingIds = paquete?.serviciosIds || (paquete?.IDServicio ? [Number(paquete.IDServicio)] : []);
+            buildSvcList(_svcsTodos, existingIds);
         } catch { /* continúa sin datos */ }
 
-        document.getElementById('form-paq-titulo').textContent  = paquete ? `Editar — ${paquete.NombrePaquete}` : 'Nuevo Paquete';
-        document.getElementById('btn-form-guardar').innerHTML   = paquete
+        document.getElementById('form-paq-titulo').textContent = paquete ? `Editar — ${paquete.NombrePaquete}` : 'Nuevo Paquete';
+        document.getElementById('btn-form-guardar').innerHTML  = paquete
             ? '<i class="fa-solid fa-floppy-disk"></i> Guardar cambios'
             : '<i class="fa-solid fa-plus"></i> Crear paquete';
-        document.getElementById('fpaq-id').value       = paquete?.IDPaquete  || '';
-        document.getElementById('fpaq-nombre').value   = paquete?.NombrePaquete || '';
-        document.getElementById('fpaq-desc').value     = paquete?.Descripcion   || '';
-        document.getElementById('fpaq-precio').value   = paquete?.Precio        || '';
-        document.getElementById('fpaq-estado').value   = paquete?.Estado != null ? paquete.Estado : 1;
-        document.getElementById('fpaq-habitacion').value = paquete?.IDHabitacion || '';
-        document.getElementById('fpaq-servicio').value   = paquete?.IDServicio   || '';
+        document.getElementById('fpaq-id').value         = paquete?.IDPaquete    || '';
+        document.getElementById('fpaq-nombre').value     = paquete?.NombrePaquete || '';
+        document.getElementById('fpaq-desc').value       = paquete?.Descripcion   || '';
+        document.getElementById('fpaq-precio').value     = paquete?.Precio        || '';
+        document.getElementById('fpaq-estado').value     = paquete?.Estado != null ? paquete.Estado : 1;
+        document.getElementById('fpaq-habitacion').value = paquete?.IDHabitacion  || '';
         if (window._imgPicker) window._imgPicker.set(paquete?.ImagenPaquete || '');
 
         document.getElementById('modal-form-paq').classList.remove('hidden');
@@ -699,14 +748,21 @@
     }
 
     /* ── Eliminar ── */
-    async function eliminarPaquete(id) {
+    function eliminarPaquete(id) {
         const p = paquetesCargados.find(x => x.IDPaquete === id);
-        if (!confirm(`¿Eliminar el paquete "${p?.NombrePaquete}"? Esta acción no se puede deshacer.`)) return;
-        try {
-            await requestJson(`/paquetes/${id}`, { method: 'DELETE', allowNoContent: true });
-            showMsg(`Paquete eliminado correctamente.`, 'ok');
-            cargarPaquetes();
-        } catch { showMsg('Error al eliminar el paquete.', 'error'); }
+        confirmarAccion({
+            titulo: '¿Eliminar paquete?',
+            mensaje: `Esta acción no se puede deshacer. El paquete "${p?.NombrePaquete || id}" será eliminado del sistema.`,
+            textoConfirmar: 'Eliminar',
+            tipo: 'danger',
+            onConfirmar: async () => {
+                try {
+                    await requestJson(`/paquetes/${id}`, { method: 'DELETE', allowNoContent: true });
+                    showMsg('Paquete eliminado correctamente.', 'ok');
+                    cargarPaquetes();
+                } catch { showMsg('Error al eliminar el paquete.', 'error'); }
+            }
+        });
     }
 
     /* ── Image Picker ── */
@@ -827,20 +883,23 @@
             const id  = document.getElementById('fpaq-id').value;
             const btn = document.getElementById('btn-form-guardar');
 
+            const serviciosIds = [...document.querySelectorAll('#fpaq-servicios-list input[type=checkbox]:checked')]
+                .map(chk => Number(chk.dataset.id));
+
             const body = {
                 NombrePaquete: document.getElementById('fpaq-nombre').value.trim(),
                 Descripcion:   document.getElementById('fpaq-desc').value.trim(),
                 IDHabitacion:  Number(document.getElementById('fpaq-habitacion').value),
-                IDServicio:    Number(document.getElementById('fpaq-servicio').value),
+                serviciosIds,
                 Precio:        Number(document.getElementById('fpaq-precio').value),
                 Estado:        Number(document.getElementById('fpaq-estado').value),
                 ImagenURL:     document.getElementById('fpaq-imagen').value.trim() || null,
             };
 
-            if (!body.NombrePaquete) { showMsg('El nombre es obligatorio.', 'error'); return; }
-            if (!body.IDHabitacion)  { showMsg('Selecciona una habitación.', 'error'); return; }
-            if (!body.IDServicio)    { showMsg('Selecciona un servicio.', 'error'); return; }
-            if (!body.Precio)        { showMsg('Ingresa un precio válido.', 'error'); return; }
+            if (!body.NombrePaquete)       { showMsg('El nombre es obligatorio.', 'error'); return; }
+            if (!body.IDHabitacion)        { showMsg('Selecciona una habitación.', 'error'); return; }
+            if (!serviciosIds.length)      { showMsg('Selecciona al menos un servicio.', 'error'); return; }
+            if (!body.Precio)              { showMsg('Ingresa un precio válido.', 'error'); return; }
 
             btn.disabled = true;
             try {

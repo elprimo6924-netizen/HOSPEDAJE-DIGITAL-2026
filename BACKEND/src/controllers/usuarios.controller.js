@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const bcrypt = require("bcryptjs");
 
 const mapUsuario = (usuario) => {
     if (!usuario) return null;
@@ -94,24 +95,48 @@ exports.create = async (req, res) => {
             return res.status(400).json({ error: "NombreUsuario, Email y Contrasena son obligatorios" });
         }
 
+        if (Contrasena.length < 8) {
+            return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
+        }
+
+        const hashPass = await bcrypt.hash(Contrasena, 10);
+        const rolFinal = IDRol || 2;
+        const activoFinal = IsActive === false ? 0 : 1;
+
         const [result] = await db.query(
             `INSERT INTO usuarios
-                (NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive, requiereCambioPassword)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
             [
                 NombreUsuario,
                 Apellido || null,
                 Email,
-                Contrasena,
+                hashPass,
                 TipoDocumento || null,
                 NumeroDocumento || null,
                 Telefono || null,
                 Pais || null,
                 Direccion || null,
-                IDRol || 2,
-                IsActive === false ? 0 : 1,
+                rolFinal,
+                activoFinal,
             ]
         );
+
+        // U1: Si el rol es Cliente (3) y tiene NumeroDocumento, sincronizar con tabla cliente
+        if (rolFinal === 3 && NumeroDocumento) {
+            await db.query(
+                `INSERT INTO cliente (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 3)
+                 ON DUPLICATE KEY UPDATE
+                   Nombre = VALUES(Nombre),
+                   Apellido = VALUES(Apellido),
+                   Direccion = VALUES(Direccion),
+                   Email = VALUES(Email),
+                   Telefono = VALUES(Telefono),
+                   Estado = VALUES(Estado)`,
+                [NumeroDocumento, NombreUsuario, Apellido || '', Direccion || null, Email, Telefono || null, activoFinal]
+            );
+        }
 
         const usuario = await obtenerUsuarioBase(result.insertId);
         res.status(201).json({ mensaje: "Usuario creado", usuario: mapUsuario(usuario) });
@@ -145,12 +170,21 @@ exports.update = async (req, res) => {
         const asignaciones = [];
         const valores = [];
 
-        camposPermitidos.forEach((campo) => {
+        for (const campo of camposPermitidos) {
             if (req.body[campo] !== undefined && req.body[campo] !== null && req.body[campo] !== "") {
+                let valor = req.body[campo];
+                if (campo === "Contrasena") {
+                    if (String(valor).length < 8) {
+                        return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
+                    }
+                    valor = await bcrypt.hash(String(valor), 10);
+                    // Al actualizar contraseña manualmente, limpiar el flag
+                    asignaciones.push("requiereCambioPassword = 0");
+                }
                 asignaciones.push(`${campo} = ?`);
-                valores.push(req.body[campo]);
+                valores.push(valor);
             }
-        });
+        }
 
         if (!asignaciones.length) {
             return res.status(400).json({ error: "No hay datos para actualizar" });

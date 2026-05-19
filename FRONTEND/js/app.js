@@ -527,6 +527,12 @@ const cargarClienteEnFormularioAdmin = (cliente) => {
     if (titulo) titulo.textContent = `Editar cliente ${obtenerIdCliente(cliente)}`;
     if (botonGuardar) botonGuardar.textContent = 'Actualizar cliente';
 
+    /* Ocultar contraseña en modo edición */
+    const labelPass = document.getElementById('label-cliente-contrasena');
+    if (labelPass) labelPass.style.display = 'none';
+    const inputPass = document.getElementById('cliente-admin-contrasena');
+    if (inputPass) { inputPass.value = ''; inputPass.removeAttribute('required'); }
+
     abrirModalClienteAdmin();
     mostrarMensajeClienteAdmin(`Editando cliente ${cliente.Nombre || obtenerIdCliente(cliente)}.`, 'ok');
 };
@@ -546,6 +552,12 @@ const limpiarFormularioClienteAdmin = (mostrarMensaje = true) => {
     if (titulo) titulo.textContent = 'Crear cliente';
     if (botonGuardar) botonGuardar.textContent = 'Guardar cliente';
 
+    /* Mostrar contraseña en modo creación */
+    const labelPass = document.getElementById('label-cliente-contrasena');
+    if (labelPass) labelPass.style.display = 'block';
+    const inputPass = document.getElementById('cliente-admin-contrasena');
+    if (inputPass) { inputPass.value = ''; inputPass.setAttribute('required', ''); }
+
     if (mostrarMensaje) {
         mostrarMensajeClienteAdmin('Formulario listo para crear un cliente.');
     }
@@ -559,9 +571,9 @@ const construirPayloadCliente = ({ forzarEstado = null } = {}) => {
     const campoEmail = document.getElementById('cliente-admin-email');
     const campoTelefono = document.getElementById('cliente-admin-telefono');
     const campoEstado = document.getElementById('cliente-admin-estado');
-    const campoRol = document.getElementById('cliente-admin-idrol');
+    const campoContrasena = document.getElementById('cliente-admin-contrasena');
 
-    return {
+    const payload = {
         NroDocumento: campoDocumento?.value?.trim(),
         Nombre: campoNombre?.value?.trim(),
         Apellido: campoApellido?.value?.trim() || null,
@@ -569,8 +581,13 @@ const construirPayloadCliente = ({ forzarEstado = null } = {}) => {
         Email: campoEmail?.value?.trim(),
         Telefono: campoTelefono?.value?.trim() || null,
         Estado: forzarEstado !== null ? Number(forzarEstado) : Number(campoEstado?.value ?? 1),
-        IDRol: Number(campoRol?.value ?? 1)
+        IDRol: 3
     };
+
+    const passVal = campoContrasena?.value?.trim();
+    if (passVal) payload.Password = passVal;
+
+    return payload;
 };
 
 async function cargarClientesAdmin() {
@@ -2283,7 +2300,7 @@ const renderizarServiciosAdmin = () => {
     if (serviciosFiltrados.length === 0) {
         contenedor.innerHTML = `
             <tr>
-                <td colspan="7" class="mensaje-vacio">No hay servicios que coincidan con el filtro actual.</td>
+                <td colspan="6" class="mensaje-vacio">No hay servicios que coincidan con el filtro actual.</td>
             </tr>
         `;
         const tablaWrapVacio = contenedor.closest('.crud-servicios-tabla-wrap') || contenedor;
@@ -2296,14 +2313,21 @@ const renderizarServiciosAdmin = () => {
         const estado = normalizarEstadoServicio(servicio.Estado);
         const switchId = `switch-servicio-${idServicio}`;
 
+        const imgSrc = servicio.imagen_url ? escaparHtml(servicio.imagen_url) : '';
         return `
             <tr>
+                <td style="width:60px">
+                    ${imgSrc
+                        ? `<img src="${imgSrc}" alt="${escaparHtml(servicio.NombreServicio || '')}"
+                               style="width:52px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0"
+                               onerror="this.style.display='none'">`
+                        : `<span style="color:#cbd5e1;font-size:1.3rem"><i class="fa-solid fa-image"></i></span>`}
+                </td>
                 <td>
                     <div class="crud-servicios-nombre">${escaparHtml(servicio.NombreServicio || 'Sin nombre')}</div>
                 </td>
                 <td><strong>${servicio.Duracion || '—'}</strong></td>
-                <td>${servicio.CantidadMaximaPersonas || '—'}</td>
-                <td><strong>${formatearCostoServicio(servicio.Costo)}</strong></td>
+                <td class="crud-servicios-descripcion">${escaparHtml(servicio.Descripcion || 'Sin descripción')}</td>
                 <td>
                     <div class="crud-estado-control">
                         <label class="switch-estado-servicio" for="${escaparHtml(switchId)}">
@@ -2319,7 +2343,6 @@ const renderizarServiciosAdmin = () => {
                         </label>
                     </div>
                 </td>
-                <td class="crud-servicios-descripcion">${escaparHtml(servicio.Descripcion || 'Sin descripción')}</td>
                 <td>
                     <div class="crud-servicios-acciones">
                         ${obtenerBotonIcono('ver', 'btn-mini-ver', 'Ver detalle', `Ver detalle de ${servicio.NombreServicio || 'servicio'}`, 'accion-servicio', idServicio)}
@@ -2393,6 +2416,9 @@ const limpiarFormularioServicioAdmin = (mostrarMensaje = true) => {
     const titulo = document.getElementById('servicio-admin-form-title');
     const botonGuardar = document.getElementById('btn-servicio-admin-guardar');
 
+    const campoImagenUrl = document.getElementById('servicio-admin-imagen-url');
+    const previewWrap = document.getElementById('servicio-admin-imagen-preview');
+
     if (formulario) formulario.reset();
     if (campoId) campoId.value = '';
     if (campoNombre) campoNombre.value = '';
@@ -2401,6 +2427,8 @@ const limpiarFormularioServicioAdmin = (mostrarMensaje = true) => {
     if (campoCantidadMaxima) campoCantidadMaxima.value = '';
     if (campoCosto) campoCosto.value = '';
     if (campoEstado) campoEstado.value = '1';
+    if (campoImagenUrl) campoImagenUrl.value = '';
+    if (previewWrap) previewWrap.style.display = 'none';
     if (titulo) titulo.textContent = 'Crear servicio';
     if (botonGuardar) botonGuardar.textContent = 'Guardar servicio';
 
@@ -2424,6 +2452,10 @@ const cargarServicioEnFormularioAdmin = (servicio) => {
 
     const idServicio = obtenerIdServicio(servicio);
 
+    const campoImagenUrl = document.getElementById('servicio-admin-imagen-url');
+    const previewWrap = document.getElementById('servicio-admin-imagen-preview');
+    const previewImg  = document.getElementById('servicio-admin-preview-img');
+
     if (campoId) campoId.value = idServicio;
     if (campoNombre) campoNombre.value = servicio.NombreServicio || '';
     if (campoDescripcion) campoDescripcion.value = servicio.Descripcion || '';
@@ -2431,6 +2463,15 @@ const cargarServicioEnFormularioAdmin = (servicio) => {
     if (campoCantidadMaxima) campoCantidadMaxima.value = servicio.CantidadMaximaPersonas || '';
     if (campoCosto) campoCosto.value = servicio.Costo || '';
     if (campoEstado) campoEstado.value = servicio.Estado;
+    if (campoImagenUrl) {
+        campoImagenUrl.value = servicio.imagen_url || '';
+        if (servicio.imagen_url && previewWrap && previewImg) {
+            previewImg.src = servicio.imagen_url;
+            previewWrap.style.display = 'block';
+        } else if (previewWrap) {
+            previewWrap.style.display = 'none';
+        }
+    }
     if (titulo) titulo.textContent = `Editar: ${servicio.NombreServicio}`;
     if (botonGuardar) botonGuardar.textContent = 'Actualizar servicio';
 
@@ -2448,6 +2489,7 @@ async function guardarServicioAdmin(evento) {
     const campoCantidadMaxima = document.getElementById('servicio-admin-cantidad-maxima');
     const campoCosto = document.getElementById('servicio-admin-costo');
     const campoEstado = document.getElementById('servicio-admin-estado');
+    const campoImagenUrl = document.getElementById('servicio-admin-imagen-url');
 
     const id = campoId?.value;
     const nombre = campoNombre?.value.trim();
@@ -2456,6 +2498,7 @@ async function guardarServicioAdmin(evento) {
     const cantidadMaxima = campoCantidadMaxima?.value.trim();
     const costo = campoCosto?.value.trim();
     const estado = campoEstado?.value;
+    const imagenUrl = campoImagenUrl?.value.trim() || null;
 
     if (!nombre || !descripcion || !duracion || !cantidadMaxima || !costo || estado === undefined) {
         mostrarMensajeServicioAdmin('Por favor completa todos los campos del formulario.', 'error');
@@ -2473,7 +2516,8 @@ async function guardarServicioAdmin(evento) {
         Duracion: Number(duracion),
         CantidadMaximaPersonas: Number(cantidadMaxima),
         Costo: Number(costo),
-        Estado: Number(estado)
+        Estado: Number(estado),
+        imagen_url: imagenUrl
     };
 
     limpiarEstadoErrorCampos([
@@ -2616,6 +2660,22 @@ const inicializarFormularioServiciosAdmin = () => {
         campoNombre.addEventListener('input', actualizarValidacionNombreServicioAdmin);
         campoNombre.addEventListener('blur', actualizarValidacionNombreServicioAdmin);
         campoNombre.dataset.serviciosAdminInicializado = 'true';
+    }
+
+    const campoImgUrl = document.getElementById('servicio-admin-imagen-url');
+    if (campoImgUrl && !campoImgUrl.dataset.imgPreviewInicializado) {
+        campoImgUrl.addEventListener('input', () => {
+            const wrap = document.getElementById('servicio-admin-imagen-preview');
+            const img  = document.getElementById('servicio-admin-preview-img');
+            const url  = campoImgUrl.value.trim();
+            if (url && wrap && img) {
+                img.src = url;
+                wrap.style.display = 'block';
+            } else if (wrap) {
+                wrap.style.display = 'none';
+            }
+        });
+        campoImgUrl.dataset.imgPreviewInicializado = 'true';
     }
 
     if (modalServicio && !modalServicio.dataset.serviciosAdminInicializado) {

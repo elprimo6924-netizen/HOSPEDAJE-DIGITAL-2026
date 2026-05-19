@@ -50,13 +50,14 @@ const HabitacionesService = {
         return await Habitaciones.eliminar(id);
     },
 
-    // 🔎 HABITACIONES DISPONIBLES
+    // 🔎 HABITACIONES DISPONIBLES (solo activas)
     disponibles: async (inicio, fin) => {
 
         const [rows] = await db.query(`
             SELECT h.*
             FROM habitacion h
-            WHERE NOT EXISTS (
+            WHERE h.Estado = 1
+            AND NOT EXISTS (
                 SELECT 1
                 FROM reserva r
                 WHERE r.IDHabitacion = h.IDHabitacion

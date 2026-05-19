@@ -34,11 +34,6 @@
         <header>
             <nav>
                 <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
-                <ul>
-                    <li><a href="../index.html">Inicio</a></li>
-                    <li><a href="nosotros.html">Nosotros</a></li>
-                    <li><a href="contacto.html">Contacto</a></li>
-                </ul>
             </nav>
         </header>
 
@@ -46,25 +41,17 @@
         <main>
             <!-- Sección de Administración de Servicios -->
             <section id="seccion-administrar-servicios" class="crud-servicios-section">
-                <div class="crud-servicios-toolbar">
-                    <button type="button" class="btn-accion-crud btn-accion-principal" id="btn-nuevo-servicio-admin">+ NUEVO SERVICIO</button>
-                    <div id="mensaje-servicio-admin" class="crud-servicios-mensaje" aria-live="polite"></div>
+                <div class="mod-toolbar">
+                    <div class="mod-toolbar-left">
+                        <h2 class="mod-toolbar-title"><i class="fa-solid fa-bell-concierge mod-icon" aria-hidden="true"></i> Gestión de Servicios</h2>
+                        <p class="mod-toolbar-subtitle">Administra los servicios disponibles y sus tarifas.</p>
+                    </div>
+                    <div class="mod-toolbar-actions">
+                        <div id="mensaje-servicio-admin" class="crud-servicios-mensaje" aria-live="polite"></div>
+                        <button type="button" class="btn-mod-nuevo" id="btn-nuevo-servicio-admin"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Servicio</button>
+                    </div>
                 </div>
 
-                <div class="crud-servicios-summary">
-                    <article>
-                        <span>Total</span>
-                        <strong id="servicios-admin-total">0</strong>
-                    </article>
-                    <article>
-                        <span>Activos</span>
-                        <strong id="servicios-admin-activos">0</strong>
-                    </article>
-                    <article>
-                        <span>Inactivos</span>
-                        <strong id="servicios-admin-inactivos">0</strong>
-                    </article>
-                </div>
 
                 <div class="crud-servicios-layout">
                     <section class="crud-servicios-panel crud-servicios-panel-lista">
@@ -88,18 +75,17 @@
                             <table class="crud-servicios-tabla">
                                 <thead>
                                     <tr>
+                                        <th>Imagen</th>
                                         <th>Nombre</th>
                                         <th>Duración (min)</th>
-                                        <th>Personas</th>
-                                        <th>Costo</th>
-                                        <th>Estado</th>
                                         <th>Descripción</th>
+                                        <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="servicios-admin-tbody">
                                     <tr>
-                                        <td colspan="7" class="mensaje-vacio">Cargando servicios...</td>
+                                        <td colspan="6" class="mensaje-vacio">Cargando servicios...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -120,12 +106,12 @@
 
                         <label>
                             <span>Nombre del servicio <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="text" id="servicio-admin-nombre" required maxlength="50" placeholder="Ej. Masaje relajante">
+                            <input type="text" id="servicio-admin-nombre" required maxlength="100" placeholder="Ej. Masaje relajante">
                         </label>
 
                         <label>
                             <span>Descripción <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <textarea id="servicio-admin-descripcion" required maxlength="100" placeholder="Describe el servicio en pocas palabras"></textarea>
+                            <textarea id="servicio-admin-descripcion" required maxlength="500" placeholder="Describe el servicio en pocas palabras"></textarea>
                         </label>
 
                         <label>
@@ -142,6 +128,16 @@
                             <span>Costo <span class="campo-obligatorio" aria-hidden="true">*</span></span>
                             <input type="number" id="servicio-admin-costo" required min="0" step="0.01" placeholder="Ej. 150000">
                         </label>
+
+                        <label>
+                            <span>Imagen (URL)</span>
+                            <input type="url" id="servicio-admin-imagen-url" maxlength="500"
+                                   placeholder="https://ejemplo.com/imagen.jpg">
+                        </label>
+                        <div id="servicio-admin-imagen-preview" style="display:none;margin-top:-.5rem;margin-bottom:.5rem">
+                            <img id="servicio-admin-preview-img" alt="Vista previa"
+                                 style="max-height:120px;border-radius:8px;border:1px solid #e2e8f0;object-fit:cover;">
+                        </div>
 
                         <label>
                             <span>Estado <span class="campo-obligatorio" aria-hidden="true">*</span></span>

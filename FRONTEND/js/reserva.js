@@ -3,7 +3,7 @@
  * Arquitectura modular para el formulario de Nueva Reserva
  */
 
-const API_BASE = '/api'; // Ajustar segn el puerto si es necesario
+const API_BASE = '/api'; // Ajustar según el puerto si es necesario
 const FORMATTER = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const fmt = val => FORMATTER.format(val || 0);
 
@@ -82,7 +82,7 @@ const CalendarioPicker = {
         let html = `<div class="font-bold text-center mb-4 text-gray-800">${this.meses[mes]} ${año}</div>`;
         html += `<div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-400 mb-2">`;
         ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'].forEach(d => html += `<div>${d}</div>`);
-        html += `</div><div class="grid grid-cols-7 gap-1 text-center" id="grid-${containerId}">`;
+        html += `</div><div class="grid grid-cols-7 gap-1 justify-items-center" id="grid-${containerId}">`;
 
         for (let i = 0; i < primerDia; i++) html += `<div></div>`;
 
@@ -208,7 +208,7 @@ const ModoReserva = {
             
             await this.loadPaquetes();
         }
-        UI.showToast("Seleccin anterior eliminada", "info");
+        UI.showToast("Selección anterior eliminada", "info");
         ResumenLateral.actualizar();
         ServiciosAdicionales.render();
     },
@@ -219,7 +219,7 @@ const ModoReserva = {
         const data = await fetchJson('/habitaciones');
         if (!data) return;
         
-        sel.innerHTML = '<option value="">— Selecciona una habitacin —</option>';
+        sel.innerHTML = '<option value="">— Selecciona una habitación —</option>';
         data.filter(h => h.Estado === 1).forEach(h => {
             const opt = document.createElement('option');
             opt.value = h.IDHabitacion;
@@ -258,12 +258,21 @@ const ModoReserva = {
             div.dataset.id = p.IDPaquete;
             div.onclick = () => this.selectPaquete(div, p);
 
+            const extraInfo = [
+                p.NombreHabitacion ? `<div class="flex items-center gap-1.5 mt-1 text-xs text-slate-500"><i class="fa-solid fa-bed text-green-600 text-[10px]"></i><span>${p.NombreHabitacion}</span></div>` : '',
+                p.NombreServicio   ? `<div class="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500"><i class="fa-solid fa-bell-concierge text-amber-500 text-[10px]"></i><span>Incluye: ${p.NombreServicio}</span></div>` : '',
+            ].join('');
+
             div.innerHTML = `
               <img src="/img/${p.ImagenPaquete}" class="w-full h-32 object-cover rounded-xl mb-3 bg-gray-100" onerror="this.style.display='none'">
               <h3 class="font-semibold text-green-900">${p.NombrePaquete}</h3>
-              <p class="text-xs text-gray-500 mb-2 truncate">${p.Descripcion || 'Sin descripcin'}</p>
+              <div class="paquete-desc overflow-hidden transition-all duration-300 max-h-0 opacity-0">
+                  <p class="text-xs text-gray-600 mt-1 mb-1.5 leading-relaxed">${p.Descripcion || 'Sin descripción'}</p>
+                  ${extraInfo}
+              </div>
               <div class="flex items-center justify-between mt-3">
                 <span class="text-lg font-bold text-green-800">${fmt(p.Precio)}</span>
+                <span class="paq-sel-hint text-xs text-gray-400 italic">Clic para seleccionar</span>
               </div>
             `;
             grid.appendChild(div);
@@ -271,14 +280,27 @@ const ModoReserva = {
     },
 
     selectPaquete(cardEl, data) {
-        document.querySelectorAll('.paquete-card').forEach(c => c.className = "border-2 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:border-amber-400 hover:shadow-md bg-white paquete-card");
-        cardEl.className = "border-green-700 bg-green-50 ring-2 ring-green-700 rounded-2xl p-5 cursor-pointer transition-all duration-200 paquete-card";
-        
+        document.querySelectorAll('.paquete-card').forEach(c => {
+            c.className = "border-2 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:border-amber-400 hover:shadow-md bg-white paquete-card";
+            const desc = c.querySelector('.paquete-desc');
+            if (desc) { desc.classList.remove('max-h-56', 'opacity-100'); desc.classList.add('max-h-0', 'opacity-0'); }
+            const hint = c.querySelector('.paq-sel-hint');
+            if (hint) hint.textContent = 'Clic para seleccionar';
+        });
+
+        cardEl.className = "border-green-700 bg-green-50 ring-2 ring-green-700 rounded-2xl p-5 cursor-pointer transition-all duration-200 paquete-card shadow-md";
+        const desc = cardEl.querySelector('.paquete-desc');
+        if (desc) { desc.classList.remove('max-h-0', 'opacity-0'); desc.classList.add('max-h-56', 'opacity-100'); }
+        const hint = cardEl.querySelector('.paq-sel-hint');
+        if (hint) hint.textContent = '✓ Seleccionado';
+
         State.itemSeleccionado = {
             id: data.IDPaquete,
             nombre: data.NombrePaquete,
             precio: Number(data.Precio),
-            imagen: `/img/${data.ImagenPaquete}`,
+            imagen: data.ImagenPaquete ? `/img/${data.ImagenPaquete}` : null,
+            habitacion: data.NombreHabitacion || null,
+            servicio: data.NombreServicio || null,
             tipo: 'paquete'
         };
         ResumenLateral.actualizar();
@@ -379,35 +401,58 @@ const BuscadorCliente = {
 const ServiciosAdicionales = {
     async render() {
         const c = document.getElementById('servicios-container');
-        if(State.modo !== 'habitacion') {
-            c.innerHTML = '';
-            return;
-        }
+        if (State.modo !== 'habitacion') { c.innerHTML = ''; return; }
 
         c.innerHTML = '<p class="text-gray-500 text-sm">Cargando servicios...</p>';
         const data = await fetchJson('/servicios');
-        if(!data) return;
+        if (!data) return;
 
         c.innerHTML = '';
         data.filter(s => s.Estado === 1).forEach(s => {
-            const lbl = document.createElement('label');
-            lbl.className = "flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group bg-white";
-            lbl.innerHTML = `
-                <div class="flex items-center gap-3">
-                  <input type="checkbox" class="accent-green-700 w-4 h-4" data-id="${s.IDServicio}" data-precio="${s.Costo}" data-nombre="${s.NombreServicio}" onchange="ServiciosAdicionales.toggle(this)">
-                  <span class="text-sm text-gray-700 group-hover:text-gray-900">${s.NombreServicio}</span>
+            const div = document.createElement('div');
+            div.className = "svc-item-wrapper flex flex-col p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors bg-white";
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="accent-green-700 w-4 h-4 cursor-pointer"
+                               id="svc-${s.IDServicio}" data-id="${s.IDServicio}"
+                               data-precio="${s.Costo}" data-nombre="${s.NombreServicio}"
+                               onchange="ServiciosAdicionales.toggle(this)">
+                        <label for="svc-${s.IDServicio}" class="text-sm text-gray-700 hover:text-gray-900 cursor-pointer select-none">${s.NombreServicio}</label>
+                    </div>
+                    <span class="text-sm font-medium text-green-800">+${fmt(s.Costo)}</span>
                 </div>
-                <span class="text-sm font-medium text-green-800">+${fmt(s.Costo)}</span>
+                <div class="svc-hora-wrap hidden mt-2 pl-7">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-gray-400 text-xs"></i>
+                        <span class="text-xs text-gray-500 font-medium">Hora deseada:</span>
+                        <input type="time" class="svc-hora text-xs border border-gray-200 rounded-lg px-2 py-1
+                               focus:ring-1 focus:ring-green-600 focus:outline-none"
+                               data-svc-id="${s.IDServicio}">
+                    </div>
+                </div>
             `;
-            c.appendChild(lbl);
+            c.appendChild(div);
         });
     },
 
     toggle(chk) {
         const id = chk.dataset.id;
+        const wrapper  = chk.closest('.svc-item-wrapper');
+        const horaWrap = wrapper?.querySelector('.svc-hora-wrap');
+        const horaInput = wrapper?.querySelector('.svc-hora');
+
         if (chk.checked) {
-            State.serviciosExtras.push({ id, nombre: chk.dataset.nombre, precio: Number(chk.dataset.precio) });
+            horaWrap?.classList.remove('hidden');
+            State.serviciosExtras.push({ id, nombre: chk.dataset.nombre, precio: Number(chk.dataset.precio), hora: '' });
+            if (horaInput) {
+                horaInput.addEventListener('change', () => {
+                    const svc = State.serviciosExtras.find(s => s.id === id);
+                    if (svc) svc.hora = horaInput.value;
+                });
+            }
         } else {
+            horaWrap?.classList.add('hidden');
             State.serviciosExtras = State.serviciosExtras.filter(s => s.id !== id);
         }
         ResumenLateral.actualizar();
@@ -442,11 +487,29 @@ const ResumenLateral = {
                 if (State.itemSeleccionado.imagen) {
                     imgEl.src = State.itemSeleccionado.imagen;
                     imgWrap.classList.remove('hidden');
+                } else {
+                    imgWrap.classList.add('hidden');
                 }
+                // RES1: Show package included room/service in summary
+                let detailEl = document.getElementById('resumen-paq-detail');
+                if (!detailEl) {
+                    detailEl = document.createElement('div');
+                    detailEl.id = 'resumen-paq-detail';
+                    detailEl.className = 'text-xs text-gray-500 mb-4 space-y-0.5';
+                    titleEl.insertAdjacentElement('afterend', detailEl);
+                }
+                const hab = State.itemSeleccionado.habitacion;
+                const svc = State.itemSeleccionado.servicio;
+                detailEl.innerHTML = [
+                    hab ? `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bed text-green-600 text-[10px]"></i>${hab}</div>` : '',
+                    svc ? `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bell-concierge text-amber-500 text-[10px]"></i>Incluye: ${svc}</div>` : '',
+                ].join('');
             }
         } else {
-            titleEl.textContent = 'Sin seleccin';
+            titleEl.textContent = 'Sin selección';
             imgWrap.classList.add('hidden');
+            const detailEl = document.getElementById('resumen-paq-detail');
+            if (detailEl) detailEl.innerHTML = '';
         }
 
         if (State.fechaInicio) {
@@ -515,17 +578,29 @@ const ReservaForm = {
             btn.disabled = true;
             btn.textContent = 'Procesando...';
 
+            const noches = Math.round((State.fechaFin - State.fechaInicio) / 86400000);
+            const costoBase = State.modo === 'habitacion'
+                ? State.itemSeleccionado.precio * Math.max(1, noches)
+                : State.itemSeleccionado.precio;
+            const costoSvc  = State.serviciosExtras.reduce((a, s) => a + s.precio, 0);
+            const subtotal  = costoBase + costoSvc - State.descuento;
+            const iva       = Math.max(0, subtotal * 0.19);
+            const total     = Math.max(0, subtotal + iva);
+
             const payload = {
                 NroDocumentoCliente: State.cliente.documento,
                 FechaInicio: State.fechaInicio.toISOString().split('T')[0],
                 FechaFinalizacion: State.fechaFin.toISOString().split('T')[0],
-                MetodoPago: document.getElementById('metodo-pago').value,
-                IdEstadoReserva: document.getElementById('estado-reserva').value,
+                MetodoPago: Number(document.getElementById('metodo-pago').value),
+                IdEstadoReserva: Number(document.getElementById('estado-reserva').value),
                 Descuento: State.descuento,
-                // Logica condicional para IDs
+                SubTotal: subtotal,
+                IVA: iva,
+                MontoTotal: total,
                 IDHabitacion: State.modo === 'habitacion' ? State.itemSeleccionado.id : null,
-                paquetesIds: State.modo === 'paquete' ? [State.itemSeleccionado.id] : [],
-                serviciosIds: State.serviciosExtras.map(s => s.id)
+                paquetesIds: State.modo === 'paquete' ? [Number(State.itemSeleccionado.id)] : [],
+                serviciosIds: State.serviciosExtras.map(s => Number(s.id)),
+                serviciosConHorarios: State.serviciosExtras.map(s => ({ id: Number(s.id), hora: s.hora || null })),
             };
 
             try {
@@ -536,7 +611,7 @@ const ReservaForm = {
                 });
                 
                 if (res.ok) {
-                    UI.showToast("Reserva confirmada con xito", "success");
+                    UI.showToast("Reserva confirmada con éxito", "success");
                     setTimeout(() => window.location.href = 'reservas.html', 1500);
                 } else {
                     const err = await res.json();

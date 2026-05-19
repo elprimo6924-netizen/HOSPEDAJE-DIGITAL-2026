@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Contraseña - Hospedaje Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { display: ['Sora', 'sans-serif'] } } }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.28),_transparent_32%),linear-gradient(135deg,_#101827_0%,_#5a3d28_48%,_#d17a3a_100%)] font-display text-slate-900">
+<main class="relative flex min-h-screen items-center justify-center px-4 py-10">
+    <div class="absolute left-8 top-10 h-72 w-72 rounded-full bg-black/20 blur-3xl"></div>
+    <div class="absolute bottom-6 right-10 h-80 w-80 rounded-full bg-orange-300/15 blur-3xl"></div>
+
+    <section class="relative w-full max-w-md rounded-[28px] bg-white/95 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.28)] ring-1 ring-white/60 backdrop-blur">
+
+        <div class="mb-6 text-center">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 shadow-md">
+                <i class="fa-solid fa-key text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900">Cambiar contraseña</h1>
+            <p class="mt-1 text-sm text-slate-500">Tu cuenta tiene una contraseña temporal. Debes establecer una nueva contraseña para continuar.</p>
+        </div>
+
+        <div id="error-msg" class="hidden mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600 border border-red-100"></div>
+        <div id="success-msg" class="hidden mb-4 rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700 border border-green-100"></div>
+
+        <form id="form-cambiar" class="space-y-4">
+            <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Nueva contraseña</label>
+                <div class="relative">
+                    <input id="nueva-contrasena" type="password" minlength="8" maxlength="72" required
+                           placeholder="Mínimo 8 caracteres"
+                           class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-11 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100">
+                    <button type="button" onclick="toggleVer('nueva-contrasena', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Confirmar contraseña</label>
+                <div class="relative">
+                    <input id="confirmar-contrasena" type="password" minlength="8" maxlength="72" required
+                           placeholder="Repite la nueva contraseña"
+                           class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-11 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100">
+                    <button type="button" onclick="toggleVer('confirmar-contrasena', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="btn-guardar" type="submit"
+                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-200 hover:bg-orange-600 active:scale-[0.98] transition-all disabled:opacity-60">
+                <i id="btn-icon" class="fa-solid fa-floppy-disk"></i>
+                <span id="btn-text">Guardar nueva contraseña</span>
+            </button>
+        </form>
+    </section>
+</main>
+
+<script src="../js/config.js"></script>
+<script>
+    function toggleVer(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash text-sm';
+        } else {
+            input.type = 'password';
+            icon.className = 'fa-solid fa-eye text-sm';
+        }
+    }
+
+    function mostrarError(msg) {
+        const el = document.getElementById('error-msg');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        document.getElementById('success-msg').classList.add('hidden');
+    }
+
+    function mostrarExito(msg) {
+        const el = document.getElementById('success-msg');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        document.getElementById('error-msg').classList.add('hidden');
+    }
+
+    document.getElementById('form-cambiar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const nueva = document.getElementById('nueva-contrasena').value;
+        const confirmar = document.getElementById('confirmar-contrasena').value;
+
+        if (nueva.length < 8) {
+            mostrarError('La contraseña debe tener al menos 8 caracteres.');
+            return;
+        }
+        if (nueva !== confirmar) {
+            mostrarError('Las contraseñas no coinciden.');
+            return;
+        }
+
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = localStorage.getItem('token');
+        const userId = userData.IDUsuario || userData.id;
+
+        if (!userId || !token) {
+            mostrarError('Sesión no encontrada. Por favor inicia sesión nuevamente.');
+            setTimeout(() => { window.location.href = '../login.html'; }, 1500);
+            return;
+        }
+
+        const btn = document.getElementById('btn-guardar');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        btn.disabled = true;
+        btnText.textContent = 'Guardando…';
+        btnIcon.className = 'fa-solid fa-spinner fa-spin';
+
+        try {
+            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) || 'http://localhost:3000/api';
+            const res = await fetch(`${apiUrl}/usuarios/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ Contrasena: nueva })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                mostrarError(data.error || data.detalle || 'Error al guardar la contraseña.');
+                btn.disabled = false;
+                btnText.textContent = 'Guardar nueva contraseña';
+                btnIcon.className = 'fa-solid fa-floppy-disk';
+                return;
+            }
+
+            // Actualizar el flag en localStorage
+            userData.requiereCambioPassword = false;
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            mostrarExito('Contraseña actualizada correctamente. Redirigiendo…');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+
+        } catch (err) {
+            mostrarError('Error de conexión con el servidor.');
+            btn.disabled = false;
+            btnText.textContent = 'Guardar nueva contraseña';
+            btnIcon.className = 'fa-solid fa-floppy-disk';
+        }
+    });
+
+    // Verificar que el usuario esté logueado y realmente necesite cambiar contraseña
+    (function guard() {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = localStorage.getItem('token');
+        if (!token || !userData.id) {
+            window.location.href = '../login.html';
+        }
+    })();
+</script>
+</body>
+</html>

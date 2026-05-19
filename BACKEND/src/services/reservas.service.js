@@ -38,6 +38,40 @@ const ReservasService = {
     return rows;
   },
 
+  obtenerPorId: async (id) => {
+    const [[reserva]] = await db.query(
+      `SELECT r.IdReserva AS IDReserva, r.NroDocumentoCliente,
+              r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
+              r.Sub_Total AS SubTotal, r.Descuento, r.IVA, r.Monto_Total AS MontoTotal,
+              r.MetodoPago, r.IdEstadoReserva,
+              c.Nombre, c.Apellido, e.NombreEstadoReserva
+       FROM reserva r
+       LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
+       LEFT JOIN estadosreserva e ON r.IdEstadoReserva = e.IdEstadoReserva
+       WHERE r.IdReserva = ?`,
+      [id]
+    );
+    if (!reserva) return null;
+
+    const [paquetes] = await db.query(
+      `SELECT p.IDPaquete, p.NombrePaquete, drp.Precio
+       FROM detallereservapaquetes drp
+       JOIN paquetes p ON drp.IDPaquete = p.IDPaquete
+       WHERE drp.IDReserva = ?`,
+      [id]
+    );
+
+    const [servicios] = await db.query(
+      `SELECT s.IDServicio, s.NombreServicio, drs.Precio, drs.HoraServicio
+       FROM detallereservaservicio drs
+       JOIN servicio s ON drs.IDServicio = s.IDServicio
+       WHERE drs.IDReserva = ?`,
+      [id]
+    );
+
+    return { ...reserva, paquetes, servicios };
+  },
+
   cancelar: async (idReserva) => {
     const [result] = await db.query(
       `UPDATE reserva SET IdEstadoReserva = 3 WHERE IdReserva = ?`,
@@ -67,10 +101,42 @@ const ReservasService = {
       id_usuario,
       paquetesIds,
       serviciosIds,
+      serviciosConHorarios,
     } = reserva;
 
     if (!NroDocumentoCliente) throw new Error("Falta NroDocumentoCliente.");
     if (!FechaInicio || !FechaFinalizacion) throw new Error("Faltan fechas.");
+
+    // H3: Validar que las habitaciones de los paquetes seleccionados estén activas
+    if (Array.isArray(paquetesIds) && paquetesIds.length > 0) {
+      for (const pid of paquetesIds) {
+        const [[paq]] = await db.query(
+          `SELECT p.IDPaquete, h.Estado AS estadoHabitacion
+           FROM paquetes p
+           JOIN habitacion h ON p.IDHabitacion = h.IDHabitacion
+           WHERE p.IDPaquete = ?`,
+          [pid]
+        );
+        if (!paq) throw new Error("Paquete no encontrado.");
+        if (!paq.estadoHabitacion) {
+          throw new Error("Esta habitación no está disponible para reservas.");
+        }
+      }
+    }
+
+    // S4: Validar que los servicios adicionales seleccionados estén activos
+    if (Array.isArray(serviciosIds) && serviciosIds.length > 0) {
+      for (const sid of serviciosIds) {
+        const [[svc]] = await db.query(
+          `SELECT Estado FROM servicio WHERE IDServicio = ?`,
+          [sid]
+        );
+        if (!svc) throw new Error("Servicio no encontrado.");
+        if (!svc.Estado) {
+          throw new Error("Uno de los servicios seleccionados no está disponible.");
+        }
+      }
+    }
 
     const [result] = await db.query(
       `INSERT INTO reserva
@@ -103,14 +169,16 @@ const ReservasService = {
       }
     }
 
-    if (Array.isArray(serviciosIds) && serviciosIds.length > 0) {
-      for (const sid of serviciosIds) {
-        await db.query(
-          `INSERT INTO detallereservaservicio (IDReserva, IDServicio, Cantidad, Precio, Estado)
-           SELECT ?, ?, 1, Costo, 1 FROM servicio WHERE IDServicio = ?`,
-          [idReserva, sid, sid]
-        );
-      }
+    const svcList = Array.isArray(serviciosConHorarios) && serviciosConHorarios.length > 0
+      ? serviciosConHorarios
+      : (Array.isArray(serviciosIds) ? serviciosIds.map(id => ({ id, hora: null })) : []);
+
+    for (const { id: sid, hora } of svcList) {
+      await db.query(
+        `INSERT INTO detallereservaservicio (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
+         SELECT ?, ?, 1, Costo, 1, ? FROM servicio WHERE IDServicio = ?`,
+        [idReserva, sid, hora || null, sid]
+      );
     }
 
     return { insertId: idReserva };
@@ -129,6 +197,7 @@ const ReservasService = {
       IdEstadoReserva,
       paquetesIds,
       serviciosIds,
+      serviciosConHorarios,
     } = data;
 
     const [result] = await db.query(
@@ -162,13 +231,17 @@ const ReservasService = {
       }
     }
 
-    if (Array.isArray(serviciosIds)) {
+    const hasSvcData = Array.isArray(serviciosConHorarios) || Array.isArray(serviciosIds);
+    if (hasSvcData) {
       await db.query(`DELETE FROM detallereservaservicio WHERE IDReserva = ?`, [id]);
-      for (const sid of serviciosIds) {
+      const svcList = Array.isArray(serviciosConHorarios) && serviciosConHorarios.length > 0
+        ? serviciosConHorarios
+        : (Array.isArray(serviciosIds) ? serviciosIds.map(sid => ({ id: sid, hora: null })) : []);
+      for (const { id: sid, hora } of svcList) {
         await db.query(
-          `INSERT INTO detallereservaservicio (IDReserva, IDServicio, Cantidad, Precio, Estado)
-           SELECT ?, ?, 1, Costo, 1 FROM servicio WHERE IDServicio = ?`,
-          [id, sid, sid]
+          `INSERT INTO detallereservaservicio (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
+           SELECT ?, ?, 1, Costo, 1, ? FROM servicio WHERE IDServicio = ?`,
+          [id, sid, hora || null, sid]
         );
       }
     }

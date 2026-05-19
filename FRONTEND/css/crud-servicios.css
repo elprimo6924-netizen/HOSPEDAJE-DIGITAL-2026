@@ -21,7 +21,7 @@
 
 .crud-servicios-header h3 {
     font-size: var(--font-size-xxl);
-    color: #c2410c;
+    color: var(--color-secondary);
     margin-bottom: var(--spacing-xs);
 }
 
@@ -71,7 +71,7 @@
 
 .crud-servicios-summary strong {
     font-size: 2rem;
-    color: #c2410c;
+    color: var(--color-secondary);
 }
 
 .crud-servicios-layout {
@@ -90,7 +90,7 @@
 
 .crud-servicios-panel h4 {
     font-size: var(--font-size-xl);
-    color: #c2410c;
+    color: var(--color-secondary);
     margin-bottom: var(--spacing-sm);
 }
 
@@ -139,8 +139,8 @@
 .crud-servicios-filtros input:focus,
 .crud-servicios-filtros select:focus {
     outline: none;
-    border-color: #c2410c;
-    box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.12);
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.12);
 }
 
 .crud-servicios-form-actions {
@@ -225,7 +225,7 @@
 
 .crud-servicios-tabla thead th {
     background: #f8fafc;
-    color: #c2410c;
+    color: var(--color-secondary);
     text-align: left;
     padding: 1rem;
     font-size: 0.8rem;
@@ -247,7 +247,7 @@
 
 .crud-servicios-nombre {
     font-weight: 700;
-    color: #c2410c;
+    color: var(--color-secondary);
     margin-bottom: 0.35rem;
 }
 

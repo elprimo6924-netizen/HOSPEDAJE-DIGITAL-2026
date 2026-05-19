@@ -5,6 +5,7 @@ const router = express.Router();
 const ServiciosController = require("../controllers/servicios.controller");
 
 router.get("/", ServiciosController.listar);
+router.get("/activos", ServiciosController.listarActivos);
 
 router.get("/:id", ServiciosController.obtener);
 

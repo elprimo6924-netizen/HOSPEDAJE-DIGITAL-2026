@@ -19,27 +19,27 @@
         footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
 
         .crud-reservas-toolbar { display:flex; align-items:center; justify-content:space-between; gap:var(--spacing-md); margin-bottom:var(--spacing-md); }
-        .btn-nueva-reserva { padding:.75rem 1.5rem; background:#c2410c; color:#fff; border:none; border-radius:10px; font-size:.9rem; font-weight:700; cursor:pointer; letter-spacing:.03em; transition:background .2s; }
+        .btn-nueva-reserva { padding:.75rem 1.5rem; background:var(--color-secondary); color:#fff; border:none; border-radius:10px; font-size:.9rem; font-weight:700; cursor:pointer; letter-spacing:.03em; transition:background .2s; }
         .btn-nueva-reserva:hover { background:#9a3412; }
 
         .crud-reservas-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--spacing-md); margin-bottom:var(--spacing-lg); }
         .crud-reservas-summary article { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-md); box-shadow:var(--shadow-sm); }
         .crud-reservas-summary span    { display:block; color:var(--color-text-light); font-size:var(--font-size-sm); margin-bottom:var(--spacing-xs); }
-        .crud-reservas-summary strong  { font-size:2rem; color:#c2410c; }
+        .crud-reservas-summary strong  { font-size:2rem; color:var(--color-secondary); }
 
         .crud-reservas-panel  { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-lg); box-shadow:var(--shadow-sm); }
-        .crud-reservas-panel h4 { font-size:var(--font-size-xl); color:#c2410c; margin-bottom:var(--spacing-sm); }
+        .crud-reservas-panel h4 { font-size:var(--font-size-xl); color:var(--color-secondary); margin-bottom:var(--spacing-sm); }
         .crud-reservas-note   { color:var(--color-text-light); margin:0 0 var(--spacing-md); }
         .crud-reservas-lista-top { display:flex; justify-content:space-between; gap:var(--spacing-md); align-items:flex-start; margin-bottom:var(--spacing-md); }
 
         .crud-reservas-filtros { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
         .crud-reservas-filtros input  { flex:1 1 240px; min-width:240px; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:10px; background:var(--color-white); color:var(--color-text); font:inherit; }
         .crud-reservas-filtros select { flex:0 0 180px; min-width:180px; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:10px; background:var(--color-white); color:var(--color-text); font:inherit; }
-        .crud-reservas-filtros input:focus, .crud-reservas-filtros select:focus { outline:none; border-color:#c2410c; box-shadow:0 0 0 3px rgba(194,65,12,.12); }
+        .crud-reservas-filtros input:focus, .crud-reservas-filtros select:focus { outline:none; border-color:var(--color-secondary); box-shadow:0 0 0 3px rgba(255, 140, 66, .12); }
 
         .crud-reservas-tabla-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:14px; background:#fff; }
         .crud-reservas-tabla { width:100%; min-width:1000px; border-collapse:collapse; }
-        .crud-reservas-tabla thead th { background:#f8fafc; color:#c2410c; text-align:left; padding:1rem; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e2e8f0; }
+        .crud-reservas-tabla thead th { background:#f8fafc; color:var(--color-secondary); text-align:left; padding:1rem; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e2e8f0; }
         .crud-reservas-tabla tbody td { padding:1rem; border-bottom:1px solid #edf2f7; vertical-align:middle; color:var(--color-text); }
         .crud-reservas-tabla tbody tr:hover { background:#f8fafc; }
         .crud-reservas-acciones { display:flex; flex-wrap:wrap; gap:.5rem; }
@@ -57,7 +57,7 @@
         .modal-reserva-overlay { position:fixed; inset:0; z-index:1200; display:grid; place-items:center; background:rgba(15,23,42,.55); padding:1rem; }
         .modal-reserva-overlay.hidden { display:none; }
         .modal-reserva-content { width:min(700px,100%); max-height:84vh; overflow:auto; background:#fff; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 24px 48px rgba(15,23,42,.25); padding:var(--spacing-lg); position:relative; }
-        .modal-reserva-content h4 { font-size:1.3rem; color:#c2410c; margin-bottom:var(--spacing-md); }
+        .modal-reserva-content h4 { font-size:1.3rem; color:var(--color-secondary); margin-bottom:var(--spacing-md); }
         .modal-reserva-close { position:absolute; top:.6rem; right:.8rem; border:none; background:transparent; font-size:2rem; line-height:1; cursor:pointer; color:#64748b; }
         .modal-reserva-close:hover { color:#0f172a; }
         .detalle-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
@@ -72,7 +72,7 @@
         .pag-controls { display:flex; align-items:center; gap:.35rem; }
         .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#64748b; }
         .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e2e8f0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#0f172a; cursor:pointer; outline:none; }
-        .pag-per-page select:focus { border-color:#c2410c; }
+        .pag-per-page select:focus { border-color:var(--color-secondary); }
         .pag-btn {
             min-width:34px; height:34px; padding:0 .5rem;
             border:1.5px solid #e2e8f0; border-radius:8px;
@@ -80,8 +80,8 @@
             cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
             transition:all .15s;
         }
-        .pag-btn:hover:not(:disabled) { border-color:#c2410c; color:#c2410c; background:#fff7ed; }
-        .pag-btn.active  { background:#c2410c; color:#fff; border-color:#c2410c; }
+        .pag-btn:hover:not(:disabled) { border-color:var(--color-secondary); color:var(--color-secondary); background:#fff7ed; }
+        .pag-btn.active  { background:var(--color-secondary); color:#fff; border-color:var(--color-secondary); }
         .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
         .pag-btn.dots { cursor:default; border-color:transparent; background:transparent; }
 
@@ -104,11 +104,15 @@
         </header>
 
         <main>
-            <div class="crud-reservas-toolbar">
-                <button type="button" class="btn-nueva-reserva" id="btn-nueva-reserva">
-                    <i class="fa-solid fa-plus"></i> NUEVA RESERVA
-                </button>
-                <div id="mensaje-reservas-admin" class="crud-reservas-mensaje" aria-live="polite"></div>
+            <div class="mod-toolbar">
+                <div class="mod-toolbar-left">
+                    <h2 class="mod-toolbar-title"><i class="fa-solid fa-calendar-check mod-icon" aria-hidden="true"></i> Gestión de Reservas</h2>
+                    <p class="mod-toolbar-subtitle">Consulta, cancela y gestiona todas las reservas del hospedaje.</p>
+                </div>
+                <div class="mod-toolbar-actions">
+                    <div id="mensaje-reservas-admin" class="crud-reservas-mensaje" aria-live="polite"></div>
+                    <button type="button" class="btn-mod-nuevo" id="btn-nueva-reserva"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nueva Reserva</button>
+                </div>
             </div>
 
             <div class="crud-reservas-summary">
@@ -182,6 +186,7 @@
     <script src="../js/main.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/validation.js"></script>
     <script>
         /* ── Utilidades ── */
         function badgeEstado(id, nombre) {
@@ -348,14 +353,39 @@
         }
 
         /* ── Ver detalle ── */
-        function verDetalle(id) {
-            const r = reservasCargadas.find(x => x.IDReserva === id);
-            if (!r) return;
+        async function verDetalle(id) {
+            const contenido = document.getElementById('detalle-reserva-contenido');
+            contenido.innerHTML = '<div style="grid-column:span 2;text-align:center;color:#64748b;padding:1rem">Cargando...</div>';
+            document.getElementById('modal-reserva-detalle').classList.remove('hidden');
+
+            let r;
+            try {
+                r = await requestJson(`/reservas/${id}`);
+            } catch {
+                r = reservasCargadas.find(x => x.IDReserva === id) || null;
+            }
+            if (!r) { contenido.innerHTML = '<div style="grid-column:span 2;color:#ef4444">Error al cargar detalle.</div>'; return; }
+
+            const chip = (txt, bg, color, border) =>
+                `<span style="display:inline-flex;align-items:center;gap:4px;background:${bg};color:${color};
+                              border:1px solid ${border};border-radius:6px;padding:2px 9px;
+                              font-size:.76rem;font-weight:600;margin:2px">${txt}</span>`;
+
+            const paqHtml = (r.paquetes || []).length
+                ? r.paquetes.map(p => chip(p.NombrePaquete, '#f0fdf4', '#166534', '#bbf7d0')).join('')
+                : (r.Paquetes ? r.Paquetes.split(', ').map(p => chip(p, '#f0fdf4', '#166534', '#bbf7d0')).join('') : '<span style="color:#94a3b8">—</span>');
+
+            const svcHtml = (r.servicios || []).length
+                ? r.servicios.map(s => {
+                    const hora = s.HoraServicio ? ` <span style="opacity:.7">${s.HoraServicio}</span>` : '';
+                    return chip(`<i class="fa-regular fa-clock" style="font-size:.65rem"></i> ${s.NombreServicio}${hora}`, '#eff6ff', '#1d4ed8', '#bfdbfe');
+                  }).join('')
+                : (r.Servicios ? r.Servicios.split(', ').map(s => chip(s, '#eff6ff', '#1d4ed8', '#bfdbfe')).join('') : '<span style="color:#94a3b8">—</span>');
+
             const campos = [
                 ['ID Reserva',    `#${r.IDReserva}`],
                 ['Cliente',       `${r.Nombre||''} ${r.Apellido||''}`],
                 ['Documento',     r.NroDocumentoCliente||'-'],
-                ['Fecha reserva', formatFecha(r.FechaReserva)],
                 ['Fecha inicio',  formatFecha(r.FechaInicio)],
                 ['Fecha fin',     formatFecha(r.FechaFinalizacion)],
                 ['Subtotal',      formatMonto(r.SubTotal)],
@@ -363,31 +393,58 @@
                 ['IVA',           formatMonto(r.IVA)],
                 ['Total',         formatMonto(r.MontoTotal)],
                 ['Estado',        r.NombreEstadoReserva||'-'],
-                ['Paquetes',      r.Paquetes||'Ninguno'],
-                ['Servicios',     r.Servicios||'Ninguno'],
+                ['Paquetes',      paqHtml],
+                ['Servicios',     svcHtml],
             ];
-            document.getElementById('detalle-reserva-contenido').innerHTML = campos.map(([l,v]) =>
+            contenido.innerHTML = campos.map(([l,v]) =>
                 `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('');
-            document.getElementById('modal-reserva-detalle').classList.remove('hidden');
         }
 
         /* ── Cancelar / Eliminar ── */
-        async function cancelarReservaUI(id) {
-            if (!confirm(`¿Cancelar la reserva #${id}?`)) return;
-            try {
-                await requestJson(`/reservas/${id}/cancelar`, { method: 'PUT' });
-                mostrarMensaje(`Reserva #${id} cancelada.`, 'ok');
-                cargarReservas();
-            } catch { mostrarMensaje('Error al cancelar.', 'error'); }
+        function cancelarReservaUI(id) {
+            if (typeof confirmarAccion !== 'function') {
+                if (!confirm(`¿Cancelar la reserva #${id}?`)) return;
+                requestJson(`/reservas/${id}/cancelar`, { method: 'PUT' })
+                    .then(() => { mostrarMensaje(`Reserva #${id} cancelada.`, 'ok'); cargarReservas(); })
+                    .catch(() => mostrarMensaje('Error al cancelar.', 'error'));
+                return;
+            }
+            confirmarAccion({
+                titulo: '¿Cancelar reserva?',
+                mensaje: `La reserva #${id} será marcada como cancelada y no podrá revertirse.`,
+                textoConfirmar: 'Sí, cancelar',
+                tipo: 'warning',
+                onConfirmar: async () => {
+                    try {
+                        await requestJson(`/reservas/${id}/cancelar`, { method: 'PUT' });
+                        mostrarMensaje(`Reserva #${id} cancelada.`, 'ok');
+                        cargarReservas();
+                    } catch { mostrarMensaje('Error al cancelar.', 'error'); }
+                }
+            });
         }
 
-        async function eliminarReservaUI(id) {
-            if (!confirm(`¿Eliminar definitivamente la reserva #${id}? No se puede deshacer.`)) return;
-            try {
-                await requestJson(`/reservas/${id}`, { method: 'DELETE', allowNoContent: true });
-                mostrarMensaje(`Reserva #${id} eliminada.`, 'ok');
-                cargarReservas();
-            } catch { mostrarMensaje('Error al eliminar.', 'error'); }
+        function eliminarReservaUI(id) {
+            if (typeof confirmarAccion !== 'function') {
+                if (!confirm(`¿Eliminar definitivamente la reserva #${id}? No se puede deshacer.`)) return;
+                requestJson(`/reservas/${id}`, { method: 'DELETE', allowNoContent: true })
+                    .then(() => { mostrarMensaje(`Reserva #${id} eliminada.`, 'ok'); cargarReservas(); })
+                    .catch(() => mostrarMensaje('Error al eliminar.', 'error'));
+                return;
+            }
+            confirmarAccion({
+                titulo: '¿Eliminar reserva?',
+                mensaje: `La reserva #${id} será eliminada permanentemente. Esta acción no se puede deshacer.`,
+                textoConfirmar: 'Eliminar',
+                tipo: 'danger',
+                onConfirmar: async () => {
+                    try {
+                        await requestJson(`/reservas/${id}`, { method: 'DELETE', allowNoContent: true });
+                        mostrarMensaje(`Reserva #${id} eliminada.`, 'ok');
+                        cargarReservas();
+                    } catch { mostrarMensaje('Error al eliminar.', 'error'); }
+                }
+            });
         }
 
         /* ── Init ── */
