@@ -5,13 +5,6 @@
 
 window.API_URL = window.API_URL || ((typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : 'http://localhost:3000/api');
 
-// Fondo del main con Tailwind (azul oscuro del dashboard)
-(() => {
-    document.querySelectorAll('main').forEach(el => {
-        el.classList.add('bg-[#0f172a]');
-    });
-})();
-
 // Titulos estandarizados en naranja (Tailwind)
 (() => {
     const titleSelectors = [

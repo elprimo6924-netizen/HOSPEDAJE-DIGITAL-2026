@@ -22,6 +22,17 @@
         #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
         main { background-color: #0f172a !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
         footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+        /* Inputs y selects del formulario y filtros: texto oscuro fijo sobre fondo blanco,
+           sin importar el tema activo (en modo oscuro --color-text es casi blanco) */
+        .crud-habitaciones-form input,
+        .crud-habitaciones-form textarea,
+        .crud-habitaciones-form select,
+        .crud-habitaciones-filtros input,
+        .crud-habitaciones-filtros select,
+        #filtro-estado-habitaciones-admin option {
+            color: #1f2937 !important;
+            background-color: #ffffff !important;
+        }
     </style>
 </head>
 <body>

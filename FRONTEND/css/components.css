@@ -903,7 +903,16 @@
     box-shadow: 0 24px 48px rgba(15, 23, 42, 0.25);
     padding: var(--spacing-lg);
     position: relative;
+    color: #1f2937;
 }
+.crud-modal-content h4 { color: var(--color-secondary); }
+.crud-modal-content label,
+.crud-modal-content p,
+.crud-modal-content small { color: #374151; }
+.crud-modal-content input,
+.crud-modal-content textarea,
+.crud-modal-content select { color: #1f2937 !important; background-color: #ffffff !important; }
+.crud-modal-content select option { color: #1f2937 !important; background-color: #ffffff !important; }
 
 .crud-modal-content .crud-habitaciones-mensaje,
 .crud-modal-content .crud-servicios-mensaje {

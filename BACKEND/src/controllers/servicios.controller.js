@@ -101,8 +101,11 @@ crear: async (req, res) => {
 
         } catch (error) {
 
+            console.error(error);
+
             res.status(500).json({
-                error: "Error actualizando servicio"
+                error: "Error actualizando servicio",
+                detalle: error.message
             });
 
         }

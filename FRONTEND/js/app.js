@@ -1550,8 +1550,20 @@ const aplicarModoContraste = (activo) => {
 };
 
 function configurarModoContraste() {
-    // Aplicar contraste al 100% de forma permanente
-    document.body.classList.add('high-contrast');
+    const valorGuardado = localStorage.getItem(CLAVE_CONTRASTE_ALTO);
+    const activo = valorGuardado === 'true';
+
+    aplicarModoContraste(activo);
+
+    const boton = document.getElementById('toggle-contraste');
+    if (boton && !boton.dataset.contrasteInicializado) {
+        boton.addEventListener('click', () => {
+            const nuevoEstado = !document.body.classList.contains('high-contrast');
+            aplicarModoContraste(nuevoEstado);
+            localStorage.setItem(CLAVE_CONTRASTE_ALTO, String(nuevoEstado));
+        });
+        boton.dataset.contrasteInicializado = 'true';
+    }
 }
 
 const actualizarResumenHabitacionesAdmin = (habitaciones) => {
@@ -2510,10 +2522,38 @@ async function guardarServicioAdmin(evento) {
         return;
     }
 
+    if (imagenUrl) {
+        if (imagenUrl.length > 500) {
+            mostrarMensajeServicioAdmin('La URL de imagen supera 500 caracteres. Usa un enlace mas corto y directo.', 'error');
+            return;
+        }
+
+        const extensionImagen = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
+        const tieneExtensionValida = extensionImagen.test(imagenUrl);
+
+        if (!tieneExtensionValida) {
+            try {
+                const respuesta = await fetch(imagenUrl, { method: 'HEAD' });
+                const contentType = respuesta.headers.get('content-type') || '';
+
+                if (!respuesta.ok || !contentType.startsWith('image/')) {
+                    mostrarMensajeServicioAdmin('La URL no apunta a una imagen valida (Content-Type image/*).', 'error');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error validando URL de imagen:', error);
+                mostrarMensajeServicioAdmin('No se pudo validar la URL por CORS o red. Se guardara igualmente.', 'info');
+            }
+        }
+    }
+
+    const duracionNumero = Number(duracion);
+    const duracionPayload = Number.isFinite(duracionNumero) ? duracionNumero : duracion;
+
     const payload = {
         NombreServicio: nombre,
         Descripcion: descripcion,
-        Duracion: Number(duracion),
+        Duracion: duracionPayload,
         CantidadMaximaPersonas: Number(cantidadMaxima),
         Costo: Number(costo),
         Estado: Number(estado),
@@ -2555,7 +2595,8 @@ async function guardarServicioAdmin(evento) {
             // Actualizar
             const resultado = await actualizarServicio(id, payload);
             if (!resultado) {
-                throw new Error('No se pudo actualizar el servicio');
+                const detalle = (typeof getApiLastError === 'function') ? getApiLastError() : null;
+                throw new Error(detalle || 'No se pudo actualizar el servicio');
             }
             mostrarMensajeServicioAdmin(`Servicio "${nombre}" actualizado correctamente.`, 'ok');
         } else {
@@ -2591,7 +2632,10 @@ async function eliminarServicioAdmin(id) {
             onConfirmar: async () => {
                 try {
                     const resultado = await eliminarServicio(id);
-                    if (!resultado) throw new Error('No se pudo eliminar el servicio');
+                    if (!resultado) {
+                        const detalle = (typeof getApiLastError === 'function') ? getApiLastError() : null;
+                        throw new Error(detalle || 'No se pudo eliminar el servicio');
+                    }
                     mostrarMensajeServicioAdmin(`Servicio "${servicio.NombreServicio}" eliminado correctamente.`, 'ok');
                     limpiarFormularioServicioAdmin(false);
                     await cargarServiciosAdmin();
@@ -2605,7 +2649,10 @@ async function eliminarServicioAdmin(id) {
         if (!confirm(`¿Estás seguro de que deseas eliminar el servicio "${servicio.NombreServicio}"?`)) return;
         try {
             const resultado = await eliminarServicio(id);
-            if (!resultado) throw new Error('No se pudo eliminar el servicio');
+            if (!resultado) {
+                const detalle = (typeof getApiLastError === 'function') ? getApiLastError() : null;
+                throw new Error(detalle || 'No se pudo eliminar el servicio');
+            }
             mostrarMensajeServicioAdmin(`Servicio "${servicio.NombreServicio}" eliminado correctamente.`, 'ok');
             limpiarFormularioServicioAdmin(false);
             await cargarServiciosAdmin();
@@ -2679,11 +2726,6 @@ const inicializarFormularioServiciosAdmin = () => {
     }
 
     if (modalServicio && !modalServicio.dataset.serviciosAdminInicializado) {
-        modalServicio.addEventListener('click', (event) => {
-            if (event.target === modalServicio) {
-                cerrarModalServicioAdmin();
-            }
-        });
         modalServicio.dataset.serviciosAdminInicializado = 'true';
     }
 
@@ -2756,11 +2798,6 @@ const inicializarFormularioServiciosAdmin = () => {
     const cerrarDetalle = document.getElementById('btn-cerrar-modal-detalle');
 
     if (detalleModal && !detalleModal.dataset.detalleInicializado) {
-        detalleModal.addEventListener('click', (event) => {
-            if (event.target === detalleModal) {
-                cerrarDetalleAdmin();
-            }
-        });
         detalleModal.dataset.detalleInicializado = 'true';
     }
 

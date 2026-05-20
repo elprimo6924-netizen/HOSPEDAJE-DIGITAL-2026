@@ -20,11 +20,28 @@
                     colors: {
                         primary: '#0f3d3e',
                         secondary: '#1a1a1a',
-                    }
+                    },
+                    backgroundImage: {
+                        'vignette': 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%)',
+                    },
                 }
             }
         }
     </script>
+    <!-- Ken Burns: animación de zoom suave para las imágenes del hero -->
+    <style>
+        @keyframes kenBurns {
+            from { transform: scale(1);    }
+            to   { transform: scale(1.12); }
+        }
+        .hero-ken-burns {
+            animation: kenBurns 6s ease-in-out forwards;
+        }
+        /* Transición suave del parallax sin interferir con el ciclo de imágenes */
+        #hero-bg {
+            transition: transform 0.12s ease-out;
+        }
+    </style>
 </head>
 <body class="bg-white text-secondary font-sans antialiased">
 
@@ -52,43 +69,112 @@
     </nav>
 
     <!-- HERO SECTION -->
-    <section id="inicio" class="relative overflow-hidden pt-16 pb-24 lg:pt-32 lg:pb-40 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-            <div class="z-10">
-                <h1 class="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-secondary mb-8">
-                    Descanso sin <br><span class="text-primary italic">complicaciones</span>
+    <section id="inicio" class="relative overflow-hidden min-h-screen flex items-center">
+
+        <!-- ===== SISTEMA DE FONDO DINÁMICO ===== -->
+        <!--
+            Escala base 1.04 en el contenedor: crea margen invisible alrededor del frame
+            para que el parallax no revele bordes vacíos al desplazarse.
+        -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden -z-10"
+             id="hero-bg"
+             style="transform: scale(1.04); will-change: transform;">
+
+            <!-- Imagen 1: Interior habitación de lujo -->
+            <div class="absolute inset-0 w-full h-full transition-opacity duration-1000 opacity-100" data-hero-slide="0">
+                <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=1920"
+                     class="absolute inset-0 w-full h-full object-cover object-center"
+                     alt="Interior habitación hotel de lujo">
+            </div>
+
+            <!-- Imagen 2: Suite con cama king -->
+            <div class="absolute inset-0 w-full h-full transition-opacity duration-1000 opacity-0" data-hero-slide="1">
+                <img src="https://images.unsplash.com/photo-1582719478250-c89cae4df85b?auto=format&fit=crop&q=80&w=1920"
+                     class="absolute inset-0 w-full h-full object-cover object-center"
+                     alt="Suite hotel con cama king size">
+            </div>
+
+            <!-- Imagen 3: Lobby de hotel boutique -->
+            <div class="absolute inset-0 w-full h-full transition-opacity duration-1000 opacity-0" data-hero-slide="2">
+                <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1920"
+                     class="absolute inset-0 w-full h-full object-cover object-center"
+                     alt="Lobby hotel boutique">
+            </div>
+
+            <!-- Imagen 4: Baño de hotel de lujo -->
+            <div class="absolute inset-0 w-full h-full transition-opacity duration-1000 opacity-0" data-hero-slide="3">
+                <img src="https://images.unsplash.com/photo-1620332372374-f108c53d2e03?auto=format&fit=crop&q=80&w=1920"
+                     class="absolute inset-0 w-full h-full object-cover object-center"
+                     alt="Baño hotel de lujo">
+            </div>
+
+            <!-- Imagen 5: Piscina en azotea de hotel -->
+            <div class="absolute inset-0 w-full h-full transition-opacity duration-1000 opacity-0" data-hero-slide="4">
+                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=1920"
+                     class="absolute inset-0 w-full h-full object-cover object-center"
+                     alt="Piscina azotea hotel">
+            </div>
+
+            <!-- Overlay: gradiente oscuro de izquierda a derecha para legibilidad del texto -->
+            <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/10"></div>
+
+            <!-- Viñeta cinematográfica: oscurecimiento radial de los bordes -->
+            <div class="absolute inset-0 bg-vignette pointer-events-none"></div>
+        </div>
+
+        <!-- Contenido principal: z-10 para mantenerse encima del fondo -->
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center py-32 w-full relative z-10">
+
+            <!-- Columna izquierda: texto y botones -->
+            <div>
+                <h1 class="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-white mb-8">
+                    Descanso sin <br><span class="text-amber-300 italic">complicaciones</span>
                 </h1>
-                <p class="text-lg text-gray-600 leading-relaxed max-w-lg mb-10">
+                <p class="text-lg text-white/80 leading-relaxed max-w-lg mb-10">
                     Reserva tus habitaciones de forma simple. Accede a todos los servicios en una plataforma clara, moderna y disponible 24/7.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="login.html" class="px-8 py-4 bg-primary text-white rounded-xl font-bold shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all">Entrar al sistema</a>
-                    <a href="#habitaciones" class="px-8 py-4 bg-white text-primary border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all">Ver habitaciones</a>
+                    <a href="login.html"
+                       class="px-8 py-4 bg-primary text-white rounded-xl font-bold shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all">
+                        Entrar al sistema
+                    </a>
+                    <a href="#habitaciones"
+                       class="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-xl font-bold hover:bg-white/20 transition-all">
+                        Ver habitaciones
+                    </a>
                 </div>
             </div>
 
+            <!-- Columna derecha: tarjetas de estadísticas con glassmorphism -->
             <div class="relative">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
-                        <span class="text-4xl font-bold text-primary mb-2">24/7</span>
-                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Disponibilidad</span>
+                    <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-white mb-2">24/7</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-white/60">Disponibilidad</span>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center mt-12 transform hover:scale-105 transition-transform duration-500">
-                        <span class="text-4xl font-bold text-primary mb-2">∞</span>
-                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Posibilidades</span>
+                    <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-white mb-2">∞</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-white/60">Posibilidades</span>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center -mt-12 transform hover:scale-105 transition-transform duration-500">
-                        <span class="text-4xl font-bold text-primary mb-2">100%</span>
-                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Digital</span>
+                    <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-white mb-2">100%</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-white/60">Digital</span>
                     </div>
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
-                        <span class="text-4xl font-bold text-primary mb-2">1</span>
-                        <span class="text-xs font-bold uppercase tracking-widest text-gray-400">Plataforma</span>
+                    <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-500">
+                        <span class="text-4xl font-bold text-white mb-2">1</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-white/60">Plataforma</span>
                     </div>
                 </div>
-                <!-- Decoración abstracta -->
-                <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-primary/5 rounded-full blur-3xl"></div>
             </div>
+        </div>
+
+        <!-- Indicadores de punto (dots): activo = w-3 h-3 bg-white, inactivo = w-2 h-2 bg-white/40 -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 justify-center z-10" id="hero-dots">
+            <button class="w-3 h-3 rounded-full bg-white transition-all duration-300"    data-dot="0" aria-label="Imagen 1"></button>
+            <button class="w-2 h-2 rounded-full bg-white/40 cursor-pointer transition-all duration-300" data-dot="1" aria-label="Imagen 2"></button>
+            <button class="w-2 h-2 rounded-full bg-white/40 cursor-pointer transition-all duration-300" data-dot="2" aria-label="Imagen 3"></button>
+            <button class="w-2 h-2 rounded-full bg-white/40 cursor-pointer transition-all duration-300" data-dot="3" aria-label="Imagen 4"></button>
+            <button class="w-2 h-2 rounded-full bg-white/40 cursor-pointer transition-all duration-300" data-dot="4" aria-label="Imagen 5"></button>
         </div>
     </section>
 
@@ -196,7 +282,30 @@
             'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=800'
         ];
 
-        function getRandomImage(index) {
+        // Base del servidor de imágenes (mismo origen que la API, sin /api)
+        const IMG_BASE = (typeof API_BASE_URL !== 'undefined')
+            ? API_BASE_URL.replace(/\/api\/?$/, '')
+            : 'http://localhost:3000';
+
+        function getRandomImage(index, room) {
+            const raw = ((room && room.ImagenHabitacion) || '').trim();
+            if (!raw) return roomImages[index % roomImages.length];
+
+            // data URL base64 → usar directamente
+            if (raw.startsWith('data:image/')) return raw;
+
+            // URL HTTP/HTTPS válida → usar directamente
+            if (/^https?:\/\//.test(raw)) return raw;
+
+            // Ruta web relativa normal (/img/... pero NO //... ni ///...)
+            if (/^\/[^/]/.test(raw)) return IMG_BASE + raw;
+
+            // Ruta de sistema de archivos Windows (///D:/...) u otra ruta absoluta
+            // → extraer solo el nombre de archivo y servir desde el backend
+            const decoded = decodeURIComponent(raw);
+            const nombreArchivo = decoded.replace(/\\/g, '/').split('/').filter(Boolean).pop();
+            if (nombreArchivo) return IMG_BASE + '/img/' + encodeURIComponent(nombreArchivo);
+
             return roomImages[index % roomImages.length];
         }
 
@@ -204,7 +313,7 @@
             const container = document.getElementById('habitaciones-container');
             try {
                 const habitaciones = await requestJson('/habitaciones');
-                
+
                 if (!Array.isArray(habitaciones) || habitaciones.length === 0) {
                     container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic">No hay habitaciones disponibles hoy.</p>';
                     return;
@@ -215,7 +324,7 @@
                 const html = roomsToDisplay.map((room, index) => `
                     <article class="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
                         <div class="relative h-64 overflow-hidden">
-                            <img src="${getRandomImage(index)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <img src="${getRandomImage(index, room)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                             <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary">Disponible</div>
                         </div>
                         <div class="p-8">
@@ -247,6 +356,118 @@
                 : '573000000000';
             document.getElementById('wa-fab').href = `https://wa.me/${wn}`;
         });
+    </script>
+
+    <!-- ===== HERO: FONDO DINÁMICO — Ken Burns + Slideshow + Parallax ===== -->
+    <script>
+    (function () {
+        'use strict';
+
+        // Referencias al DOM
+        const heroBg       = document.getElementById('hero-bg');
+        const heroSection  = document.getElementById('inicio');
+        const slides       = document.querySelectorAll('[data-hero-slide]');
+        const dots         = document.querySelectorAll('[data-dot]');
+
+        // Intervalo entre transiciones de imágenes (ms)
+        const INTERVALO_MS = 5000;
+        // Desplazamiento máximo en píxeles para el efecto parallax
+        const MAX_DESPL    = 15;
+        // Escala base del contenedor (margen para el parallax)
+        const ESCALA_BASE  = 1.04;
+
+        let indiceActual = 0;
+        let timerSlide;
+
+        // -------------------------------------------------------------------
+        // Muestra la diapositiva indicada y actualiza los dots
+        // -------------------------------------------------------------------
+        function mostrarSlide(idx) {
+            // Desactivar diapositiva anterior
+            slides[indiceActual].classList.remove('opacity-100');
+            slides[indiceActual].classList.add('opacity-0');
+
+            // Dot anterior vuelve a estado inactivo
+            dots[indiceActual].classList.remove('w-3', 'h-3', 'bg-white');
+            dots[indiceActual].classList.add('w-2', 'h-2', 'bg-white/40');
+
+            // Reiniciar efecto Ken Burns en la nueva imagen
+            const imgEntrada = slides[idx].querySelector('img');
+            imgEntrada.classList.remove('hero-ken-burns');
+            // Forzar reflow para que el navegador reinicie la animación CSS
+            void imgEntrada.offsetWidth;
+            imgEntrada.classList.add('hero-ken-burns');
+
+            // Activar nueva diapositiva
+            slides[idx].classList.remove('opacity-0');
+            slides[idx].classList.add('opacity-100');
+
+            // Dot activo
+            dots[idx].classList.remove('w-2', 'h-2', 'bg-white/40');
+            dots[idx].classList.add('w-3', 'h-3', 'bg-white');
+
+            indiceActual = idx;
+        }
+
+        // -------------------------------------------------------------------
+        // Avanza automáticamente a la siguiente diapositiva
+        // -------------------------------------------------------------------
+        function avanzarSlide() {
+            const siguiente = (indiceActual + 1) % slides.length;
+            mostrarSlide(siguiente);
+        }
+
+        // -------------------------------------------------------------------
+        // Inicia (o reinicia) el ciclo automático
+        // -------------------------------------------------------------------
+        function iniciarCiclo() {
+            clearInterval(timerSlide);
+            timerSlide = setInterval(avanzarSlide, INTERVALO_MS);
+        }
+
+        // -------------------------------------------------------------------
+        // Conectar cada dot con su diapositiva correspondiente
+        // -------------------------------------------------------------------
+        dots.forEach(function (dot) {
+            dot.addEventListener('click', function () {
+                const idx = parseInt(dot.dataset.dot, 10);
+                if (idx === indiceActual) return;
+                mostrarSlide(idx);
+                iniciarCiclo(); // Reiniciar temporizador desde el punto elegido
+            });
+        });
+
+        // -------------------------------------------------------------------
+        // Parallax: desplazar el fondo sutilmente al mover el ratón
+        // El contenedor tiene scale(1.04) de base para que el translate
+        // nunca deje ver los bordes vacíos del viewport.
+        // -------------------------------------------------------------------
+        heroSection.addEventListener('mousemove', function (e) {
+            const W  = window.innerWidth;
+            const H  = window.innerHeight;
+            // Posición relativa del cursor: rango -0.5 a +0.5
+            const rx = (e.clientX / W) - 0.5;
+            const ry = (e.clientY / H) - 0.5;
+            // Desplazamiento invertido: el fondo se mueve opuesto al cursor
+            const tx = rx * MAX_DESPL * -1;
+            const ty = ry * MAX_DESPL * -1;
+            heroBg.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + ESCALA_BASE + ')';
+        });
+
+        // Restaurar posición centrada al salir del hero
+        heroSection.addEventListener('mouseleave', function () {
+            heroBg.style.transform = 'translate(0px, 0px) scale(' + ESCALA_BASE + ')';
+        });
+
+        // -------------------------------------------------------------------
+        // Arranque: activar Ken Burns en la primera imagen e iniciar ciclo
+        // -------------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', function () {
+            const primeraImg = slides[0].querySelector('img');
+            primeraImg.classList.add('hero-ken-burns');
+            iniciarCiclo();
+        });
+    })();
     </script>
 </body>
 </html>

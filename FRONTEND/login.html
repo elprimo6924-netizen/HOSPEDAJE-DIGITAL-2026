@@ -21,60 +21,84 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
-<body class="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.28),_transparent_32%),linear-gradient(135deg,_#101827_0%,_#5a3d28_48%,_#d17a3a_100%)] font-display text-slate-900">
-    <main class="relative flex min-h-screen items-center justify-center px-4 py-10">
-        <div class="absolute left-8 top-10 h-72 w-72 rounded-full bg-black/20 blur-3xl"></div>
-        <div class="absolute bottom-6 right-10 h-80 w-80 rounded-full bg-orange-300/15 blur-3xl"></div>
 
-        <section class="relative w-full max-w-md rounded-[28px] bg-white/95 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.28)] ring-1 ring-white/60 backdrop-blur">
+    <style>
+        #login-bg {
+            position: fixed;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Fallback mientras carga la imagen */
+            background-color: #101827;
+        }
+        #snow-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-hidden font-display text-slate-900">
+
+    <!-- ===== FONDO: imagen del login ===== -->
+    <div id="login-bg">
+        <!-- Overlay oscuro sobre la imagen para legibilidad de la tarjeta -->
+        <div class="absolute inset-0 bg-black/55"></div>
+    </div>
+
+    <!-- ===== NIEVE: canvas transparente ===== -->
+    <canvas id="snow-canvas"></canvas>
+
+    <!-- ===== CONTENIDO ===== -->
+    <main class="relative flex min-h-screen items-center justify-center px-4 py-10" style="z-index:3">
+
+        <section class="relative w-full max-w-md rounded-[28px] bg-white/10 backdrop-blur-md border border-white/20 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
             <div class="text-center">
-                <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 shadow-sm">
+                <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm border border-white/30">
                     <i class="fa-solid fa-hotel text-2xl"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Hospedaje Digital</h1>
-                <p class="mt-2 text-sm text-slate-500">Ingresa a tu cuenta</p>
+                <h1 class="text-3xl font-extrabold tracking-tight text-white">Hospedaje Digital</h1>
+                <p class="mt-2 text-sm text-white/70">Ingresa a tu cuenta</p>
             </div>
 
-            <div class="mt-8 rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)]">
+            <div class="mt-8 rounded-[24px] border border-white/20 bg-white/10 p-5">
                 <form id="loginForm" class="space-y-5">
-                    <div id="errorMessage" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+                    <div id="errorMessage" class="hidden rounded-xl border border-red-300/60 bg-red-500/20 px-4 py-3 text-sm text-red-100"></div>
 
-                    <!-- ✏️ MODIFICADO: Email con field-wrapper para validación visual -->
                     <div class="field-wrapper space-y-2 relative">
-                        <label for="email" class="text-sm font-semibold text-slate-700">
-                            Correo Electrónico <span class="text-red-500">*</span>
+                        <label for="email" class="text-sm font-semibold text-white/90">
+                            Correo Electrónico <span class="text-orange-300">*</span>
                         </label>
                         <input type="email" id="email" name="email" required placeholder="admin@hotel.com" autocomplete="email"
-                            class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                            class="w-full rounded-xl border border-white/30 bg-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white/25 focus:ring-4 focus:ring-orange-400/20">
                     </div>
 
-                    <!-- ✏️ MODIFICADO: Password con toggle mostrar/ocultar -->
                     <div class="field-wrapper space-y-2 relative">
-                        <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
+                        <label for="password" class="text-sm font-semibold text-white/90">Contraseña</label>
                         <div class="relative">
                             <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                class="w-full rounded-xl border border-white/30 bg-white/15 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/40 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white/25 focus:ring-4 focus:ring-orange-400/20">
                             <button type="button" id="togglePassword"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" style="background:none;border:none;">
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer" style="background:none;border:none;">
                                 <i id="toggleIcon" class="fa-solid fa-eye"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- ✏️ MODIFICADO: Botón con estado de carga -->
                     <button id="loginBtn" type="submit"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition-all hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-900/30 transition-all hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/30 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
                         <span id="loginBtnText">Iniciar Sesión</span>
                         <i id="loginBtnIcon" class="fa-solid fa-arrow-right-to-bracket"></i>
                     </button>
                 </form>
             </div>
 
-            <div class="mt-6 space-y-3 text-center text-sm text-slate-600">
-                <p>¿No tienes cuenta? <a href="pages/register.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">Regístrate aquí</a></p>
-                <p><a href="pages/recuperarpass.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">¿Olvidaste tu contraseña?</a></p>
-                <p><a href="landingPage.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">← Volver</a></p>
+            <div class="mt-6 space-y-3 text-center text-sm text-white/70">
+                <p>¿No tienes cuenta? <a href="pages/register.html" class="font-semibold text-white underline decoration-orange-400 decoration-2 underline-offset-4">Regístrate aquí</a></p>
+                <p><a href="pages/recuperarpass.html" class="font-semibold text-white underline decoration-orange-400 decoration-2 underline-offset-4">¿Olvidaste tu contraseña?</a></p>
+                <p><a href="landingPage.html" class="font-semibold text-white underline decoration-orange-400 decoration-2 underline-offset-4">← Volver</a></p>
             </div>
         </section>
     </main>
@@ -84,20 +108,20 @@
     <script src="js/notifications.js"></script>
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const loginForm = document.getElementById("loginForm");
-            const errorContainer = document.getElementById("errorMessage");
-            const loginBtn = document.getElementById("loginBtn");
-            const loginBtnText = document.getElementById("loginBtnText");
-            const loginBtnIcon = document.getElementById("loginBtnIcon");
-            const emailInput = document.getElementById("email");
-            const passwordInput = document.getElementById("password");
+            const loginForm       = document.getElementById("loginForm");
+            const errorContainer  = document.getElementById("errorMessage");
+            const loginBtn        = document.getElementById("loginBtn");
+            const loginBtnText    = document.getElementById("loginBtnText");
+            const loginBtnIcon    = document.getElementById("loginBtnIcon");
+            const emailInput      = document.getElementById("email");
+            const passwordInput   = document.getElementById("password");
 
-            // ✏️ MODIFICADO: Toggle mostrar/ocultar contraseña
             document.getElementById('togglePassword').addEventListener('click', () => {
                 const input = document.getElementById('password');
-                const icon = document.getElementById('toggleIcon');
+                const icon  = document.getElementById('toggleIcon');
                 if (input.type === 'password') {
                     input.type = 'text';
                     icon.className = 'fa-solid fa-eye-slash';
@@ -107,38 +131,28 @@
                 }
             });
 
-            // ✏️ MODIFICADO: Validación en tiempo real del email
-            emailInput.addEventListener('blur', function() {
+            emailInput.addEventListener('blur', function () {
                 if (this.value && typeof validarEmail === 'function') {
                     const v = validarEmail(this.value);
-                    if (typeof setFieldState === 'function') {
+                    if (typeof setFieldState === 'function')
                         setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
-                    }
                 } else if (this.value) {
                     if (typeof setFieldState === 'function') setFieldState(this, 'valido');
                 }
             });
 
-            emailInput.addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
-            });
-
-            // ✏️ MODIFICADO: Limpiar estado del password al focus
-            passwordInput.addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
-            });
+            emailInput.addEventListener('focus',    function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
+            passwordInput.addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
             if (loginForm) {
                 loginForm.addEventListener("submit", async (e) => {
                     e.preventDefault();
-
                     errorContainer.classList.add("hidden");
                     errorContainer.innerHTML = "";
 
-                    const email = emailInput.value;
+                    const email     = emailInput.value;
                     const contrasena = passwordInput.value;
 
-                    // Validar email antes de enviar
                     if (typeof validarEmail === 'function') {
                         const vEmail = validarEmail(email);
                         if (!vEmail.valido) {
@@ -149,42 +163,113 @@
                         }
                     }
 
-                    // ✏️ MODIFICADO: Estado de carga en el botón
-                    loginBtn.disabled = true;
+                    loginBtn.disabled        = true;
                     loginBtnText.textContent = 'Verificando...';
-                    loginBtnIcon.className = 'fa-solid fa-spinner fa-spin';
+                    loginBtnIcon.className   = 'fa-solid fa-spinner fa-spin';
 
                     try {
                         const result = await loginUsuario(email, contrasena);
-
                         if (result.success) {
                             loginBtnText.textContent = '¡Bienvenido!';
-                            loginBtnIcon.className = 'fa-solid fa-check';
+                            loginBtnIcon.className   = 'fa-solid fa-check';
                             setTimeout(() => {
-                                if (result.data?.usuario?.requiereCambioPassword) {
-                                    window.location.href = "pages/cambiar-contrasena.html";
-                                } else {
-                                    window.location.href = "pages/dashboard.html";
-                                }
+                                window.location.href = result.data?.usuario?.requiereCambioPassword
+                                    ? "pages/cambiar-contrasena.html"
+                                    : "pages/dashboard.html";
                             }, 500);
                         } else {
                             errorContainer.classList.remove("hidden");
                             errorContainer.textContent = result.message;
-                            // Restaurar botón
-                            loginBtn.disabled = false;
+                            loginBtn.disabled        = false;
                             loginBtnText.textContent = 'Iniciar Sesión';
-                            loginBtnIcon.className = 'fa-solid fa-arrow-right-to-bracket';
+                            loginBtnIcon.className   = 'fa-solid fa-arrow-right-to-bracket';
                         }
                     } catch (err) {
                         errorContainer.classList.remove("hidden");
                         errorContainer.textContent = "Error de conexión con el servidor";
-                        loginBtn.disabled = false;
+                        loginBtn.disabled        = false;
                         loginBtnText.textContent = 'Iniciar Sesión';
-                        loginBtnIcon.className = 'fa-solid fa-arrow-right-to-bracket';
+                        loginBtnIcon.className   = 'fa-solid fa-arrow-right-to-bracket';
                     }
                 });
             }
         });
+    </script>
+
+    <!-- ===== FONDO + NIEVE ===== -->
+    <script>
+    (function () {
+        'use strict';
+
+        // Construir URL de la imagen usando el mismo origen que la API
+        const imgBase = (typeof CONFIG !== 'undefined' && CONFIG.API_URL)
+            ? CONFIG.API_URL.replace(/\/api\/?$/, '')
+            : 'http://localhost:3000';
+
+        document.getElementById('login-bg').style.backgroundImage =
+            "url('" + imgBase + "/img/01.login.png')";
+
+        // ── NIEVE ──────────────────────────────────────────────────────────
+        const canvas = document.getElementById('snow-canvas');
+        const ctx    = canvas.getContext('2d');
+
+        // Ajustar canvas al tamaño de la ventana
+        function redimensionar() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        redimensionar();
+        window.addEventListener('resize', redimensionar);
+
+        const TOTAL_COPOS = 200;
+        // Tiempo global para oscilación natural del viento
+        let tiempo = 0;
+
+        // Crear un copo con posición inicial aleatoria
+        function crearCopo(desde_arriba) {
+            return {
+                x:        Math.random() * canvas.width,
+                y:        desde_arriba ? -Math.random() * 20 : Math.random() * canvas.height,
+                radio:    Math.random() * 2.8 + 0.8,          // 0.8 – 3.6 px
+                velocidad: Math.random() * 1.4 + 0.5,         // caída: 0.5 – 1.9 px/frame
+                oscilacion: Math.random() * 0.8 + 0.2,        // amplitud de balanceo lateral
+                fase:     Math.random() * Math.PI * 2,        // fase inicial del balanceo
+                opacidad: Math.random() * 0.55 + 0.35,        // 0.35 – 0.90
+            };
+        }
+
+        // Inicializar todos los copos distribuidos en pantalla
+        const copos = Array.from({ length: TOTAL_COPOS }, () => crearCopo(false));
+
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            tiempo += 0.012;
+
+            copos.forEach(function (c, i) {
+                // Dibujar copo como círculo blanco
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.radio, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,' + c.opacidad + ')';
+                ctx.fill();
+
+                // Mover: caída vertical + balanceo horizontal sinusoidal
+                c.y += c.velocidad;
+                c.x += Math.sin(tiempo + c.fase) * c.oscilacion;
+
+                // Reiniciar copo que salió por abajo
+                if (c.y > canvas.height + c.radio + 2) {
+                    copos[i] = crearCopo(true);
+                }
+                // Wrap lateral
+                if (c.x < -c.radio)              c.x = canvas.width  + c.radio;
+                if (c.x > canvas.width + c.radio) c.x = -c.radio;
+            });
+
+            requestAnimationFrame(animar);
+        }
+
+        animar();
+    })();
     </script>
 </body>
 </html>

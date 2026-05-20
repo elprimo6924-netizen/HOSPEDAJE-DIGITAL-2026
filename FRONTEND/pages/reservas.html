@@ -29,7 +29,7 @@
 
         .crud-reservas-panel  { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-lg); box-shadow:var(--shadow-sm); }
         .crud-reservas-panel h4 { font-size:var(--font-size-xl); color:var(--color-secondary); margin-bottom:var(--spacing-sm); }
-        .crud-reservas-note   { color:var(--color-text-light); margin:0 0 var(--spacing-md); }
+        .crud-reservas-note   { color:var(--color-text); opacity:.8; margin:0 0 var(--spacing-md); }
         .crud-reservas-lista-top { display:flex; justify-content:space-between; gap:var(--spacing-md); align-items:flex-start; margin-bottom:var(--spacing-md); }
 
         .crud-reservas-filtros { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
@@ -49,7 +49,8 @@
         .badge-estado.cancelada { background:#fee2e2; color:#991b1b; }
         .badge-estado.otro      { background:#e2e8f0; color:#475569; }
 
-        .crud-reservas-mensaje { min-height:1.5rem; color:var(--color-text-light); font-size:var(--font-size-sm); display:inline-flex; align-items:center; padding:.5rem .75rem; border-radius:10px; background:rgba(255,255,255,.98); box-shadow:0 10px 24px rgba(15,23,42,.12); }
+        .crud-reservas-mensaje { min-height:1.5rem; color:var(--color-text); opacity:.82; font-size:var(--font-size-sm); display:inline-flex; align-items:center; padding:.5rem .75rem; border-radius:10px; background:rgba(255,255,255,.98); box-shadow:0 10px 24px rgba(15,23,42,.12); }
+        .crud-reservas-mensaje:empty { display:none; }
         .crud-reservas-mensaje.error { color:var(--color-danger); }
         .crud-reservas-mensaje.ok    { color:#14532d; background:rgba(20,83,45,.08); }
 

@@ -374,7 +374,8 @@ header nav a:hover {
 
 .crud-habitaciones-subtitle,
 .crud-habitaciones-note {
-    color: var(--color-text-light);
+    color: var(--color-text);
+    opacity: 0.8;
     margin: 0;
     line-height: 1.6;
 }
@@ -666,6 +667,30 @@ header nav a:hover {
     box-shadow: 0 24px 48px rgba(15, 23, 42, 0.25);
     padding: var(--spacing-lg);
     position: relative;
+    /* El main hereda color claro del dark-mode; el modal siempre es blanco */
+    color: #1f2937;
+}
+
+/* Forzar texto oscuro en todos los elementos dentro de cualquier modal CRUD */
+.crud-modal-content h4 {
+    color: var(--color-secondary);
+}
+.crud-modal-content label,
+.crud-modal-content p,
+.crud-modal-content small,
+.crud-modal-content .crud-habitaciones-note,
+.crud-modal-content .crud-servicios-note {
+    color: #374151;
+}
+.crud-modal-content input,
+.crud-modal-content textarea,
+.crud-modal-content select {
+    color: #1f2937 !important;
+    background-color: #ffffff !important;
+}
+.crud-modal-content select option {
+    color: #1f2937 !important;
+    background-color: #ffffff !important;
 }
 
 .crud-modal-content .crud-habitaciones-mensaje,
@@ -693,6 +718,16 @@ header nav a:hover {
 
 body.modal-open {
     overflow: hidden;
+}
+
+/* Regla global: cualquier div de mensaje de módulo CRUD oculto cuando esté vacío */
+[class*="crud-"][class*="-mensaje"]:empty {
+    display: none !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
 /* Mantiene visible el sidebar cuando se abre un modal CRUD. */
@@ -795,7 +830,8 @@ body.modal-open .sidebar {
 }
 
 .crud-habitaciones-descripcion {
-    color: var(--color-text-light);
+    color: var(--color-text);
+    opacity: 0.82;
     font-size: var(--font-size-sm);
     line-height: 1.5;
 }
@@ -1012,7 +1048,8 @@ body.modal-open .sidebar {
 
 .crud-servicios-subtitle,
 .crud-servicios-note {
-    color: var(--color-text-light);
+    color: var(--color-text);
+    opacity: 0.8;
     margin: 0;
     line-height: 1.6;
 }
@@ -1137,7 +1174,7 @@ body.modal-open .sidebar {
 .crud-servicios-mensaje {
     margin-top: var(--spacing-md);
     min-height: 1.5rem;
-    color: var(--color-text-light);
+    color: var(--color-text);
     font-size: var(--font-size-sm);
     position: relative;
     z-index: 1206;
@@ -1147,6 +1184,15 @@ body.modal-open .sidebar {
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.98);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.crud-servicios-mensaje:empty {
+    display: none !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
 }
 
 #mensaje-servicio-admin.exito,
@@ -1193,6 +1239,13 @@ body.modal-open .sidebar {
     flex: 0 0 170px;
     width: auto;
     min-width: 170px;
+    color: var(--color-text) !important;
+    background: var(--color-white) !important;
+}
+
+.crud-servicios-filtros select option {
+    color: var(--color-text) !important;
+    background: var(--color-white) !important;
 }
 
 .crud-servicios-tabla-wrap {
@@ -1237,7 +1290,8 @@ body.modal-open .sidebar {
 }
 
 .crud-servicios-descripcion {
-    color: var(--color-text-light);
+    color: var(--color-text);
+    opacity: 0.82;
     font-size: var(--font-size-sm);
     line-height: 1.5;
 }
@@ -1600,6 +1654,15 @@ body.modal-open .sidebar {
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
 }
 
+.crud-clientes-mensaje:empty {
+    display: none !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
 .crud-clientes-mensaje.error {
     color: var(--color-danger);
 }
@@ -1668,7 +1731,8 @@ body.modal-open .sidebar {
 }
 
 .crud-clientes-note {
-    color: var(--color-text-light);
+    color: var(--color-text);
+    opacity: 0.8;
     margin: 0;
 }
 
