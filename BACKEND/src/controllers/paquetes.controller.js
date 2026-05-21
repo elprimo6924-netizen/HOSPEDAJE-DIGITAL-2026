@@ -12,6 +12,12 @@ const PaquetesController = {
 
         } catch (error) {
 
+            console.error("[Paquetes] Error en listar:", {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
+
             res.status(500).json({
                 error: "Error obteniendo paquetes"
             });
@@ -29,6 +35,12 @@ const PaquetesController = {
             res.json(data);
 
         } catch (error) {
+
+            console.error("[Paquetes] Error en obtener:", {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
 
             res.status(500).json({
                 error: "Error obteniendo paquete"
@@ -50,6 +62,12 @@ const PaquetesController = {
             });
 
         } catch (error) {
+
+            console.error("[Paquetes] Error en crear:", {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
 
             res.status(500).json({
                 error: "Error creando paquete",
@@ -76,6 +94,12 @@ const PaquetesController = {
 
         } catch (error) {
 
+            console.error("[Paquetes] Error en actualizar:", {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
+
             res.status(500).json({
                 error: "Error actualizando paquete"
             });
@@ -96,6 +120,12 @@ const PaquetesController = {
             });
 
         } catch (error) {
+
+            console.error("[Paquetes] Error en eliminar:", {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
 
             res.status(500).json({
                 error: "Error eliminando paquete"

@@ -1,53 +1,59 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 
-const client = new Client({
-  authStrategy: new LocalAuth({ dataPath: "./.wwebjs_auth" }),
-  puppeteer: { 
-    headless: true, 
-    args: [
-      "--no-sandbox", 
-      "--disable-setuid-sandbox", 
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--no-zygote",
-      "--single-process",
-      "--disable-gpu"
-    ],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
-  },
-});
-
+const whatsappEnabled = String(process.env.ENABLE_WHATSAPP || "").toLowerCase() === "true";
+let client = null;
 let clienteListo = false;
 
-client.on("qr", (qr) => {
-  console.log("\n📱 Escanea este QR con tu WhatsApp (Vincular dispositivo → Escanear código QR):\n");
-  qrcode.generate(qr, { small: true });
-});
+if (whatsappEnabled) {
+  client = new Client({
+    authStrategy: new LocalAuth({ dataPath: "./.wwebjs_auth" }),
+    puppeteer: {
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+        "--disable-gpu"
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+    },
+  });
 
-client.on("ready", () => {
-  clienteListo = true;
-  console.log("✅ WhatsApp conectado y listo para enviar mensajes.");
-});
+  client.on("qr", (qr) => {
+    console.log("\n📱 Escanea este QR con tu WhatsApp (Vincular dispositivo → Escanear código QR):\n");
+    qrcode.generate(qr, { small: true });
+  });
 
-client.on("authenticated", () => {
-  console.log("🔐 WhatsApp autenticado correctamente.");
-});
+  client.on("ready", () => {
+    clienteListo = true;
+    console.log("✅ WhatsApp conectado y listo para enviar mensajes.");
+  });
 
-client.on("auth_failure", (msg) => {
-  console.error("❌ Error de autenticación WhatsApp:", msg);
-  clienteListo = false;
-});
+  client.on("authenticated", () => {
+    console.log("🔐 WhatsApp autenticado correctamente.");
+  });
 
-client.on("disconnected", (reason) => {
-  console.warn("⚠️  WhatsApp desconectado:", reason);
-  clienteListo = false;
-});
+  client.on("auth_failure", (msg) => {
+    console.error("❌ Error de autenticación WhatsApp:", msg);
+    clienteListo = false;
+  });
 
-client.initialize().catch((err) => {
-  console.error("Error al inicializar WhatsApp:", err.message);
-});
+  client.on("disconnected", (reason) => {
+    console.warn("⚠️  WhatsApp desconectado:", reason);
+    clienteListo = false;
+  });
+
+  client.initialize().catch((err) => {
+    console.error("Error al inicializar WhatsApp:", err.message);
+  });
+} else {
+  console.log("WhatsApp deshabilitado (ENABLE_WHATSAPP=false)");
+}
 
 const formatearNumero = (telefono) => {
   const limpio = telefono.replace(/\D/g, "");
@@ -62,6 +68,10 @@ const formatearNumero = (telefono) => {
 
 const WhatsappService = {
   enviarConfirmacionReserva: async ({ clienteNombre, clienteTelefono, reservaId, habitacion, fechaInicio, fechaFin, montoTotal }) => {
+    if (!whatsappEnabled || !client) {
+      console.warn("WhatsApp deshabilitado, mensaje no enviado.");
+      return false;
+    }
     if (!clienteListo) {
       console.warn("WhatsApp aún no está listo, mensaje no enviado.");
       return false;

@@ -273,6 +273,7 @@
 
     <!-- SCRIPTS -->
     <script src="js/config.js"></script>
+    <script src="js/mock-data.js"></script>
     <script src="js/api.js"></script>
     <script>
         const roomImages = [
@@ -309,19 +310,15 @@
             return roomImages[index % roomImages.length];
         }
 
-        async function loadHabitaciones() {
-            const container = document.getElementById('habitaciones-container');
-            try {
-                const habitaciones = await requestJson('/habitaciones');
+        function renderHabitaciones(container, habitaciones) {
+            if (!Array.isArray(habitaciones) || habitaciones.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic">No hay habitaciones disponibles hoy.</p>';
+                return;
+            }
 
-                if (!Array.isArray(habitaciones) || habitaciones.length === 0) {
-                    container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic">No hay habitaciones disponibles hoy.</p>';
-                    return;
-                }
+            const roomsToDisplay = habitaciones.slice(0, 6);
 
-                const roomsToDisplay = habitaciones.slice(0, 6);
-
-                const html = roomsToDisplay.map((room, index) => `
+            const html = roomsToDisplay.map((room, index) => `
                     <article class="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
                         <div class="relative h-64 overflow-hidden">
                             <img src="${getRandomImage(index, room)}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
@@ -342,8 +339,28 @@
                     </article>
                 `).join('');
 
-                container.innerHTML = html;
+            container.innerHTML = html;
+        }
+
+        async function loadHabitaciones() {
+            const container = document.getElementById('habitaciones-container');
+            const usarMock = (typeof CONFIG !== 'undefined' && CONFIG.USE_MOCK_DATA) && typeof getMockData === 'function';
+
+            try {
+                const habitaciones = usarMock
+                    ? await getMockData('habitaciones')
+                    : await requestJson('/habitaciones');
+
+                renderHabitaciones(container, habitaciones);
             } catch (error) {
+                if (!usarMock && typeof getMockData === 'function') {
+                    try {
+                        const fallback = await getMockData('habitaciones');
+                        renderHabitaciones(container, fallback);
+                        return;
+                    } catch {}
+                }
+
                 container.innerHTML = '<p class="col-span-full text-center text-red-400">Error al conectar con el servidor.</p>';
             }
         }
