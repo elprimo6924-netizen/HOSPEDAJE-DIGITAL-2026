@@ -2,7 +2,30 @@ const db = require("../config/db");
 
 const ReservasService = {
 
-  obtener: async () => {
+  obtener: async (options = {}) => {
+    const { role, userId, numeroDocumento, forceCliente = false } = options;
+    const isAdmin = Number(role) === 1 && !forceCliente;
+    const params = [];
+    let whereClause = "";
+
+    if (!isAdmin) {
+      const filters = [];
+      if (userId) {
+        filters.push("r.id_usuario = ?");
+        params.push(userId);
+      }
+      if (numeroDocumento) {
+        filters.push("r.NroDocumentoCliente = ?");
+        params.push(numeroDocumento);
+      }
+
+      if (!filters.length) {
+        return [];
+      }
+
+      whereClause = `WHERE (${filters.join(" OR ")})`;
+    }
+
     const [rows] = await db.query(`
       SELECT
         r.IdReserva          AS IDReserva,
@@ -32,9 +55,10 @@ const ReservasService = {
       LEFT JOIN paquetes          p   ON drp.IDPaquete         = p.IDPaquete
       LEFT JOIN detallereservaservicio drs ON r.IdReserva      = drs.IDReserva
       LEFT JOIN servicio          s   ON drs.IDServicio        = s.IDServicio
+      ${whereClause}
       GROUP BY r.IdReserva
       ORDER BY r.IdReserva DESC
-    `);
+    `, params);
     return rows;
   },
 

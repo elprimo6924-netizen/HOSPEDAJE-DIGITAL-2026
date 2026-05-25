@@ -2,6 +2,30 @@ const PaquetesService = require("../services/paquetes.service");
 
 const PaquetesController = {
 
+    listarActivos: async (req, res) => {
+
+        try {
+
+            const data = await PaquetesService.listarActivos();
+
+            res.json(data);
+
+        } catch (error) {
+
+            console.error("[Paquetes] Error en listarActivos:", {
+                message: error?.message,
+                code: error?.code,
+                stack: error?.stack
+            });
+
+            res.status(500).json({
+                error: "Error obteniendo paquetes activos"
+            });
+
+        }
+
+    },
+
     listar: async (req, res) => {
 
         try {

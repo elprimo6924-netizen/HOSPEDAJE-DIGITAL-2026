@@ -165,14 +165,21 @@ function validarLongitudMaxima(valor, maximo, nombreCampo) {
     return { valido: true };
 }
 
-// ✏️ MODIFICADO: Nueva función — validar documento (Bug #5)
-function validarDocumento(documento) {
+// Validar documento — con validación específica por tipo
+function validarDocumento(documento, tipo = null) {
     const limpio = documento.trim().replace(/\s/g, '');
-    if (!/^[0-9A-Za-z\-]{5,20}$/.test(limpio)) {
-        return {
-            valido: false,
-            mensaje: 'Documento inválido (5-20 caracteres alfanuméricos)'
-        };
+    if (tipo === 'CC') {
+        if (!/^[0-9]{6,10}$/.test(limpio))
+            return { valido: false, mensaje: 'Cédula de Ciudadanía: 6 a 10 dígitos' };
+    } else if (tipo === 'TI') {
+        if (!/^[0-9]{8,11}$/.test(limpio))
+            return { valido: false, mensaje: 'Tarjeta de Identidad: 8 a 11 dígitos' };
+    } else if (tipo === 'CE') {
+        if (!/^[a-zA-Z0-9\-]{6,15}$/.test(limpio))
+            return { valido: false, mensaje: 'Cédula de Extranjería: 6 a 15 caracteres alfanuméricos' };
+    } else {
+        if (!/^[0-9A-Za-z\-]{5,20}$/.test(limpio))
+            return { valido: false, mensaje: 'Documento inválido (5-20 caracteres alfanuméricos)' };
     }
     return { valido: true };
 }
@@ -197,17 +204,17 @@ function validarConfirmacionContrasena(contrasena, confirmacion) {
     return { valido: true };
 }
 
-// ✏️ MODIFICADO: Nueva función — validar nombre/apellido (sin números)
-function validarNombrePersona(valor, nombreCampo) {
+// Validar nombre/apellido/país (sin números, con límite de caracteres)
+function validarNombrePersona(valor, nombreCampo, maxLen = 50) {
     const limpio = valor.trim();
     if (limpio.length < 2) {
-        return { valido: false, mensaje: `${nombreCampo} muy corto` };
+        return { valido: false, mensaje: `${nombreCampo} debe tener al menos 2 caracteres` };
+    }
+    if (limpio.length > maxLen) {
+        return { valido: false, mensaje: `${nombreCampo} no puede exceder ${maxLen} caracteres` };
     }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-']+$/.test(limpio)) {
-        return {
-            valido: false,
-            mensaje: `${nombreCampo} solo puede contener letras`
-        };
+        return { valido: false, mensaje: `${nombreCampo} solo puede contener letras` };
     }
     return { valido: true };
 }
@@ -419,18 +426,21 @@ function validarFormularioServicio(servicio) {
     };
 }
 
-// ✏️ MODIFICADO: Nueva función — validar formulario de registro
+// Validar formulario de registro completo
 function validarFormularioRegistro(datos) {
     const errores = [];
 
-    const vNombre = validarNombrePersona(datos.nombre, 'Nombre');
+    const vNombre = validarNombrePersona(datos.nombre, 'Nombre', 50);
     if (!vNombre.valido) errores.push(vNombre.mensaje);
 
-    const vApellido = validarNombrePersona(datos.apellido, 'Apellido');
+    const vApellido = validarNombrePersona(datos.apellido, 'Apellido', 50);
     if (!vApellido.valido) errores.push(vApellido.mensaje);
 
     const vEmail = validarEmail(datos.email);
     if (!vEmail.valido) errores.push(vEmail.mensaje);
+
+    if (datos.email && datos.email.length > 100)
+        errores.push('El correo no puede exceder 100 caracteres');
 
     const vPass = validarContrasena(datos.contrasena);
     if (!vPass.valido) errores.push(vPass.mensaje);
@@ -442,6 +452,19 @@ function validarFormularioRegistro(datos) {
         const vTel = validarTelefono(datos.telefono);
         if (!vTel.valido) errores.push(vTel.mensaje);
     }
+
+    if (datos.pais) {
+        const vPais = validarNombrePersona(datos.pais, 'País', 60);
+        if (!vPais.valido) errores.push(vPais.mensaje);
+    }
+
+    if (datos.tipoDoc && datos.numDoc) {
+        const vDoc = validarDocumento(datos.numDoc, datos.tipoDoc);
+        if (!vDoc.valido) errores.push(vDoc.mensaje);
+    }
+
+    if (datos.direccion && datos.direccion.length > 150)
+        errores.push('La dirección no puede exceder 150 caracteres');
 
     return { valido: errores.length === 0, errores };
 }

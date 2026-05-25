@@ -3,179 +3,404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - Hospedaje Digital</title>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Registro — Hospedaje Digital</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        display: ['Sora', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
+    <script>tailwind.config = { corePlugins: { preflight: false } };</script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --lux-navy:   #090f1c;
+            --lux-card:   #0c1828;
+            --lux-card2:  #0a1422;
+            --lux-border: rgba(30,52,90,0.9);
+            --lux-gold:   #d6b25e;
+            --lux-gold2:  #b78a2a;
+            --lux-gold3:  #ead483;
+            --lux-ivory:  #f0e6d3;
+            --lux-iv2:    rgba(240,230,211,0.70);
+            --lux-iv3:    rgba(240,230,211,0.38);
+        }
+
+        html, body {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse 180% 70% at 15% 0%,  rgba(22,40,78,0.75) 0%, transparent 55%),
+                radial-gradient(ellipse 120% 50% at 85% 100%, rgba(90,55,10,0.28) 0%, transparent 50%),
+                linear-gradient(155deg, #0a1322 0%, #080e1a 45%, #0b1220 100%);
+            background-attachment: fixed;
+            font-family: 'Sora', sans-serif;
+            color: var(--lux-ivory);
+        }
+
+        /* Textura sutil de fondo */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d6b25e' fill-opacity='0.018'%3E%3Cpath d='M40 0l2 10-2 2-2-2zm0 80l2-10-2-2-2 2zm40-40l-10 2-2-2 2-2zm-80 0l10 2 2-2-2-2zM13.4 13.4l7.1 7.1-1.4 2-2-1.4zm53.2 53.2l-7.1-7.1 1.4-2 2 1.4zm0-53.2l-7.1 7.1-2-1.4 1.4-2zm-53.2 53.2l7.1-7.1 2 1.4-1.4 2z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        main { position: relative; z-index: 1; }
+
+        /* ── Tarjeta principal ── */
+        .lux-card-main {
+            background: rgba(10,19,34,0.97);
+            border: 1px solid rgba(214,178,94,0.20);
+            box-shadow:
+                0 60px 130px rgba(0,0,0,0.70),
+                0 0 0 1px rgba(214,178,94,0.05) inset,
+                0 1px 0   rgba(214,178,94,0.14) inset;
+            backdrop-filter: blur(28px);
+        }
+
+        /* Ornamentos de esquina */
+        .lux-corner {
+            position: absolute;
+            width: 36px; height: 36px;
+            border-color: rgba(214,178,94,0.28);
+            border-style: solid;
+        }
+        .lux-corner.tl { top: 18px; left: 18px;  border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+        .lux-corner.tr { top: 18px; right: 18px;  border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }
+        .lux-corner.bl { bottom: 18px; left: 18px;  border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
+        .lux-corner.br { bottom: 18px; right: 18px;  border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+
+        /* ── Cabecera ── */
+        .lux-crown-badge {
+            background: linear-gradient(135deg, rgba(214,178,94,0.18) 0%, rgba(214,178,94,0.07) 100%);
+            border: 1px solid rgba(214,178,94,0.30);
+            color: var(--lux-gold);
+        }
+
+        .lux-title {
+            font-family: 'Cinzel', 'Trajan Pro', 'Times New Roman', serif;
+            color: var(--lux-ivory);
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            line-height: 1.15;
+        }
+        @media (min-width: 768px) { .lux-title { font-size: 2.6rem; } }
+
+        .lux-ornament-line {
+            height: 1px;
+            max-width: 200px;
+            margin: 0 auto;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(214,178,94,0.35) 20%,
+                rgba(214,178,94,0.70) 50%,
+                rgba(214,178,94,0.35) 80%,
+                transparent);
+        }
+
+        .lux-subtitle { color: var(--lux-iv3); font-size: 0.80rem; letter-spacing: 0.08em; }
+
+        /* ── Secciones ── */
+        .lux-section {
+            background: linear-gradient(160deg, rgba(14,28,50,0.80) 0%, rgba(9,17,32,0.90) 100%);
+            border: 1px solid rgba(24,44,78,0.80);
+            border-top: 1px solid rgba(214,178,94,0.13);
+        }
+
+        .lux-icon-badge {
+            background: linear-gradient(135deg, rgba(214,178,94,0.16), rgba(214,178,94,0.05));
+            border: 1px solid rgba(214,178,94,0.26);
+            color: var(--lux-gold);
+            flex-shrink: 0;
+        }
+
+        .lux-section-title {
+            font-family: 'Cinzel', 'Times New Roman', serif;
+            color: var(--lux-gold);
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+        }
+
+        .lux-section-sub { color: var(--lux-iv3); font-size: 0.75rem; margin-top: 2px; }
+
+        /* ── Labels ── */
+        .lux-label {
+            display: block;
+            color: rgba(214,178,94,0.80);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+        .lux-req { color: #f87171; }
+
+        /* ── Inputs ── */
+        .lux-input {
+            width: 100%;
+            background: rgba(4,8,18,0.88);
+            border: 1px solid rgba(28,48,82,0.85);
+            border-radius: 10px;
+            color: var(--lux-ivory);
+            padding: 11px 16px;
+            font-size: 0.84rem;
+            font-family: 'Sora', sans-serif;
+            outline: none;
+            transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
+        }
+        .lux-input::placeholder { color: rgba(240,230,211,0.18); }
+        .lux-input:focus {
+            border-color: var(--lux-gold) !important;
+            background: rgba(4,8,18,0.96) !important;
+            box-shadow: 0 0 0 3px rgba(214,178,94,0.11), 0 2px 10px rgba(0,0,0,0.35) !important;
+        }
+
+        /* Override setFieldState para fondo oscuro */
+        .lux-input.bg-green-50,  .lux-input.bg-green-50:focus  { background: rgba(15,68,36,0.22) !important; }
+        .lux-input.bg-red-50,    .lux-input.bg-red-50:focus    { background: rgba(110,20,20,0.22) !important; }
+        .lux-input.bg-slate-100, .lux-input.bg-slate-100:focus { background: rgba(4,8,18,0.88)   !important; }
+        .lux-input.border-green-400 { border-color: #4ade80 !important; box-shadow: 0 0 0 3px rgba(74,222,128,0.09) !important; }
+        .lux-input.border-red-400   { border-color: #f87171 !important; box-shadow: 0 0 0 3px rgba(248,113,113,0.09) !important; }
+        .lux-input.border-slate-200 { border-color: rgba(28,48,82,0.85) !important; }
+        .lux-input.ring-2 { /* manejado arriba */ }
+
+        /* Select con flecha dorada */
+        select.lux-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23d6b25e' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 42px;
+            cursor: pointer;
+        }
+        select.lux-input option { background: #0c1828; color: var(--lux-ivory); }
+
+        /* Toggle contraseña */
+        .lux-pw-btn {
+            background: none; border: none;
+            color: rgba(214,178,94,0.45);
+            cursor: pointer; transition: color 0.2s;
+        }
+        .lux-pw-btn:hover { color: var(--lux-gold); }
+
+        /* ── Botón submit ── */
+        .lux-btn {
+            width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: linear-gradient(135deg, #d6b25e 0%, #b78a2a 100%);
+            color: #1a0e00;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 0.86rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            border: 1px solid rgba(214,178,94,0.38);
+            border-radius: 12px;
+            padding: 15px 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(183,138,42,0.30), 0 3px 10px rgba(0,0,0,0.45);
+            transition: all 0.26s;
+        }
+        .lux-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e8ca78 0%, #d6b25e 100%);
+            box-shadow: 0 14px 40px rgba(183,138,42,0.46), 0 4px 14px rgba(0,0,0,0.45);
+            transform: translateY(-2px);
+        }
+        .lux-btn:disabled { opacity: 0.52; cursor: not-allowed; transform: none; }
+
+        /* ── Error block ── */
+        .lux-err {
+            background: rgba(110,20,20,0.22);
+            border: 1px solid rgba(248,113,113,0.33);
+            border-radius: 12px;
+            color: #fca5a5;
+            padding: 13px 16px;
+            font-size: 0.82rem;
+            line-height: 1.65;
+        }
+
+        /* Mensajes de error de campo */
+        .field-error-msg { color: #f87171 !important; }
+
+        /* ── Contadores ── */
+        .lux-cnt { text-align: right; font-size: 0.68rem; font-weight: 500; margin-top: 4px; color: rgba(214,178,94,0.38); }
+
+        /* ── Footer ── */
+        .lux-foot { color: var(--lux-iv3); font-size: 0.80rem; text-align: center; margin-top: 1.5rem; }
+        .lux-foot a { color: var(--lux-gold); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(214,178,94,0.4); text-underline-offset: 3px; }
+        .lux-foot a:hover { color: var(--lux-gold3); }
+    </style>
 </head>
-<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.28),_transparent_32%),linear-gradient(135deg,_#101827_0%,_#5a3d28_48%,_#d17a3a_100%)] px-4 py-10 font-display text-slate-900">
-    <main class="flex min-h-screen items-center justify-center">
-        <section class="w-full max-w-4xl rounded-[28px] bg-white/95 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.28)] ring-1 ring-white/60 backdrop-blur md:p-8">
-            <div class="text-center">
-                <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 shadow-sm">
-                    <i class="fa-solid fa-user-plus text-2xl"></i>
+<body>
+    <main class="flex min-h-screen items-center justify-center px-4 py-10">
+        <section class="lux-card-main relative w-full max-w-4xl rounded-[28px] p-7 md:p-11">
+
+            <!-- Ornamentos de esquina -->
+            <div class="lux-corner tl"></div>
+            <div class="lux-corner tr"></div>
+            <div class="lux-corner bl"></div>
+            <div class="lux-corner br"></div>
+
+            <!-- Cabecera -->
+            <div class="text-center mb-9">
+                <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl lux-crown-badge shadow-lg">
+                    <i class="fa-solid fa-crown text-2xl"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Crear Cuenta</h1>
-                <p class="mt-2 text-sm text-slate-500">Completa tus datos para registrarte en el sistema</p>
+                <h1 class="lux-title mb-4">Crear Cuenta</h1>
+                <div class="lux-ornament-line mb-4"></div>
+                <p class="lux-subtitle tracking-widest">COMPLETE SUS DATOS PARA REGISTRARSE EN EL SISTEMA</p>
             </div>
 
-            <form id="registerForm" class="mt-8 space-y-6">
-                <div id="registerError" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+            <form id="registerForm" class="space-y-5">
+                <div id="registerError" class="lux-err hidden"></div>
 
-                <!-- Sección: Documento -->
-                <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
-                    <div class="mb-4 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                            <i class="fa-solid fa-id-card"></i>
+                <!-- ── Sección: Documento ── -->
+                <div class="lux-section rounded-2xl p-5 md:p-6">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="lux-icon-badge flex h-10 w-10 items-center justify-center rounded-xl">
+                            <i class="fa-solid fa-id-card text-sm"></i>
                         </div>
                         <div>
-                            <h3 class="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Información de documento</h3>
-                            <p class="text-sm text-slate-500">Identificación del huésped</p>
+                            <div class="lux-section-title">Información de documento</div>
+                            <div class="lux-section-sub">Identificación del huésped</div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <!-- ✏️ MODIFICADO: field-wrapper -->
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_tipoDoc" class="text-sm font-semibold text-slate-700">Tipo Documento <span class="text-red-500">*</span></label>
-                            <select id="reg_tipoDoc" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div class="field-wrapper relative">
+                            <label for="reg_tipoDoc" class="lux-label">Tipo Documento <span class="lux-req">*</span></label>
+                            <select id="reg_tipoDoc" required class="lux-input">
                                 <option value="">Selecciona un tipo</option>
                                 <option value="CC">Cédula de Ciudadanía</option>
                                 <option value="TI">Tarjeta de Identidad</option>
                                 <option value="CE">Cédula de Extranjería</option>
                             </select>
                         </div>
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_numDoc" class="text-sm font-semibold text-slate-700">Número Documento <span class="text-red-500">*</span></label>
+                        <div class="field-wrapper relative">
+                            <label for="reg_numDoc" class="lux-label">Número Documento <span class="lux-req">*</span></label>
                             <input type="text" id="reg_numDoc" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="20" inputmode="numeric"
+                                placeholder="Selecciona primero el tipo"
+                                autocomplete="off" class="lux-input">
                         </div>
                     </div>
                 </div>
 
-                <!-- Sección: Datos de contacto -->
-                <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
-                    <div class="mb-4 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                            <i class="fa-solid fa-address-book"></i>
+                <!-- ── Sección: Datos de contacto ── -->
+                <div class="lux-section rounded-2xl p-5 md:p-6">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="lux-icon-badge flex h-10 w-10 items-center justify-center rounded-xl">
+                            <i class="fa-solid fa-address-book text-sm"></i>
                         </div>
                         <div>
-                            <h3 class="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Datos de contacto</h3>
-                            <p class="text-sm text-slate-500">Información personal principal</p>
+                            <div class="lux-section-title">Datos de contacto</div>
+                            <div class="lux-section-sub">Información personal principal</div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_nombre" class="text-sm font-semibold text-slate-700">Nombre <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div class="field-wrapper relative">
+                            <label for="reg_nombre" class="lux-label">Nombre <span class="lux-req">*</span></label>
                             <input type="text" id="reg_nombre" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="50" minlength="2" autocomplete="given-name"
+                                placeholder="Solo letras" class="lux-input">
                         </div>
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_apellido" class="text-sm font-semibold text-slate-700">Apellido <span class="text-red-500">*</span></label>
+                        <div class="field-wrapper relative">
+                            <label for="reg_apellido" class="lux-label">Apellido <span class="lux-req">*</span></label>
                             <input type="text" id="reg_apellido" required
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="50" minlength="2" autocomplete="family-name"
+                                placeholder="Solo letras" class="lux-input">
                         </div>
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_telefono" class="text-sm font-semibold text-slate-700">Teléfono</label>
+                        <div class="field-wrapper relative">
+                            <label for="reg_telefono" class="lux-label">Teléfono</label>
                             <input type="text" id="reg_telefono"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="15" inputmode="tel" autocomplete="tel"
+                                placeholder="Solo dígitos (7–15)" class="lux-input">
                         </div>
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_pais" class="text-sm font-semibold text-slate-700">País</label>
+                        <div class="field-wrapper relative">
+                            <label for="reg_pais" class="lux-label">País</label>
                             <input type="text" id="reg_pais"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="60" autocomplete="country-name"
+                                placeholder="Solo letras" class="lux-input">
                         </div>
-                        <div class="field-wrapper space-y-2 relative md:col-span-2">
-                            <label for="reg_direccion" class="text-sm font-semibold text-slate-700">Dirección</label>
+                        <div class="field-wrapper relative md:col-span-2">
+                            <label for="reg_direccion" class="lux-label">Dirección</label>
                             <input type="text" id="reg_direccion"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="150" autocomplete="street-address"
+                                placeholder="Ingrese su dirección completa" class="lux-input">
                         </div>
                     </div>
                 </div>
 
-                <!-- Sección: Credenciales -->
-                <div class="rounded-[24px] border border-slate-100 bg-white p-5 shadow-[0_8px_25px_rgba(15,23,42,0.06)] md:p-6">
-                    <div class="mb-4 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-                            <i class="fa-solid fa-shield-halved"></i>
+                <!-- ── Sección: Credenciales ── -->
+                <div class="lux-section rounded-2xl p-5 md:p-6">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="lux-icon-badge flex h-10 w-10 items-center justify-center rounded-xl">
+                            <i class="fa-solid fa-shield-halved text-sm"></i>
                         </div>
                         <div>
-                            <h3 class="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">Credenciales de acceso</h3>
-                            <p class="text-sm text-slate-500">Usa estos datos para iniciar sesión</p>
+                            <div class="lux-section-title">Credenciales de acceso</div>
+                            <div class="lux-section-sub">Usa estos datos para iniciar sesión</div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_email" class="text-sm font-semibold text-slate-700">Correo Electrónico <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div class="field-wrapper relative">
+                            <label for="reg_email" class="lux-label">Correo Electrónico <span class="lux-req">*</span></label>
                             <input type="email" id="reg_email" required autocomplete="email"
-                                class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                maxlength="100" placeholder="correo@ejemplo.com" class="lux-input">
                         </div>
 
-                        <!-- ✏️ MODIFICADO: Password con toggle + indicador de fortaleza -->
-                        <div class="field-wrapper space-y-2 relative">
-                            <label for="reg_password" class="text-sm font-semibold text-slate-700">Contraseña <span class="text-red-500">*</span></label>
+                        <div class="field-wrapper relative">
+                            <label for="reg_password" class="lux-label">Contraseña <span class="lux-req">*</span></label>
                             <div class="relative">
                                 <input type="password" id="reg_password" required autocomplete="new-password"
-                                    class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                    maxlength="72" minlength="8" placeholder="Mínimo 8 caracteres"
+                                    class="lux-input" style="padding-right:48px;">
                                 <button type="button" id="toggleRegPassword"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" style="background:none;border:none;">
-                                    <i id="toggleRegIcon" class="fa-solid fa-eye"></i>
+                                    class="lux-pw-btn absolute right-4 top-1/2 -translate-y-1/2">
+                                    <i id="toggleRegIcon" class="fa-solid fa-eye text-sm"></i>
                                 </button>
                             </div>
-                            <!-- ✏️ MODIFICADO: Indicador de fortaleza de contraseña -->
-                            <div id="password-strength" class="mt-2 hidden">
+                            <!-- Indicador de fortaleza -->
+                            <div id="password-strength" class="hidden mt-2">
                                 <div class="flex gap-1 mb-1">
-                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-1"></div>
-                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-2"></div>
-                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-3"></div>
-                                    <div class="h-1.5 flex-1 rounded-full bg-slate-200" id="str-bar-4"></div>
+                                    <div class="h-1 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)" id="str-bar-1"></div>
+                                    <div class="h-1 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)" id="str-bar-2"></div>
+                                    <div class="h-1 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)" id="str-bar-3"></div>
+                                    <div class="h-1 flex-1 rounded-full" style="background:rgba(255,255,255,0.08)" id="str-bar-4"></div>
                                 </div>
-                                <p id="str-label" class="text-xs text-slate-500"></p>
+                                <p id="str-label" class="text-xs" style="color:var(--lux-iv3)"></p>
                             </div>
                         </div>
 
-                        <!-- ✏️ MODIFICADO: Campo confirmar contraseña -->
-                        <div class="field-wrapper space-y-2 relative md:col-span-2">
-                            <label for="reg_confirmar" class="text-sm font-semibold text-slate-700">Confirmar Contraseña <span class="text-red-500">*</span></label>
+                        <div class="field-wrapper relative md:col-span-2">
+                            <label for="reg_confirmar" class="lux-label">Confirmar Contraseña <span class="lux-req">*</span></label>
                             <div class="relative">
                                 <input type="password" id="reg_confirmar" required autocomplete="new-password"
-                                    class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 pr-12 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10">
+                                    maxlength="72" placeholder="Repite tu contraseña"
+                                    class="lux-input" style="padding-right:48px;">
                                 <button type="button" id="toggleRegConfirm"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer" style="background:none;border:none;">
-                                    <i id="toggleConfirmIcon" class="fa-solid fa-eye"></i>
+                                    class="lux-pw-btn absolute right-4 top-1/2 -translate-y-1/2">
+                                    <i id="toggleConfirmIcon" class="fa-solid fa-eye text-sm"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ✏️ MODIFICADO: Botón con estado de carga -->
-                <button id="registerBtn" type="submit"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-200 transition-all hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                <!-- ── Botón submit ── -->
+                <button id="registerBtn" type="submit" class="lux-btn">
                     <span id="registerBtnText">Registrarse</span>
                     <i id="registerBtnIcon" class="fa-solid fa-user-plus"></i>
                 </button>
             </form>
 
-            <div class="mt-6 text-center text-sm text-slate-600">
-                <p>¿Ya tienes cuenta? <a href="../login.html" class="font-semibold text-slate-900 underline decoration-orange-400 decoration-2 underline-offset-4">Inicia sesión</a></p>
+            <div class="lux-foot">
+                ¿Ya tienes cuenta? <a href="../login.html">Inicia sesión</a>
             </div>
         </section>
     </main>
@@ -187,182 +412,311 @@
     <script src="../js/auth.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const registerForm = document.getElementById("registerForm");
-            const registerError = document.getElementById("registerError");
-            const registerBtn = document.getElementById("registerBtn");
+            const registerForm    = document.getElementById("registerForm");
+            const registerError   = document.getElementById("registerError");
+            const registerBtn     = document.getElementById("registerBtn");
             const registerBtnText = document.getElementById("registerBtnText");
             const registerBtnIcon = document.getElementById("registerBtnIcon");
 
-            // ✏️ MODIFICADO: Toggle mostrar/ocultar contraseña principal
+            // Toggle contraseña principal
             document.getElementById('toggleRegPassword').addEventListener('click', () => {
                 const input = document.getElementById('reg_password');
-                const icon = document.getElementById('toggleRegIcon');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.className = 'fa-solid fa-eye-slash';
-                } else {
-                    input.type = 'password';
-                    icon.className = 'fa-solid fa-eye';
-                }
+                const icon  = document.getElementById('toggleRegIcon');
+                if (input.type === 'password') { input.type = 'text';     icon.className = 'fa-solid fa-eye-slash text-sm'; }
+                else                           { input.type = 'password'; icon.className = 'fa-solid fa-eye text-sm'; }
             });
 
-            // ✏️ MODIFICADO: Toggle mostrar/ocultar confirmar contraseña
+            // Toggle confirmar contraseña
             document.getElementById('toggleRegConfirm').addEventListener('click', () => {
                 const input = document.getElementById('reg_confirmar');
-                const icon = document.getElementById('toggleConfirmIcon');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.className = 'fa-solid fa-eye-slash';
-                } else {
-                    input.type = 'password';
-                    icon.className = 'fa-solid fa-eye';
-                }
+                const icon  = document.getElementById('toggleConfirmIcon');
+                if (input.type === 'password') { input.type = 'text';     icon.className = 'fa-solid fa-eye-slash text-sm'; }
+                else                           { input.type = 'password'; icon.className = 'fa-solid fa-eye text-sm'; }
             });
 
-            // ✏️ MODIFICADO: Indicador de fortaleza de contraseña
+            // Indicador de fortaleza de contraseña
             const passwordInput = document.getElementById('reg_password');
-            const labels = ['', 'Débil', 'Regular', 'Buena', 'Fuerte'];
-            const colors = ['', 'bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-green-500'];
-            const textColors = ['', 'text-red-500', 'text-amber-500', 'text-blue-500', 'text-green-600'];
+            const strColors  = ['', 'bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-green-500'];
+            const strLabels  = ['', 'Débil', 'Regular', 'Buena', 'Fuerte'];
+            const strTextClr = ['', '#f87171', '#fbbf24', '#60a5fa', '#4ade80'];
 
-            passwordInput.addEventListener('input', function() {
+            passwordInput.addEventListener('input', function () {
                 if (typeof calcularFortaleza !== 'function') return;
                 const score = calcularFortaleza(this.value);
                 document.getElementById('password-strength').classList.toggle('hidden', !this.value);
-
                 [1,2,3,4].forEach(i => {
                     const bar = document.getElementById(`str-bar-${i}`);
-                    bar.className = `h-1.5 flex-1 rounded-full transition-all duration-300 ${i <= score ? colors[score] : 'bg-slate-200'}`;
+                    bar.style.background = i <= score ? strColors[score].replace('bg-','').replace('-500','') : 'rgba(255,255,255,0.08)';
+                    bar.className = `h-1 flex-1 rounded-full transition-all duration-300 ${i <= score ? strColors[score] : ''}`;
                 });
-
                 const label = document.getElementById('str-label');
-                label.textContent = this.value ? labels[score] : '';
-                label.className = `text-xs font-medium ${textColors[score] || 'text-slate-500'}`;
+                label.textContent = this.value ? strLabels[score] : '';
+                label.style.color  = this.value ? strTextClr[score] : 'var(--lux-iv3)';
             });
 
-            // ✏️ MODIFICADO: Validación de contraseña al blur
-            passwordInput.addEventListener('blur', function() {
+            passwordInput.addEventListener('blur', function () {
                 if (this.value && typeof validarContrasena === 'function') {
                     const v = validarContrasena(this.value);
-                    if (typeof setFieldState === 'function') {
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
-                    }
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
                 }
             });
-            passwordInput.addEventListener('focus', function() {
+            passwordInput.addEventListener('focus', function () {
                 if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
             });
 
-            // ✏️ MODIFICADO: Validación de que contraseñas coinciden en tiempo real
-            document.getElementById('reg_confirmar').addEventListener('input', function() {
+            // Validación confirmar contraseña en tiempo real
+            document.getElementById('reg_confirmar').addEventListener('input', function () {
                 const pass = document.getElementById('reg_password').value;
                 if (typeof setFieldState === 'function') {
-                    if (this.value && this.value !== pass) {
-                        setFieldState(this, 'invalido', 'Las contraseñas no coinciden');
-                    } else if (this.value && this.value === pass) {
-                        setFieldState(this, 'valido');
-                    }
+                    if (this.value && this.value !== pass) setFieldState(this, 'invalido', 'Las contraseñas no coinciden');
+                    else if (this.value && this.value === pass) setFieldState(this, 'valido');
                 }
             });
 
-            // ✏️ MODIFICADO: Validación del email en blur
-            document.getElementById('reg_email').addEventListener('blur', function() {
+            // Validación blur: email
+            document.getElementById('reg_email').addEventListener('blur', function () {
                 if (this.value && typeof validarEmail === 'function') {
                     const v = validarEmail(this.value);
-                    if (typeof setFieldState === 'function') {
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
-                    }
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
                 }
             });
-            document.getElementById('reg_email').addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
-            });
+            document.getElementById('reg_email').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
-            // ✏️ MODIFICADO: Validación del nombre en blur
-            document.getElementById('reg_nombre').addEventListener('blur', function() {
+            // Validación blur: nombre
+            document.getElementById('reg_nombre').addEventListener('blur', function () {
                 if (this.value && typeof validarNombrePersona === 'function') {
                     const v = validarNombrePersona(this.value, 'Nombre');
-                    if (typeof setFieldState === 'function') {
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
-                    }
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
                 }
             });
-            document.getElementById('reg_nombre').addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
-            });
+            document.getElementById('reg_nombre').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
-            // ✏️ MODIFICADO: Validación del apellido en blur
-            document.getElementById('reg_apellido').addEventListener('blur', function() {
+            // Validación blur: apellido
+            document.getElementById('reg_apellido').addEventListener('blur', function () {
                 if (this.value && typeof validarNombrePersona === 'function') {
                     const v = validarNombrePersona(this.value, 'Apellido');
-                    if (typeof setFieldState === 'function') {
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
-                    }
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
                 }
             });
-            document.getElementById('reg_apellido').addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
-            });
+            document.getElementById('reg_apellido').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
-            // ✏️ MODIFICADO: Validación del teléfono en blur
-            document.getElementById('reg_telefono').addEventListener('blur', function() {
+            // Validación blur: teléfono
+            document.getElementById('reg_telefono').addEventListener('blur', function () {
                 if (this.value && typeof validarTelefono === 'function') {
                     const v = validarTelefono(this.value);
-                    if (typeof setFieldState === 'function') {
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
-                    }
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
                 }
             });
-            document.getElementById('reg_telefono').addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
-            });
+            document.getElementById('reg_telefono').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
-            // ✏️ MODIFICADO: Validación del documento en blur
-            document.getElementById('reg_numDoc').addEventListener('blur', function() {
+            // Validación blur: documento (con tipo)
+            document.getElementById('reg_numDoc').addEventListener('blur', function () {
                 if (this.value && typeof validarDocumento === 'function') {
-                    const v = validarDocumento(this.value);
-                    if (typeof setFieldState === 'function') {
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
-                    }
+                    const tipo = document.getElementById('reg_tipoDoc')?.value || null;
+                    const v = validarDocumento(this.value, tipo);
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
                 }
             });
-            document.getElementById('reg_numDoc').addEventListener('focus', function() {
-                if (typeof setFieldState === 'function') setFieldState(this, 'neutro');
+            document.getElementById('reg_numDoc').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
+
+            // Validación blur: país
+            document.getElementById('reg_pais').addEventListener('blur', function () {
+                if (this.value && typeof validarNombrePersona === 'function') {
+                    const v = validarNombrePersona(this.value, 'País', 60);
+                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
+                }
+            });
+            document.getElementById('reg_pais').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
+
+            // ════════════════════════════════════════════
+            // BLOQUEADORES DE CARACTERES EN TIEMPO REAL
+            // ════════════════════════════════════════════
+
+            const CTRL_KEYS = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Home','End','Enter'];
+
+            function bloquearNoLetras(e) {
+                if (e.ctrlKey || e.metaKey) return;
+                if (CTRL_KEYS.includes(e.key)) return;
+                if (!/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-']$/.test(e.key)) e.preventDefault();
+            }
+
+            function bloquearNoTelefono(e) {
+                if (e.ctrlKey || e.metaKey) return;
+                if (CTRL_KEYS.includes(e.key)) return;
+                if (!/^[0-9+\-\s]$/.test(e.key)) e.preventDefault();
+            }
+
+            function filtrarPegado(input, regex) {
+                input.addEventListener('paste', e => {
+                    e.preventDefault();
+                    const txt    = (e.clipboardData || window.clipboardData).getData('text');
+                    const limpio = txt.replace(regex, '').slice(0, Number(input.maxLength) || 999);
+                    const s = input.selectionStart, en = input.selectionEnd;
+                    input.value = input.value.slice(0, s) + limpio + input.value.slice(en);
+                    input.dispatchEvent(new Event('input'));
+                });
+            }
+
+            ['reg_nombre', 'reg_apellido', 'reg_pais'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('keydown', bloquearNoLetras);
+                filtrarPegado(el, /[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-']/g);
             });
 
+            const telEl = document.getElementById('reg_telefono');
+            if (telEl) {
+                telEl.addEventListener('keydown', bloquearNoTelefono);
+                filtrarPegado(telEl, /[^0-9+\-\s]/g);
+            }
+
+            // Documento: configuración dinámica según tipo
+            const tipoDocEl = document.getElementById('reg_tipoDoc');
+            const numDocEl  = document.getElementById('reg_numDoc');
+
+            const DOC_CONFIG = {
+                CC: { max: 10, placeholder: '6 a 10 dígitos',           inputmode: 'numeric', soloDigitos: true  },
+                TI: { max: 11, placeholder: '8 a 11 dígitos',           inputmode: 'numeric', soloDigitos: true  },
+                CE: { max: 15, placeholder: '6 a 15 alfanuméricos', inputmode: 'text',    soloDigitos: false },
+            };
+
+            function aplicarConfigDoc() {
+                const cfg = DOC_CONFIG[tipoDocEl?.value];
+                if (!numDocEl) return;
+                if (cfg) {
+                    numDocEl.maxLength   = cfg.max;
+                    numDocEl.placeholder = cfg.placeholder;
+                    numDocEl.inputMode   = cfg.inputmode;
+                } else {
+                    numDocEl.maxLength   = 20;
+                    numDocEl.placeholder = 'Selecciona primero el tipo';
+                    numDocEl.inputMode   = 'text';
+                }
+            }
+
+            if (tipoDocEl) {
+                tipoDocEl.addEventListener('change', () => {
+                    aplicarConfigDoc();
+                    if (numDocEl) numDocEl.value = '';
+                    if (numDocEl && typeof setFieldState === 'function') setFieldState(numDocEl, 'neutro');
+                });
+            }
+
+            if (numDocEl) {
+                numDocEl.addEventListener('keydown', e => {
+                    if (e.ctrlKey || e.metaKey || CTRL_KEYS.includes(e.key)) return;
+                    const cfg = DOC_CONFIG[tipoDocEl?.value];
+                    if (!cfg) return;
+                    if (cfg.soloDigitos  && !/^[0-9]$/.test(e.key))         e.preventDefault();
+                    if (!cfg.soloDigitos && !/^[a-zA-Z0-9\-]$/.test(e.key)) e.preventDefault();
+                });
+                numDocEl.addEventListener('paste', e => {
+                    e.preventDefault();
+                    const cfg    = DOC_CONFIG[tipoDocEl?.value];
+                    const txt    = (e.clipboardData || window.clipboardData).getData('text');
+                    const regex  = cfg?.soloDigitos ? /[^0-9]/g : /[^a-zA-Z0-9\-]/g;
+                    const limpio = txt.replace(regex, '').slice(0, numDocEl.maxLength || 20);
+                    const s = numDocEl.selectionStart, en = numDocEl.selectionEnd;
+                    numDocEl.value = numDocEl.value.slice(0, s) + limpio + numDocEl.value.slice(en);
+                    numDocEl.dispatchEvent(new Event('input'));
+                });
+            }
+
+            // ── Validación en tiempo real con debounce ──
+            function addRealtimeValid(id, validatorFn, minLen) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                let timer;
+                el.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    if (!this.value) { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); return; }
+                    if (this.value.length < minLen) return;
+                    timer = setTimeout(() => {
+                        const r = validatorFn(this.value);
+                        if (typeof setFieldState === 'function') setFieldState(this, r.valido ? 'valido' : 'invalido', r.mensaje);
+                    }, 380);
+                });
+            }
+
+            if (typeof validarNombrePersona === 'function') {
+                addRealtimeValid('reg_nombre',   v => validarNombrePersona(v, 'Nombre', 50),   2);
+                addRealtimeValid('reg_apellido', v => validarNombrePersona(v, 'Apellido', 50), 2);
+                addRealtimeValid('reg_pais',     v => validarNombrePersona(v, 'País', 60),     2);
+            }
+            if (typeof validarTelefono === 'function') addRealtimeValid('reg_telefono', validarTelefono, 7);
+            if (typeof validarEmail    === 'function') addRealtimeValid('reg_email',    validarEmail,    6);
+
+            if (typeof validarDocumento === 'function' && numDocEl) {
+                let timerDoc;
+                numDocEl.addEventListener('input', function () {
+                    clearTimeout(timerDoc);
+                    if (!this.value) { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); return; }
+                    const tipo = tipoDocEl?.value || null;
+                    const cfg  = DOC_CONFIG[tipo];
+                    if (!cfg || this.value.length < 4) return;
+                    timerDoc = setTimeout(() => {
+                        const r = validarDocumento(this.value, tipo);
+                        if (typeof setFieldState === 'function') setFieldState(this, r.valido ? 'valido' : 'invalido', r.mensaje);
+                    }, 380);
+                });
+            }
+
+            // ── Contadores de caracteres ──
+            function addContador(id, max) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const wrap = el.closest('.field-wrapper');
+                if (!wrap) return;
+                const cnt = document.createElement('div');
+                cnt.className = 'lux-cnt';
+                cnt.textContent = `0 / ${max}`;
+                const target = el.closest('div[class*="relative"]') || el;
+                target.after(cnt);
+                el.addEventListener('input', () => {
+                    const n = el.value.length;
+                    cnt.textContent = `${n} / ${max}`;
+                    cnt.style.color = n >= max        ? '#f87171' :
+                                      n >= max * 0.85 ? '#fbbf24' :
+                                                        'rgba(214,178,94,0.38)';
+                });
+            }
+
+            addContador('reg_nombre',    50);
+            addContador('reg_apellido',  50);
+            addContador('reg_email',    100);
+            addContador('reg_direccion', 150);
+
+            // ── Submit ──
             if (registerForm) {
                 registerForm.addEventListener("submit", async (e) => {
                     e.preventDefault();
-
                     registerError.classList.add("hidden");
                     registerError.textContent = "";
 
-                    const nombre = document.getElementById("reg_nombre").value.trim();
+                    const nombre   = document.getElementById("reg_nombre").value.trim();
                     const apellido = document.getElementById("reg_apellido").value.trim();
                     const password = document.getElementById("reg_password").value;
                     const confirmar = document.getElementById("reg_confirmar").value;
-                    const email = document.getElementById("reg_email").value.trim();
-                    const tipoDoc = document.getElementById("reg_tipoDoc").value.trim();
-                    const numDoc = document.getElementById("reg_numDoc").value.trim();
+                    const email    = document.getElementById("reg_email").value.trim();
+                    const tipoDoc  = document.getElementById("reg_tipoDoc").value.trim();
+                    const numDoc   = document.getElementById("reg_numDoc").value.trim();
 
-                    // ✏️ MODIFICADO: Usar validarFormularioRegistro si está disponible
                     if (typeof validarFormularioRegistro === 'function') {
                         const validacion = validarFormularioRegistro({
                             nombre, apellido, email,
                             contrasena: password,
-                            confirmar: confirmar,
+                            confirmar,
                             telefono: document.getElementById("reg_telefono").value.trim()
                         });
-
                         if (!validacion.valido) {
                             registerError.classList.remove("hidden");
-                            registerError.innerHTML = validacion.errores.map(e => `<p>${e}</p>`).join('');
+                            registerError.innerHTML = validacion.errores.map(e => `<p>• ${e}</p>`).join('');
                             return;
                         }
                     } else {
                         if (!nombre || !apellido || !password || !email || !tipoDoc || !numDoc) {
                             registerError.classList.remove("hidden");
-                            registerError.textContent = "Por favor, completa todos los campos obligatorios (marcados con *)";
+                            registerError.textContent = "Complete todos los campos obligatorios (*)";
                             return;
                         }
                     }
@@ -373,36 +727,30 @@
                         return;
                     }
 
-                    // ✏️ MODIFICADO: Estado de carga en el botón
                     registerBtn.disabled = true;
                     registerBtnText.textContent = 'Registrando...';
                     registerBtnIcon.className = 'fa-solid fa-spinner fa-spin';
 
                     const userData = {
-                        Contrasena: password,
-                        Nombre: nombre,
-                        Apellido: apellido,
-                        Email: email,
-                        TipoDocumento: tipoDoc,
-                        NumeroDocumento: numDoc,
-                        Telefono: document.getElementById("reg_telefono").value.trim() || null,
-                        Pais: document.getElementById("reg_pais").value.trim() || null,
-                        Direccion: document.getElementById("reg_direccion").value.trim() || null,
-                        IDRol: 2,
+                        Contrasena:       password,
+                        NombreUsuario:    nombre,
+                        Apellido:         apellido,
+                        Email:            email,
+                        TipoDocumento:    tipoDoc,
+                        NumeroDocumento:  numDoc,
+                        Telefono:         document.getElementById("reg_telefono").value.trim() || null,
+                        Pais:             document.getElementById("reg_pais").value.trim() || null,
+                        Direccion:        document.getElementById("reg_direccion").value.trim() || null,
+                        IDRol: 3,
                     };
 
                     try {
                         const result = await registrarUsuario(userData);
-
                         if (result.success) {
                             registerBtnText.textContent = '¡Registrado!';
                             registerBtnIcon.className = 'fa-solid fa-check';
-                            if (typeof showSuccess === 'function') {
-                                showSuccess('¡Registro exitoso! Redirigiendo a login...');
-                            }
-                            setTimeout(() => {
-                                window.location.href = "../login.html";
-                            }, 1500);
+                            if (typeof showAlert === 'function') showAlert('¡Registro exitoso! Redirigiendo...', 'success');
+                            setTimeout(() => { window.location.href = "../login.html"; }, 1500);
                         } else {
                             registerError.classList.remove("hidden");
                             registerError.textContent = result.message;

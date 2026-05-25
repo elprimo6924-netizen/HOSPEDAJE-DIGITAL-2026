@@ -93,6 +93,23 @@ function getRoleName(rolId) {
     return 'Desconocido';
 }
 
+function getDashboardPorRol() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        return Number(user.IDRol) === 1 ? 'dashboard' : 'dashboard-empleado';
+    } catch {
+        return 'dashboard';
+    }
+}
+
+// Redirect non-admin users who land directly on dashboard.html
+document.addEventListener('DOMContentLoaded', function () {
+    const page = window.location.pathname.split('/').pop().replace('.html', '');
+    if (page === 'dashboard' && getDashboardPorRol() !== 'dashboard') {
+        window.location.replace(getModuleHref('dashboard-empleado.html'));
+    }
+});
+
 async function loadSidebarComponent(containerId = 'sidebar-placeholder') {
     const container = document.getElementById(containerId);
     if (!container) {
@@ -196,8 +213,22 @@ async function filterSidebarByPermissions() {
             if (modulo) modulosPermitidos.add(modulo);
         });
 
-        // Si el rol no tiene ningún permiso definido, mostrar todo (evitar bloqueo total)
-        if (modulosPermitidos.size === 0) return;
+        // Si no tiene permisos asignados, aplicar perfil por defecto según IDRol
+        if (modulosPermitidos.size === 0) {
+            const idRol = Number(user.IDRol);
+            // IDRol=2 = Cliente: solo ve sus módulos de consumo
+            if (idRol === 2) {
+                const MODULOS_CLIENTE = new Set(['dashboard', 'paquetes', 'habitaciones', 'servicios', 'reservas', 'perfil']);
+                document.querySelectorAll('.sidebar-item[data-module]').forEach(item => {
+                    const modulo = item.getAttribute('data-module');
+                    if (modulo && !MODULOS_CLIENTE.has(modulo)) {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+            // Otros roles sin permisos: mostrar todo (comportamiento original)
+            return;
+        }
 
         document.querySelectorAll('.sidebar-item[data-module]').forEach(item => {
             const modulo = item.getAttribute('data-module');
@@ -220,6 +251,7 @@ function cargarSeccion(seccion, event) {
     const page = window.location.pathname.split('/').pop().replace('.html', '');
     const currentToModule = {
         dashboard: 'dashboard',
+        'dashboard-empleado': 'dashboard',
         habitaciones: 'habitaciones',
         servicios: 'servicios',
         paquetes: 'paquetes',
@@ -247,7 +279,8 @@ function cargarSeccion(seccion, event) {
     }
 
     if (seccion === 'dashboard') {
-        window.location.href = getModuleHref('dashboard.html');
+        const destino = getDashboardPorRol();
+        window.location.href = getModuleHref(destino === 'dashboard-empleado' ? 'dashboard-empleado.html' : 'dashboard.html');
         return;
     }
 
@@ -472,7 +505,16 @@ async function fillUserInfoInSidebar() {
                     }
                 }
             }
-            roleElement.textContent = roleName;
+            const isAdmin      = Number(user.IDRol) === 1;
+            const badgeColor   = isAdmin ? '#ff6a1a' : '#4A90E2';
+            const badgeBg      = isAdmin ? 'rgba(255,106,26,0.15)' : 'rgba(74,144,226,0.15)';
+            const badgeIcon    = isAdmin ? 'fa-shield-halved' : 'fa-user';
+            const roleLabel    = roleName.replace(/^Rol:\s*/i, '');
+            roleElement.innerHTML =
+                `<span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.6rem;` +
+                `border-radius:999px;font-size:10px;font-weight:700;` +
+                `background:${badgeBg};color:${badgeColor};">` +
+                `<i class="fa-solid ${badgeIcon}" style="font-size:8px"></i>${roleLabel}</span>`;
         }
     } catch (error) {
         console.warn('No se pudo llenar la información del usuario:', error);
@@ -483,6 +525,7 @@ function markActiveSidebarItem() {
     const page = window.location.pathname.split('/').pop().replace('.html', '');
     const pageToModule = {
         dashboard: 'dashboard',
+        'dashboard-empleado': 'dashboard',
         habitaciones: 'habitaciones',
         paquetes: 'paquetes',
         servicios: 'servicios',
@@ -651,6 +694,7 @@ async function initSidebarControls() {
     };
 })();
 
+window.getDashboardPorRol = getDashboardPorRol;
 window.getAppBasePath = getAppBasePath;
 window.markActiveSidebarItem = markActiveSidebarItem;
 window.getStoredSession = getStoredSession;
@@ -663,3 +707,12 @@ window.verificarSesion = verificarSesion;
 window.cerrarSesion = cerrarSesion;
 window.cargarSeccion = cargarSeccion;
 window.initSidebarControls = initSidebarControls;
+
+// Bfcache session guard: re-check session when browser restores page from history cache
+window.addEventListener('pageshow', function (e) {
+    const path = window.location.pathname;
+    if (/login\.html|register\.html|landingPage\.html|index\.html/i.test(path)) return;
+    if (!getStoredSession()) {
+        window.location.replace(/\/pages\//i.test(path) ? '../login.html' : 'login.html');
+    }
+});

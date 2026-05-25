@@ -1,10 +1,40 @@
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
+const {
+  ADMIN_ROLE_ID,
+  CLIENTE_ROLE_ID,
+  logUnauthorizedAccess,
+} = require("../middlewares/authorization.middleware");
+
+const getNumeroDocumentoByUserId = async (userId) => {
+  if (!userId) return null;
+  const [[row]] = await db.query(
+    "SELECT NumeroDocumento FROM usuarios WHERE IDUsuario = ? LIMIT 1",
+    [userId]
+  );
+  return row?.NumeroDocumento || null;
+};
 
 /* ================= LISTAR CLIENTES ================= */
 exports.getAll = async (req, res) => {
   try {
+    const role = Number(req.user?.rol ?? req.usuario?.rol);
+    const userId = req.user?.id ?? req.usuario?.id;
     const { documento } = req.query;
+
+    if (role === CLIENTE_ROLE_ID) {
+      const numeroDocumento = await getNumeroDocumentoByUserId(userId);
+      if (!numeroDocumento) {
+        logUnauthorizedAccess(req, "Cliente sin documento asociado");
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const [rows] = await db.query(
+        "SELECT * FROM cliente WHERE NroDocumento = ?",
+        [numeroDocumento]
+      );
+      return res.json(rows);
+    }
 
     let sql = "SELECT * FROM cliente";
     let params = [];
@@ -34,7 +64,31 @@ exports.getActivos = async (req, res) => {
 /* ================= BUSCAR CLIENTE POR DOCUMENTO ================= */
 exports.buscarPorDocumento = async (req, res) => {
   try {
+    const role = Number(req.user?.rol ?? req.usuario?.rol);
+    const userId = req.user?.id ?? req.usuario?.id;
     const { documento } = req.query;
+
+    if (role === CLIENTE_ROLE_ID) {
+      const numeroDocumento = await getNumeroDocumentoByUserId(userId);
+      if (!numeroDocumento) {
+        logUnauthorizedAccess(req, "Cliente sin documento asociado");
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      if (documento && String(documento) !== String(numeroDocumento)) {
+        logUnauthorizedAccess(req, "Intento de buscar cliente ajeno por documento");
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const [rows] = await db.query(
+        "SELECT * FROM cliente WHERE NroDocumento = ?",
+        [numeroDocumento]
+      );
+      if (rows.length === 0) {
+        return res.status(404).json({ error: "Cliente no encontrado" });
+      }
+      return res.json(rows[0]);
+    }
 
     if (!documento) {
       return res.status(400).json({ error: "Documento requerido" });
@@ -58,7 +112,22 @@ exports.buscarPorDocumento = async (req, res) => {
 /* ================= OBTENER CLIENTE POR DOCUMENTO (ID) ================= */
 exports.obtenerPorId = async (req, res) => {
   try {
+    const role = Number(req.user?.rol ?? req.usuario?.rol);
+    const userId = req.user?.id ?? req.usuario?.id;
     const id = req.params.id; // aquí id es el NroDocumento según frontend
+
+    if (role === CLIENTE_ROLE_ID) {
+      const numeroDocumento = await getNumeroDocumentoByUserId(userId);
+      if (!numeroDocumento) {
+        logUnauthorizedAccess(req, "Cliente sin documento asociado");
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      if (String(id) !== String(numeroDocumento)) {
+        logUnauthorizedAccess(req, "Intento de acceder a cliente ajeno por id");
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+
     const [rows] = await db.query(
       "SELECT * FROM cliente WHERE NroDocumento = ?",
       [id]
@@ -93,7 +162,7 @@ exports.create = async (req, res) => {
     if (Password && Password.length >= 8) {
       const hashPass = await bcrypt.hash(Password, 10);
       await db.query(
-        `INSERT INTO usuarios (Nombre, Apellido, Email, Contrasena, IDRol, Estado, requiereCambioPassword)
+        `INSERT INTO usuarios (Nombre, Apellido, Email, Contrasena, IDRol, IsActive, requiereCambioPassword)
          VALUES (?, ?, ?, ?, 3, 1, 1)
          ON DUPLICATE KEY UPDATE Nombre = VALUES(Nombre)`,
         [Nombre, Apellido || '', Email, hashPass]
@@ -102,7 +171,12 @@ exports.create = async (req, res) => {
 
     res.status(201).json({ mensaje: "Cliente creado", data: result });
   } catch (error) {
-    res.status(500).json({ error: "Error creando cliente", detalle: error.message });
+    const esDuplicado = error.code === 'ER_DUP_ENTRY';
+    const esFKFaltante = error.code === 'ER_NO_REFERENCED_ROW_2';
+    let mensaje = "Error creando cliente";
+    if (esDuplicado) mensaje = "Ya existe un cliente con ese número de documento.";
+    else if (esFKFaltante) mensaje = "El rol especificado no existe en el sistema.";
+    res.status(esDuplicado || esFKFaltante ? 409 : 500).json({ error: mensaje, detalle: error.message });
   }
 };
 

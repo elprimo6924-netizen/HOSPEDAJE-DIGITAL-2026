@@ -58,6 +58,8 @@
             <div class="hidden md:flex items-center gap-8 font-medium text-gray-500">
                 <a href="#inicio" class="hover:text-primary transition-colors">Inicio</a>
                 <a href="#habitaciones" class="hover:text-primary transition-colors">Habitaciones</a>
+                <a href="#paquetes" class="hover:text-primary transition-colors">Paquetes</a>
+                <a href="#servicios" class="hover:text-primary transition-colors">Servicios</a>
                 <a href="#nosotros" class="hover:text-primary transition-colors">Nosotros</a>
             </div>
 
@@ -194,6 +196,46 @@
                 <div class="col-span-full flex flex-col items-center py-20 text-gray-400">
                     <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
                     <p>Cargando experiencias...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAQUETES -->
+    <section id="paquetes" class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                <div class="max-w-xl">
+                    <h2 class="text-4xl font-bold mb-4 tracking-tight">Nuestros paquetes</h2>
+                    <p class="text-gray-500 text-lg">Descubre combinaciones especiales de habitación y servicios para hacer tu estadía única.</p>
+                </div>
+                <a href="login.html" class="inline-flex px-6 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all">Reservar ahora</a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="paquetes-container">
+                <div class="col-span-full flex flex-col items-center py-20 text-gray-400">
+                    <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p>Cargando paquetes...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section id="servicios" class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                <div class="max-w-xl">
+                    <h2 class="text-4xl font-bold mb-4 tracking-tight">Nuestros servicios</h2>
+                    <p class="text-gray-500 text-lg">Complementa tu estadía con nuestros servicios especializados disponibles para todos los huéspedes.</p>
+                </div>
+                <a href="login.html" class="inline-flex px-6 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all">Reservar ahora</a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="servicios-container">
+                <div class="col-span-full flex flex-col items-center py-20 text-gray-400">
+                    <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p>Cargando servicios...</p>
                 </div>
             </div>
         </div>
@@ -349,7 +391,7 @@
             try {
                 const habitaciones = usarMock
                     ? await getMockData('habitaciones')
-                    : await requestJson('/habitaciones');
+                    : await requestJson('/habitaciones/disponibles');
 
                 renderHabitaciones(container, habitaciones);
             } catch (error) {
@@ -365,8 +407,152 @@
             }
         }
 
+        function renderPaquetes(container, paquetes) {
+            if (!Array.isArray(paquetes) || paquetes.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic py-12">No hay paquetes disponibles.</p>';
+                return;
+            }
+
+            container.innerHTML = paquetes.slice(0, 6).map((pkg, index) => {
+                const imagen = getRandomImage(index, { ImagenHabitacion: pkg.ImagenPaquete });
+                const servicios = (pkg.NombresServicios || pkg.NombreServicio || '—')
+                    .split(',').map(s => s.trim()).filter(Boolean);
+
+                return `
+                <article class="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="${imagen}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="${pkg.NombrePaquete || ''}" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800'">
+                        <div class="absolute top-4 right-4 bg-amber-400/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white">Paquete</div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold mb-1 text-secondary">${pkg.NombrePaquete || 'Paquete Especial'}</h3>
+                        <p class="text-xs text-primary font-semibold mb-3 flex items-center gap-1">
+                            <i class="fa-solid fa-bed"></i> ${pkg.NombreHabitacion || '—'}
+                        </p>
+                        <p class="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2">${pkg.Descripcion || 'Paquete especial para una estadía inolvidable.'}</p>
+                        <div class="flex flex-wrap gap-1 mb-5">
+                            ${servicios.map(s => `<span class="bg-emerald-50 text-primary text-xs rounded-full px-2 py-0.5 font-medium">${s}</span>`).join('')}
+                        </div>
+                        <div class="flex items-center justify-between pt-5 border-t border-gray-50">
+                            <div class="text-primary font-bold text-xl">
+                                $${Number(pkg.Precio || 0).toLocaleString('es-CO')} <span class="text-xs text-gray-400 font-normal">/ paquete</span>
+                            </div>
+                            <a href="login.html" class="p-3 bg-gray-50 rounded-xl text-primary hover:bg-primary hover:text-white transition-colors">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        async function loadPaquetes() {
+            const container = document.getElementById('paquetes-container');
+            if (!container) return;
+
+            try {
+                const paquetes = await requestJson('/paquetes/activos');
+                renderPaquetes(container, paquetes);
+            } catch (error) {
+                try {
+                    const todos = await requestJson('/paquetes');
+                    const activos = Array.isArray(todos)
+                        ? todos.filter(p => p.Estado === 1 || p.Estado === true)
+                        : [];
+                    renderPaquetes(container, activos);
+                } catch {
+                    container.innerHTML = '<p class="col-span-full text-center text-red-400 py-12">Error al conectar con el servidor.</p>';
+                }
+            }
+        }
+
+        const servicioIconos = {
+            'spa':         'fa-spa',
+            'masajes':     'fa-spa',
+            'restaurante': 'fa-utensils',
+            'piscina':     'fa-water-ladder',
+            'wifi':        'fa-wifi',
+            'gimnasio':    'fa-dumbbell',
+            'habitación':  'fa-concierge-bell',
+            'room':        'fa-concierge-bell',
+            'tour':        'fa-map-location-dot',
+            'transport':   'fa-car',
+            'bar':         'fa-martini-glass',
+            'lavanderí':   'fa-shirt',
+        };
+
+        function getServicioIcono(nombre) {
+            const n = (nombre || '').toLowerCase();
+            for (const [clave, icono] of Object.entries(servicioIconos)) {
+                if (n.includes(clave)) return icono;
+            }
+            return 'fa-concierge-bell';
+        }
+
+        function renderServicios(container, servicios) {
+            if (!Array.isArray(servicios) || servicios.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic py-12">No hay servicios disponibles.</p>';
+                return;
+            }
+
+            container.innerHTML = servicios.slice(0, 8).map((svc) => {
+                const icono = getServicioIcono(svc.NombreServicio);
+                const imgResolved = (() => {
+                    const raw = (svc.imagen_url || '').trim();
+                    if (!raw) return null;
+                    if (raw.startsWith('data:image/')) return raw;
+                    if (/^https?:\/\//.test(raw)) return raw;
+                    if (/^\/[^/]/.test(raw)) return IMG_BASE + raw;
+                    const nombre = decodeURIComponent(raw).replace(/\\/g, '/').split('/').filter(Boolean).pop();
+                    return nombre ? IMG_BASE + '/img/' + encodeURIComponent(nombre) : null;
+                })();
+
+                const iconoHtml = imgResolved
+                    ? `<img src="${imgResolved}" class="w-full h-full object-cover" alt="${svc.NombreServicio || ''}" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-primary/10 flex items-center justify-center text-primary text-2xl\\'><i class=\\'fa-solid ${icono}\\'></i></div>'">`
+                    : `<div class="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-2xl"><i class="fa-solid ${icono}"></i></div>`;
+
+                return `
+                <article class="group bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 rounded-2xl overflow-hidden mb-5 flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
+                        ${iconoHtml}
+                    </div>
+                    <h3 class="text-base font-bold text-secondary mb-2">${svc.NombreServicio || 'Servicio'}</h3>
+                    <p class="text-gray-500 text-xs leading-relaxed mb-4 line-clamp-3">${svc.Descripcion || ''}</p>
+                    <div class="mt-auto w-full pt-4 border-t border-gray-50 flex flex-col gap-1">
+                        ${svc.Duracion ? `<span class="text-xs text-gray-400"><i class="fa-regular fa-clock mr-1"></i>${svc.Duracion}</span>` : ''}
+                        ${svc.CantidadMaximaPersonas ? `<span class="text-xs text-gray-400"><i class="fa-solid fa-users mr-1"></i>Máx. ${svc.CantidadMaximaPersonas} personas</span>` : ''}
+                        ${Number(svc.Costo) > 0
+                            ? `<span class="text-sm font-bold text-primary mt-1">$${Number(svc.Costo).toLocaleString('es-CO')}</span>`
+                            : `<span class="text-xs text-emerald-600 font-semibold mt-1">Incluido</span>`}
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        async function loadServicios() {
+            const container = document.getElementById('servicios-container');
+            if (!container) return;
+
+            try {
+                const servicios = await requestJson('/servicios/activos');
+                renderServicios(container, servicios);
+            } catch (error) {
+                try {
+                    const todos = await requestJson('/servicios');
+                    const activos = Array.isArray(todos)
+                        ? todos.filter(s => s.Estado === 1 || s.Estado === true)
+                        : [];
+                    renderServicios(container, activos);
+                } catch {
+                    container.innerHTML = '<p class="col-span-full text-center text-red-400 py-12">Error al conectar con el servidor.</p>';
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadHabitaciones();
+            loadPaquetes();
+            loadServicios();
 
             const wn = (typeof CONFIG !== 'undefined' && CONFIG.WHATSAPP_NUMBER)
                 ? CONFIG.WHATSAPP_NUMBER

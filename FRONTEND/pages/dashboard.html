@@ -211,7 +211,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Documento</th>
+                                    <th id="th-doc-recientes">Documento</th>
                                     <th>Fecha inicio</th>
                                     <th>Fecha fin</th>
                                     <th>Monto total</th>
@@ -235,6 +235,7 @@
     <script src="../js/main.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
     <script>
     /* ── helpers ── */
     const fmt  = v => '$' + Number(v || 0).toLocaleString('es-CO');
@@ -377,12 +378,25 @@
     }
 
     /* ── Tabla recientes ── */
+    function getIdRolActual() {
+        try {
+            const session = window.getStoredSession ? window.getStoredSession() : null;
+            if (session?.usuario?.IDRol) return Number(session.usuario.IDRol);
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.IDRol) return Number(user.IDRol);
+            return 0;
+        } catch { return 0; }
+    }
+    let esAdmin = false;
+
     function renderRecientes(data) {
+        const th = document.getElementById('th-doc-recientes');
+        if (th) th.textContent = esAdmin ? 'Documento' : 'Paquete / Servicio';
         document.getElementById('tbody-recientes').innerHTML = data.length
             ? data.map(r => `
                 <tr>
                     <td><strong style="color:${COLOR_ACCENT}">#${r.IdReserva}</strong></td>
-                    <td>${r.NroDocumentoCliente}</td>
+                    <td>${esAdmin ? (r.NroDocumentoCliente || '—') : (r.Paquetes || r.NombrePaquete || '—')}</td>
                     <td>${fmtFecha(r.FechaInicio)}</td>
                     <td>${fmtFecha(r.FechaFinalizacion)}</td>
                     <td><strong>${fmt(r.Monto_Total)}</strong></td>
@@ -395,6 +409,8 @@
     document.addEventListener('DOMContentLoaded', async () => {
         const session = window.getStoredSession ? window.getStoredSession() : null;
         if (!session) { window.location.href = '../login.html'; return; }
+
+        esAdmin = getIdRolActual() === 1;
 
         /* Fecha actual */
         document.getElementById('db-fecha').textContent =
@@ -410,7 +426,17 @@
             renderChartEstado(data.reservasPorEstado || []);
             renderRanking('rank-paquetes',  data.topPaquetes  || [], 'NombrePaquete');
             renderRanking('rank-servicios', data.topServicios || [], 'NombreServicio');
-            renderRecientes(data.reservasRecientes || []);
+
+            if (esAdmin) {
+                renderRecientes(data.reservasRecientes || []);
+            } else {
+                try {
+                    const misRes = await requestJson('/reservas/mis-reservas');
+                    renderRecientes(Array.isArray(misRes) ? misRes.slice(0, 5) : []);
+                } catch {
+                    renderRecientes([]);
+                }
+            }
 
         } catch (e) {
             console.error('Dashboard error:', e.message);

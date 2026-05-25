@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS servicio (
     Costo FLOAT NOT NULL,
     Estado TINYINT(1) NOT NULL
 );
+ALTER TABLE servicio ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(500) NULL;
 
 -- Crear tabla de estados de reserva
 CREATE TABLE IF NOT EXISTS estadosreserva (
@@ -72,8 +73,11 @@ CREATE TABLE IF NOT EXISTS usuarios (
     Pais VARCHAR(100),
     Direccion VARCHAR(255),
     IDRol INT,
+    IsActive TINYINT(1) DEFAULT 1,
+    requiereCambioPassword TINYINT(1) DEFAULT 0,
     FOREIGN KEY (IDRol) REFERENCES roles(IDRol)
 );
+
 
 -- Crear tabla de reservas
 CREATE TABLE IF NOT EXISTS reserva (

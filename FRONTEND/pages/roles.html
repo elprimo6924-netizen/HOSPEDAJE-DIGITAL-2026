@@ -9,21 +9,39 @@
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } };</script>
     <style>
+        :root {
+            --lux-ink: #0f1522;
+            --lux-navy: #0b1424;
+            --lux-emerald: #0f3d3e;
+            --lux-gold: #d6b25e;
+            --lux-gold-soft: #f4e6c1;
+            --lux-ivory: #f7f2e6;
+            --lux-stone: #e7dfcf;
+            --lux-shadow: 0 22px 60px rgba(15, 21, 34, 0.18);
+        }
+
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        html, body { background-color: var(--lux-navy) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
         body { font-family: var(--font-family); display: block !important; }
-        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
-        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
-        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+        #main-wrapper {
+            background: radial-gradient(1400px 600px at 8% 0%, rgba(26, 49, 76, 0.55), transparent 60%),
+                        linear-gradient(180deg, #0b1424 0%, #0d1a2c 40%, #0f1b2b 100%) !important;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        main  { background-color: transparent !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: rgba(255, 255, 255, 0.04) !important; color: #c3c8d4 !important; }
         /* Estilo para el Switch de Estado */
         .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #cbd5e1; transition: .4s; border-radius: 34px;
+            background-color: #d6dbe3; transition: .4s; border-radius: 34px;
         }
         .slider:before {
             position: absolute; content: ""; height: 16px; width: 16px;
@@ -31,6 +49,70 @@
         }
         input:checked + .slider { background-color: #22c55e; }
         input:checked + .slider:before { transform: translateX(22px); }
+
+        .mod-toolbar-title {
+            font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+            color: #f8f4ea;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        }
+        .mod-toolbar-title .mod-icon { color: var(--lux-gold); }
+        .mod-toolbar-subtitle { color: #cfd5e0; }
+        .btn-mod-nuevo {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+            box-shadow: 0 14px 28px rgba(183, 138, 42, 0.35) !important;
+            border: none !important;
+        }
+        .btn-mod-nuevo:hover { filter: brightness(1.03); transform: translateY(-1px); }
+
+        .roles-search-card {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%);
+            border: 1px solid #efe3c9;
+            box-shadow: var(--lux-shadow);
+        }
+        .roles-search-card input {
+            border: 1px solid #e3d4b4 !important;
+            background: #fffdf7 !important;
+            color: #1a2230 !important;
+        }
+        .roles-search-card input:focus {
+            border-color: var(--lux-gold) !important;
+            box-shadow: 0 0 0 4px rgba(214, 178, 94, 0.18) !important;
+        }
+        .roles-btn-primary {
+            background: linear-gradient(135deg, #0f3d3e, #0b2c31) !important;
+            box-shadow: 0 14px 28px rgba(15, 61, 62, 0.25) !important;
+        }
+        .roles-btn-secondary {
+            background: #c9d1dc !important;
+            color: #1a2230 !important;
+        }
+        .roles-card {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%);
+            border: 1px solid #efe3c9;
+            box-shadow: var(--lux-shadow);
+        }
+        .roles-card thead th {
+            background:#f8f2e3 !important;
+            color:#7a5a18 !important;
+            letter-spacing:.08em !important;
+            border-bottom:1px solid #eadfca !important;
+        }
+        .roles-card tbody tr:hover { background:#fff6e6 !important; }
+        .roles-card tbody td { color:#1a2230 !important; }
+        .roles-paginacion {
+            background:#f8f2e3 !important;
+            border-top:1px solid #eadfca !important;
+            color:#6b5b3a !important;
+        }
+        .roles-paginacion button {
+            border:1px solid #eadfca !important;
+            background:#fffdf7 !important;
+            color:#6b5b3a !important;
+        }
+        .roles-paginacion button:hover { background:#fff3da !important; }
     </style>
 </head>
 <body>
@@ -55,7 +137,7 @@
                 <button id="btn-crear-rol" class="btn-mod-nuevo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Rol</button>
             </div>
 
-            <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200 roles-search-card">
                 <div class="flex flex-col md:flex-row gap-3">
                     <div class="relative flex-1">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -63,13 +145,13 @@
                             class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--color-secondary)] focus:outline-none text-slate-700">
                     </div>
                     <div class="flex gap-2">
-                        <button id="btn-buscar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
-                        <button id="btn-limpiar" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Limpiar</button>
+                        <button id="btn-buscar" class="text-white font-bold py-2 px-6 rounded-lg transition shadow-sm roles-btn-primary">Buscar</button>
+                        <button id="btn-limpiar" class="font-bold py-2 px-6 rounded-lg transition shadow-sm roles-btn-secondary">Limpiar</button>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden roles-card">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 border-b border-slate-200">
@@ -86,7 +168,7 @@
                     </table>
                 </div>
             <!-- Paginación (Sección que faltaba) -->
-                <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium">
+                <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium roles-paginacion">
                     <span id="roles-info">Mostrando 0 a 0 de 0 roles</span>
                     <div class="flex gap-1" id="pagination-controls">
                         <button id="prevPage" class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors">
@@ -109,5 +191,6 @@
     <script src="../js/validation.js"></script>
     <script src="../js/rolFormModal.js"></script>
     <script src="../js/roles.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
 </body>
 </html>

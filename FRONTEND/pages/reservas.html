@@ -8,81 +8,122 @@
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <style>
-        * { box-sizing: border-box; }
-        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        :root {
+            --lux-ink: #0f1522;
+            --lux-navy: #0b1424;
+            --lux-gold: #d6b25e;
+            --lux-shadow: 0 22px 60px rgba(15, 21, 34, 0.18);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background-color: var(--lux-navy) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
         body { font-family: var(--font-family); display: block !important; }
-        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
-        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
-        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+        #main-wrapper {
+            background: radial-gradient(1400px 600px at 8% 0%, rgba(26, 49, 76, 0.55), transparent 60%),
+                        linear-gradient(180deg, #0b1424 0%, #0d1a2c 40%, #0f1b2b 100%) !important;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        main  { background-color: transparent !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: rgba(255, 255, 255, 0.04) !important; color: #c3c8d4 !important; }
 
-        .crud-reservas-toolbar { display:flex; align-items:center; justify-content:space-between; gap:var(--spacing-md); margin-bottom:var(--spacing-md); }
-        .btn-nueva-reserva { padding:.75rem 1.5rem; background:var(--color-secondary); color:#fff; border:none; border-radius:10px; font-size:.9rem; font-weight:700; cursor:pointer; letter-spacing:.03em; transition:background .2s; }
-        .btn-nueva-reserva:hover { background:#9a3412; }
+        /* ── Toolbar ── */
+        .mod-toolbar-title {
+            font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+            color: #f8f4ea; letter-spacing: .06em; text-transform: uppercase;
+            text-shadow: 0 6px 18px rgba(0,0,0,.45);
+        }
+        .mod-toolbar-title .mod-icon { color: var(--lux-gold); }
+        .mod-toolbar-subtitle { color: #cfd5e0; }
+        .btn-mod-nuevo {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+            box-shadow: 0 14px 28px rgba(183, 138, 42, 0.35) !important;
+            border: none !important;
+        }
+        .btn-mod-nuevo:hover { filter: brightness(1.03); transform: translateY(-1px); }
 
+        /* ── Tarjetas de resumen ── */
         .crud-reservas-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--spacing-md); margin-bottom:var(--spacing-lg); }
-        .crud-reservas-summary article { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-md); box-shadow:var(--shadow-sm); }
-        .crud-reservas-summary span    { display:block; color:var(--color-text-light); font-size:var(--font-size-sm); margin-bottom:var(--spacing-xs); }
-        .crud-reservas-summary strong  { font-size:2rem; color:var(--color-secondary); }
+        .crud-reservas-summary article {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%);
+            border: 1px solid #efe3c9; border-radius: var(--border-radius-lg);
+            padding: var(--spacing-md); box-shadow: var(--lux-shadow);
+        }
+        .crud-reservas-summary span   { display:block; color:#7a8799; font-size:var(--font-size-sm); margin-bottom:var(--spacing-xs); letter-spacing:.08em; text-transform:uppercase; }
+        .crud-reservas-summary strong { font-size:2rem; color:#7a5a18; }
 
-        .crud-reservas-panel  { background:var(--color-white); border:1px solid #e2e8f0; border-radius:var(--border-radius-lg); padding:var(--spacing-lg); box-shadow:var(--shadow-sm); }
-        .crud-reservas-panel h4 { font-size:var(--font-size-xl); color:var(--color-secondary); margin-bottom:var(--spacing-sm); }
-        .crud-reservas-note   { color:var(--color-text); opacity:.8; margin:0 0 var(--spacing-md); }
+        /* ── Panel principal ── */
+        .crud-reservas-panel {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%);
+            border: 1px solid #efe3c9; border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg); box-shadow: var(--lux-shadow);
+        }
+        .crud-reservas-panel h4 { font-size:var(--font-size-xl); color:#7a5a18; margin-bottom:var(--spacing-sm); font-weight:700; }
+        .crud-reservas-note   { color:#5d6777; opacity:.9; margin:0 0 var(--spacing-md); }
         .crud-reservas-lista-top { display:flex; justify-content:space-between; gap:var(--spacing-md); align-items:flex-start; margin-bottom:var(--spacing-md); }
 
+        /* ── Filtros ── */
         .crud-reservas-filtros { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
-        .crud-reservas-filtros input  { flex:1 1 240px; min-width:240px; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:10px; background:var(--color-white); color:var(--color-text); font:inherit; }
-        .crud-reservas-filtros select { flex:0 0 180px; min-width:180px; padding:.9rem 1rem; border:1px solid #cbd5e1; border-radius:10px; background:var(--color-white); color:var(--color-text); font:inherit; }
-        .crud-reservas-filtros input:focus, .crud-reservas-filtros select:focus { outline:none; border-color:var(--color-secondary); box-shadow:0 0 0 3px rgba(255, 140, 66, .12); }
+        .crud-reservas-filtros input  { flex:1 1 240px; min-width:240px; padding:.9rem 1rem; border:1px solid #e3d4b4; border-radius:12px; background:#fffdf7; color:#1a2230; font:inherit; }
+        .crud-reservas-filtros select { flex:0 0 180px; min-width:180px; padding:.9rem 1rem; border:1px solid #e3d4b4; border-radius:12px; background:#fffdf7; color:#1a2230; font:inherit; }
+        .crud-reservas-filtros input:focus, .crud-reservas-filtros select:focus { outline:none; border-color:var(--lux-gold); box-shadow:0 0 0 4px rgba(214,178,94,.18); }
 
-        .crud-reservas-tabla-wrap { overflow:auto; border:1px solid #e2e8f0; border-radius:14px; background:#fff; }
+        /* ── Tabla ── */
+        .crud-reservas-tabla-wrap { overflow:auto; border:1px solid #eadfca; border-radius:16px; background:#fffdf7; }
         .crud-reservas-tabla { width:100%; min-width:1000px; border-collapse:collapse; }
-        .crud-reservas-tabla thead th { background:#f8fafc; color:var(--color-secondary); text-align:left; padding:1rem; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #e2e8f0; }
-        .crud-reservas-tabla tbody td { padding:1rem; border-bottom:1px solid #edf2f7; vertical-align:middle; color:var(--color-text); }
-        .crud-reservas-tabla tbody tr:hover { background:#f8fafc; }
-        .crud-reservas-acciones { display:flex; flex-wrap:wrap; gap:.5rem; }
+        .crud-reservas-tabla thead th { background:#f8f2e3; color:#7a5a18; text-align:left; padding:1rem; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid #eadfca; }
+        .crud-reservas-tabla tbody td { padding:1rem; border-bottom:1px solid #efe7d6; vertical-align:middle; color:#1a2230; }
+        .crud-reservas-tabla tbody tr:hover { background:#fff6e6; }
+        .crud-reservas-acciones { display:flex; flex-wrap:nowrap; gap:.5rem; align-items:center; white-space:nowrap; }
+        .crud-reservas-tabla td:last-child { white-space:nowrap; }
 
+        /* ── Badges de estado ── */
         .badge-estado { display:inline-flex; align-items:center; padding:.25rem .65rem; border-radius:999px; font-weight:700; font-size:.78rem; }
-        .badge-estado.activa    { background:#dcfce7; color:#166534; }
-        .badge-estado.cancelada { background:#fee2e2; color:#991b1b; }
-        .badge-estado.otro      { background:#e2e8f0; color:#475569; }
+        .badge-estado.activa    { background:#e7f4e9; color:#1f6b3b; }
+        .badge-estado.cancelada { background:#fde6e6; color:#9b1c1c; }
+        .badge-estado.otro      { background:#f0e9db; color:#6b5b3a; }
 
-        .crud-reservas-mensaje { min-height:1.5rem; color:var(--color-text); opacity:.82; font-size:var(--font-size-sm); display:inline-flex; align-items:center; padding:.5rem .75rem; border-radius:10px; background:rgba(255,255,255,.98); box-shadow:0 10px 24px rgba(15,23,42,.12); }
+        /* ── Mensaje de feedback ── */
+        .crud-reservas-mensaje { min-height:1.5rem; color:#1a2230; opacity:.9; font-size:var(--font-size-sm); display:inline-flex; align-items:center; padding:.5rem .75rem; border-radius:12px; background:rgba(255,255,255,.98); box-shadow:0 10px 24px rgba(15,23,42,.12); }
         .crud-reservas-mensaje:empty { display:none; }
         .crud-reservas-mensaje.error { color:var(--color-danger); }
         .crud-reservas-mensaje.ok    { color:#14532d; background:rgba(20,83,45,.08); }
 
-        /* Modal detalle */
+        /* ── Modal detalle ── */
         .modal-reserva-overlay { position:fixed; inset:0; z-index:1200; display:grid; place-items:center; background:rgba(15,23,42,.55); padding:1rem; }
         .modal-reserva-overlay.hidden { display:none; }
-        .modal-reserva-content { width:min(700px,100%); max-height:84vh; overflow:auto; background:#fff; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 24px 48px rgba(15,23,42,.25); padding:var(--spacing-lg); position:relative; }
-        .modal-reserva-content h4 { font-size:1.3rem; color:var(--color-secondary); margin-bottom:var(--spacing-md); }
+        .modal-reserva-content { width:min(700px,100%); max-height:84vh; overflow:auto; background:#fffdf7; border-radius:18px; border:1px solid #eadfca; box-shadow:0 24px 48px rgba(15,23,42,.25); padding:var(--spacing-lg); position:relative; }
+        .modal-reserva-content h4 { font-size:1.3rem; color:#7a5a18; margin-bottom:var(--spacing-md); font-weight:700; }
         .modal-reserva-close { position:absolute; top:.6rem; right:.8rem; border:none; background:transparent; font-size:2rem; line-height:1; cursor:pointer; color:#64748b; }
         .modal-reserva-close:hover { color:#0f172a; }
         .detalle-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
-        .detalle-item { padding:.75rem .9rem; border:1px solid #dbe4f0; border-radius:12px; background:#f8fbff; }
+        .detalle-item { padding:.75rem .9rem; border:1px solid #eadfca; border-radius:12px; background:#fffaf0; }
         .detalle-item span   { display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; font-weight:700; margin-bottom:.3rem; }
         .detalle-item strong { color:#0f172a; font-size:.95rem; }
 
-        /* ── Pagination ── */
-        .pag-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.9rem 1rem; border-top:1px solid #f1f5f9; margin-top:.5rem; }
-        .pag-info { font-size:.8rem; color:#64748b; }
-        .pag-info strong { color:#0f172a; }
+        /* ── Paginación ── */
+        .pag-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.9rem 1rem; border-top:1px solid #eadfca; margin-top:.5rem; background:#f8f2e3; border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg); }
+        .pag-info { font-size:.8rem; color:#6b5b3a; }
+        .pag-info strong { color:#7a5a18; }
         .pag-controls { display:flex; align-items:center; gap:.35rem; }
-        .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#64748b; }
-        .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e2e8f0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#0f172a; cursor:pointer; outline:none; }
-        .pag-per-page select:focus { border-color:var(--color-secondary); }
+        .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#6b5b3a; }
+        .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #eadfca; border-radius:7px; font:inherit; font-size:.8rem; background:#fffdf7; color:#1a2230; cursor:pointer; outline:none; }
+        .pag-per-page select:focus { border-color:var(--lux-gold); }
         .pag-btn {
             min-width:34px; height:34px; padding:0 .5rem;
-            border:1.5px solid #e2e8f0; border-radius:8px;
-            background:#fff; color:#334155; font-size:.82rem; font-weight:600;
+            border:1.5px solid #eadfca; border-radius:8px;
+            background:#fffdf7; color:#5b4b2f; font-size:.82rem; font-weight:600;
             cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
             transition:all .15s;
         }
-        .pag-btn:hover:not(:disabled) { border-color:var(--color-secondary); color:var(--color-secondary); background:#fff7ed; }
-        .pag-btn.active  { background:var(--color-secondary); color:#fff; border-color:var(--color-secondary); }
+        .pag-btn:hover:not(:disabled) { border-color:var(--lux-gold); color:#7a5a18; background:#fff3da; }
+        .pag-btn.active  { background:linear-gradient(135deg, #d6b25e, #b78a2a); color:#1b1205; border-color:#b78a2a; }
         .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
         .pag-btn.dots { cursor:default; border-color:transparent; background:transparent; }
 
@@ -188,6 +229,7 @@
     <script src="../js/auth.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/validation.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
     <script>
         /* ── Utilidades ── */
         function badgeEstado(id, nombre) {
@@ -201,6 +243,17 @@
         let reservasCargadas  = [];
         let listaFiltrada     = [];
         let paginaActual      = 1;
+
+        function getIdRolActual() {
+            try {
+                const session = window.getStoredSession ? window.getStoredSession() : null;
+                if (session?.usuario?.IDRol) return Number(session.usuario.IDRol);
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                if (user.IDRol) return Number(user.IDRol);
+                return 0;
+            } catch { return 0; }
+        }
+        const esAdmin = getIdRolActual() === 1;
 
         function getPerPage() {
             return parseInt(document.getElementById('reservas-per-page')?.value || '10', 10);
@@ -250,10 +303,14 @@
             if (!pagina.length) {
                 tbody.innerHTML = '<tr><td colspan="8" class="mensaje-vacio">No hay reservas.</td></tr>';
             } else {
-                tbody.innerHTML = pagina.map(r => `
+                tbody.innerHTML = pagina.map(r => {
+                    const clienteLabel = esAdmin
+                        ? `${r.Nombre||''} ${r.Apellido||''}${r.NroDocumentoCliente ? `<br><small style="color:#64748b">${r.NroDocumentoCliente}</small>` : ''}`
+                        : 'Tu reserva';
+                    return `
                     <tr>
                         <td><strong>#${r.IDReserva}</strong></td>
-                        <td>${r.Nombre||''} ${r.Apellido||''}<br><small style="color:#64748b">${r.NroDocumentoCliente||''}</small></td>
+                        <td>${clienteLabel}</td>
                         <td>${r.Paquetes||'<span style="color:#94a3b8">—</span>'}</td>
                         <td>${formatFecha(r.FechaInicio)}</td>
                         <td>${formatFecha(r.FechaFinalizacion)}</td>
@@ -262,12 +319,15 @@
                         <td>
                             <div class="crud-reservas-acciones">
                                 <button class="btn-mini btn-mini-ver"     onclick="verDetalle(${r.IDReserva})"         title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
+                                ${esAdmin ? `
                                 <button class="btn-mini btn-mini-editar"  onclick="editarReserva(${r.IDReserva})"      title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
                                 ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva})" title="Cancelar"><i class="fa-solid fa-ban"></i></button>` : ''}
                                 <button class="btn-mini btn-mini-eliminar" onclick="eliminarReservaUI(${r.IDReserva})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                                ` : ''}
                             </div>
                         </td>
-                    </tr>`).join('');
+                    </tr>`;
+                }).join('');
             }
 
             /* ── info ── */
@@ -313,7 +373,7 @@
                     const nombre = norm(r.Nombre);
                     const apellido = norm(r.Apellido);
                     const nombreCompleto = `${nombre} ${apellido}`.trim();
-                    const doc = norm(r.NroDocumentoCliente || r.NroDocumento || r.Documento || r.DocumentoCliente);
+                    const doc = esAdmin ? norm(r.NroDocumentoCliente || r.NroDocumento || r.Documento || r.DocumentoCliente) : '';
                     return nombre.includes(texto)
                         || apellido.includes(texto)
                         || nombreCompleto.includes(texto)
@@ -347,6 +407,10 @@
         }
 
         function editarReserva(id) {
+            if (!esAdmin) {
+                mostrarMensaje('No autorizado.', 'error');
+                return;
+            }
             const r = reservasCargadas.find(x => x.IDReserva === id);
             if (!r) return;
             sessionStorage.setItem('reserva_form_data', JSON.stringify(r));
@@ -385,8 +449,8 @@
 
             const campos = [
                 ['ID Reserva',    `#${r.IDReserva}`],
-                ['Cliente',       `${r.Nombre||''} ${r.Apellido||''}`],
-                ['Documento',     r.NroDocumentoCliente||'-'],
+                ['Cliente',       esAdmin ? `${r.Nombre||''} ${r.Apellido||''}` : 'Tu reserva'],
+                ...(esAdmin ? [['Documento', r.NroDocumentoCliente||'-']] : []),
                 ['Fecha inicio',  formatFecha(r.FechaInicio)],
                 ['Fecha fin',     formatFecha(r.FechaFinalizacion)],
                 ['Subtotal',      formatMonto(r.SubTotal)],
@@ -403,6 +467,10 @@
 
         /* ── Cancelar / Eliminar ── */
         function cancelarReservaUI(id) {
+            if (!esAdmin) {
+                mostrarMensaje('No autorizado.', 'error');
+                return;
+            }
             if (typeof confirmarAccion !== 'function') {
                 if (!confirm(`¿Cancelar la reserva #${id}?`)) return;
                 requestJson(`/reservas/${id}/cancelar`, { method: 'PUT' })
@@ -426,6 +494,10 @@
         }
 
         function eliminarReservaUI(id) {
+            if (!esAdmin) {
+                mostrarMensaje('No autorizado.', 'error');
+                return;
+            }
             if (typeof confirmarAccion !== 'function') {
                 if (!confirm(`¿Eliminar definitivamente la reserva #${id}? No se puede deshacer.`)) return;
                 requestJson(`/reservas/${id}`, { method: 'DELETE', allowNoContent: true })

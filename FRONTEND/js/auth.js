@@ -35,7 +35,7 @@ async function loginUsuario(email, contrasena) {
 async function registrarUsuario(userData) {
     try {
         const apiUrl = window.API_URL || (typeof CONFIG !== 'undefined' && CONFIG.API_URL) || 'http://localhost:3000/api';
-        const response = await fetch(`${apiUrl}/usuarios`, {
+        const response = await fetch(`${apiUrl}/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(userData),
@@ -46,7 +46,9 @@ async function registrarUsuario(userData) {
         if (response.ok) {
             return { success: true, data };
         } else {
-            return { success: false, message: data.error || data.message || "Error al registrar usuario" };
+            const msg = data.error || data.message || "Error al registrar usuario";
+            const detalle = data.detalle ? ` (${data.detalle})` : '';
+            return { success: false, message: msg + detalle };
         }
     } catch (error) {
         console.error("Error de conexión:", error);

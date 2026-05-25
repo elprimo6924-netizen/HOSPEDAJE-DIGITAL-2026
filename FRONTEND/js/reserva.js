@@ -13,7 +13,7 @@ const State = {
     modo: 'habitacion', // 'habitacion' | 'paquete'
     itemSeleccionado: null, // { id, nombre, precio, imagen, tipo }
     cliente: null,
-    serviciosExtras: [], // [{ id, nombre, precio }]
+    serviciosExtras: [], // [{ id, nombre, precio, cantidad, hora }]
     blockedDates: [],
     mesOffset: 0,
     descuento: 0,
@@ -21,14 +21,12 @@ const State = {
     estadoReserva: 1
 };
 
-// Utils: Fetch
+// Utils: Fetch — delegates to requestJson from api.js (absolute URL + Bearer token)
 async function fetchJson(endpoint) {
     try {
-        const res = await fetch(`${API_BASE}${endpoint}`);
-        if (!res.ok) throw new Error('Network error');
-        return await res.json();
+        return await requestJson(endpoint);
     } catch (err) {
-        console.error(err);
+        console.error('[reserva.js fetchJson]', err);
         return null;
     }
 }
@@ -220,7 +218,7 @@ const ModoReserva = {
         if (!data) return;
         
         sel.innerHTML = '<option value="">— Selecciona una habitación —</option>';
-        data.filter(h => h.Estado === 1).forEach(h => {
+        data.filter(h => h.Estado == 1).forEach(h => {
             const opt = document.createElement('option');
             opt.value = h.IDHabitacion;
             opt.dataset.precio = h.Costo;
@@ -252,7 +250,7 @@ const ModoReserva = {
         if (!data) return;
 
         grid.innerHTML = '';
-        data.filter(p => p.Estado === 1).forEach(p => {
+        data.filter(p => p.Estado == 1).forEach(p => {
             const div = document.createElement('div');
             div.className = "border-2 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:border-amber-400 hover:shadow-md bg-white paquete-card";
             div.dataset.id = p.IDPaquete;
@@ -398,6 +396,105 @@ const BuscadorCliente = {
 // ==========================================
 // SERVICIOS ADICIONALES
 // ==========================================
+const DIAS_SEMANA = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
+const HORA_BTN_BASE = "svc-hora-btn py-1 text-[11px] font-semibold border border-stone-200 rounded-lg text-stone-600 bg-white hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 transition-all duration-150";
+const HORA_BTN_ACTIVE = "svc-hora-btn py-1 text-[11px] font-semibold border-2 border-amber-500 rounded-lg text-white bg-amber-500 shadow-sm shadow-amber-200";
+
+const SERVICIOS_META = [
+    {
+        key: "spa",
+        match: ["spa", "masaje"],
+        icono: "🧖",
+        descripcion: "Relajacion y bienestar completo",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        horarios: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00"],
+    },
+    {
+        key: "restaurante",
+        match: ["restaurante"],
+        icono: "🍽️",
+        descripcion: "Desayuno, almuerzo y cena",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
+        horarios: ["07:00", "08:00", "12:00", "13:00", "19:00", "20:00", "21:00"],
+    },
+    {
+        key: "piscina",
+        match: ["piscina"],
+        icono: "🏊",
+        descripcion: "Area acuatica climatizada",
+        dias: ["Lu", "Mi", "Vi", "Sa", "Do"],
+        horarios: ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+    },
+    {
+        key: "wifi",
+        match: ["wifi"],
+        icono: "📶",
+        descripcion: "Internet de alta velocidad",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
+        horarios: [],
+    },
+    {
+        key: "gimnasio",
+        match: ["gimnasio"],
+        icono: "🏋️",
+        descripcion: "Equipos de ultima generacion",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        horarios: ["06:00", "07:00", "08:00", "16:00", "17:00", "18:00", "19:00", "20:00"],
+    },
+    {
+        key: "habitacion",
+        match: ["habitacion", "room"],
+        icono: "🛎️",
+        descripcion: "Servicio a la habitacion 24h",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
+        horarios: ["07:00", "08:00", "12:00", "13:00", "19:00", "20:00", "21:00", "22:00"],
+    },
+    {
+        key: "tour",
+        match: ["tour"],
+        icono: "🗺️",
+        descripcion: "Recorridos por la ciudad",
+        dias: ["Ma", "Ju", "Sa", "Do"],
+        horarios: ["08:00", "10:00", "14:00", "16:00"],
+    },
+    {
+        key: "lavanderia",
+        match: ["lavanderia", "lavanderia"],
+        icono: "👔",
+        descripcion: "Entrega en 24 horas",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi"],
+        horarios: ["08:00", "09:00", "10:00", "11:00"],
+    },
+    {
+        key: "transporte",
+        match: ["transporte"],
+        icono: "🚗",
+        descripcion: "Traslados al aeropuerto",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
+        horarios: ["05:00", "06:00", "07:00", "18:00", "19:00", "20:00", "21:00", "22:00"],
+    },
+    {
+        key: "bar",
+        match: ["bar", "cocktail"],
+        icono: "🍹",
+        descripcion: "Cocteleria artesanal premium",
+        dias: ["Mi", "Ju", "Vi", "Sa"],
+        horarios: ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"],
+    },
+];
+
+const getServicioMeta = (nombre = "") => {
+    const norm = nombre.toLowerCase();
+    const meta = SERVICIOS_META.find((item) => item.match.some((m) => norm.includes(m)));
+    return meta || {
+        key: "servicio",
+        icono: "✨",
+        descripcion: "Servicio premium disponible",
+        dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
+        horarios: [],
+    };
+};
+
 const ServiciosAdicionales = {
     async render() {
         const c = document.getElementById('servicios-container');
@@ -408,28 +505,112 @@ const ServiciosAdicionales = {
         if (!data) return;
 
         c.innerHTML = '';
-        data.filter(s => s.Estado === 1).forEach(s => {
+        data.filter(s => s.Estado == 1).forEach(s => {
+            const meta = getServicioMeta(s.NombreServicio || '');
+            const diasSet = new Set(meta.dias || []);
+            const diasHtml = DIAS_SEMANA.map((d) => {
+                const activo = diasSet.has(d);
+                const base = activo
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                    : 'bg-stone-100 text-stone-400 border-stone-200 line-through';
+                return `<span class="px-1.5 py-0.5 text-[10px] font-bold rounded-md border ${base}">${d}</span>`;
+            }).join('');
+
+            const horarios = Array.isArray(meta.horarios) ? meta.horarios : [];
+            const horariosHtml = horarios.length
+                ? horarios.map((h) => `
+                    <button type="button" class="${HORA_BTN_BASE}" onclick="ServiciosAdicionales.selectHora(this, '${s.IDServicio}', '${h}')">${h}</button>
+                `).join('')
+                : `<span class="text-xs text-stone-500">Disponible todo el dia</span>`;
+
+            const confirmHtml = horarios.length
+                ? `<div class="flex items-center gap-1.5 bg-amber-50 rounded-lg px-2.5 py-1.5 border border-amber-200">
+                        <span class="text-base">⏰</span>
+                        <span class="text-xs font-semibold text-amber-700 confirmacion-hora">Reservado: --:--</span>
+                   </div>`
+                : '';
+
             const div = document.createElement('div');
-            div.className = "svc-item-wrapper flex flex-col p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors bg-white";
+            div.className = "svc-item-wrapper relative flex flex-col gap-3 p-4 bg-white border-2 border-stone-200 rounded-2xl cursor-pointer hover:border-amber-400 hover:shadow-lg hover:shadow-amber-100/50 transition-all duration-250 group";
             div.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" class="accent-green-700 w-4 h-4 cursor-pointer"
+                <div class="flex items-start gap-3">
+                    <div class="relative mt-0.5 shrink-0">
+                        <input type="checkbox" class="peer sr-only"
                                id="svc-${s.IDServicio}" data-id="${s.IDServicio}"
                                data-precio="${s.Costo}" data-nombre="${s.NombreServicio}"
                                onchange="ServiciosAdicionales.toggle(this)">
-                        <label for="svc-${s.IDServicio}" class="text-sm text-gray-700 hover:text-gray-900 cursor-pointer select-none">${s.NombreServicio}</label>
+                        <label for="svc-${s.IDServicio}" class="w-5 h-5 flex items-center justify-center border-2 border-stone-300 rounded-md peer-checked:bg-amber-500 peer-checked:border-amber-500 cursor-pointer transition-all duration-200 hover:border-amber-400">
+                            <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </label>
                     </div>
-                    <span class="text-sm font-medium text-green-800">+${fmt(s.Costo)}</span>
+                    <span class="text-2xl leading-none mt-0.5 group-hover:scale-110 transition-transform duration-200">${meta.icono}</span>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-sm font-bold text-stone-800 leading-tight whitespace-nowrap">${s.NombreServicio}</span>
+                        <span class="text-xs text-stone-500 leading-tight mt-0.5">${meta.descripcion}</span>
+                    </div>
                 </div>
-                <div class="svc-hora-wrap hidden mt-2 pl-7">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-regular fa-clock text-gray-400 text-xs"></i>
-                        <span class="text-xs text-gray-500 font-medium">Hora deseada:</span>
-                        <input type="time" class="svc-hora text-xs border border-gray-200 rounded-lg px-2 py-1
-                               focus:ring-1 focus:ring-green-600 focus:outline-none"
-                               data-svc-id="${s.IDServicio}">
+
+                <div class="flex items-center justify-between px-0.5">
+                    <span class="text-xs text-stone-400 font-medium">Por persona</span>
+                    <span class="text-base font-black text-amber-600">+${fmt(s.Costo)}</span>
+                </div>
+
+                <div class="svc-cantidad-wrap hidden flex flex-col gap-2 border-t border-amber-200 pt-3 mt-1" data-svc-id="${s.IDServicio}">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base">👥</span>
+                        <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Cantidad de personas</span>
                     </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button"
+                            onclick="ServiciosAdicionales.cambiarCantidad('${s.IDServicio}', -1)"
+                            class="w-8 h-8 flex items-center justify-center border-2 border-stone-200 rounded-lg text-stone-500 font-bold text-base hover:border-amber-400 hover:bg-amber-50 hover:text-amber-600 active:scale-95 transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+                            id="btn-menos-${s.IDServicio}"
+                            aria-label="Reducir cantidad">
+                            −
+                        </button>
+
+                        <input type="number"
+                            id="cantidad-input-${s.IDServicio}"
+                            value="1"
+                            min="1"
+                            max="20"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            oninput="ServiciosAdicionales.validarCantidad(this, '${s.IDServicio}')"
+                            onkeydown="ServiciosAdicionales.bloquearNoNumericos(event)"
+                            class="w-14 h-8 text-center text-sm font-black text-stone-800 bg-white border-2 border-amber-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            aria-label="Número de personas">
+
+                        <button type="button"
+                            onclick="ServiciosAdicionales.cambiarCantidad('${s.IDServicio}', 1)"
+                            class="w-8 h-8 flex items-center justify-center border-2 border-stone-200 rounded-lg text-stone-500 font-bold text-base hover:border-amber-400 hover:bg-amber-50 hover:text-amber-600 active:scale-95 transition-all duration-150"
+                            id="btn-mas-${s.IDServicio}"
+                            aria-label="Aumentar cantidad">
+                            +
+                        </button>
+
+                        <span class="text-[10px] text-stone-400 leading-tight ml-1">máx.<br>20 pers.</span>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        <span class="text-xs text-stone-500 font-medium">Subtotal servicio:</span>
+                        <span class="text-sm font-black text-amber-700 subtotal-servicio" data-precio="${s.Costo}">${fmt(s.Costo)}</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Dias disponibles</span>
+                    <div class="flex gap-1 flex-wrap">${diasHtml}</div>
+                </div>
+
+                <div class="svc-hora-wrap hidden flex-col gap-2 border-t border-amber-200 pt-3">
+                    <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Selecciona tu horario</span>
+                    <div class="grid grid-cols-4 gap-1">${horariosHtml}</div>
+                    ${confirmHtml}
+                    <input type="hidden" class="svc-hora" data-svc-id="${s.IDServicio}">
                 </div>
             `;
             c.appendChild(div);
@@ -441,10 +622,18 @@ const ServiciosAdicionales = {
         const wrapper  = chk.closest('.svc-item-wrapper');
         const horaWrap = wrapper?.querySelector('.svc-hora-wrap');
         const horaInput = wrapper?.querySelector('.svc-hora');
+        const cantidadWrap = wrapper?.querySelector('.svc-cantidad-wrap');
+        const cantidadInput = wrapper?.querySelector(`#cantidad-input-${id}`);
 
         if (chk.checked) {
             horaWrap?.classList.remove('hidden');
-            State.serviciosExtras.push({ id, nombre: chk.dataset.nombre, precio: Number(chk.dataset.precio), hora: '' });
+            cantidadWrap?.classList.remove('hidden');
+            wrapper?.classList.add('border-amber-500', 'bg-gradient-to-br', 'from-amber-50', 'to-orange-50', 'shadow-lg', 'shadow-amber-200/50');
+            State.serviciosExtras.push({ id, nombre: chk.dataset.nombre, precio: Number(chk.dataset.precio), cantidad: 1, hora: '' });
+            if (cantidadInput) {
+                cantidadInput.value = '1';
+                this.syncCantidad(id, 1);
+            }
             if (horaInput) {
                 horaInput.addEventListener('change', () => {
                     const svc = State.serviciosExtras.find(s => s.id === id);
@@ -453,9 +642,79 @@ const ServiciosAdicionales = {
             }
         } else {
             horaWrap?.classList.add('hidden');
+            cantidadWrap?.classList.add('hidden');
+            wrapper?.classList.remove('border-amber-500', 'bg-gradient-to-br', 'from-amber-50', 'to-orange-50', 'shadow-lg', 'shadow-amber-200/50');
             State.serviciosExtras = State.serviciosExtras.filter(s => s.id !== id);
+            if (cantidadInput) cantidadInput.value = '1';
+            this.syncCantidad(id, 1);
         }
         ResumenLateral.actualizar();
+    },
+
+    cambiarCantidad(servicioId, delta) {
+        const input = document.getElementById(`cantidad-input-${servicioId}`);
+        if (!input) return;
+        const current = parseInt(input.value, 10) || 1;
+        let next = current + delta;
+        if (next < 1) next = 1;
+        if (next > 20) next = 20;
+        input.value = String(next);
+        this.syncCantidad(servicioId, next);
+    },
+
+    validarCantidad(input, servicioId) {
+        const raw = String(input.value || '').replace(/[^0-9]/g, '');
+        let val = parseInt(raw, 10);
+        if (!val || val < 1) val = 1;
+        if (val > 20) val = 20;
+        input.value = String(val);
+        this.syncCantidad(servicioId, val);
+    },
+
+    bloquearNoNumericos(event) {
+        const allowed = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+        if (allowed.includes(event.key)) return;
+        if (/^[0-9]$/.test(event.key)) return;
+        event.preventDefault();
+    },
+
+    syncCantidad(servicioId, cantidad) {
+        const wrapper = document.getElementById(`svc-${servicioId}`)?.closest('.svc-item-wrapper');
+        const subtotalEl = wrapper?.querySelector('.subtotal-servicio');
+        const btnMenos = wrapper?.querySelector(`#btn-menos-${servicioId}`);
+        const btnMas = wrapper?.querySelector(`#btn-mas-${servicioId}`);
+
+        const svc = State.serviciosExtras.find(s => s.id === servicioId);
+        if (svc) svc.cantidad = cantidad;
+
+        const base = svc ? svc.precio : Number(subtotalEl?.dataset.precio || 0);
+        if (subtotalEl) subtotalEl.textContent = fmt(base * cantidad);
+
+        if (btnMenos) btnMenos.disabled = cantidad <= 1;
+        if (btnMas) btnMas.disabled = cantidad >= 20;
+
+        ResumenLateral.actualizar();
+    },
+
+    selectHora(btn, servicioId, hora) {
+        const wrapper = btn.closest('.svc-item-wrapper');
+        if (!wrapper) return;
+        const panel = wrapper.querySelector('.svc-hora-wrap');
+        const input = wrapper.querySelector('.svc-hora');
+        const confirm = panel?.querySelector('.confirmacion-hora');
+
+        wrapper.querySelectorAll('.svc-hora-btn').forEach((b) => {
+            b.className = HORA_BTN_BASE;
+        });
+        btn.className = HORA_BTN_ACTIVE;
+
+        if (input) {
+            input.value = hora;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        if (confirm) {
+            confirm.textContent = `Reservado: ${hora}`;
+        }
     }
 };
 
@@ -519,7 +778,7 @@ const ResumenLateral = {
         }
 
         // Servicios extras
-        const costoServicios = State.serviciosExtras.reduce((acc, s) => acc + s.precio, 0);
+        const costoServicios = State.serviciosExtras.reduce((acc, s) => acc + (s.precio * (s.cantidad || 1)), 0);
 
         // Subtotal y Descuento
         const subtotalBruto = precioBase + costoServicios;
@@ -573,8 +832,8 @@ const ReservaForm = {
         document.getElementById('btn-confirmar-reserva')?.addEventListener('click', async (e) => {
             e.preventDefault();
             if (!FormValidator.validar()) return;
-            
-            const btn = e.target;
+
+            const btn = e.currentTarget;
             btn.disabled = true;
             btn.textContent = 'Procesando...';
 
@@ -582,7 +841,7 @@ const ReservaForm = {
             const costoBase = State.modo === 'habitacion'
                 ? State.itemSeleccionado.precio * Math.max(1, noches)
                 : State.itemSeleccionado.precio;
-            const costoSvc  = State.serviciosExtras.reduce((a, s) => a + s.precio, 0);
+            const costoSvc  = State.serviciosExtras.reduce((a, s) => a + (s.precio * (s.cantidad || 1)), 0);
             const subtotal  = costoBase + costoSvc - State.descuento;
             const iva       = Math.max(0, subtotal * 0.19);
             const total     = Math.max(0, subtotal + iva);
@@ -604,25 +863,23 @@ const ReservaForm = {
             };
 
             try {
-                const res = await fetch(`${API_BASE}/reservas`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (res.ok) {
-                    UI.showToast("Reserva confirmada con éxito", "success");
-                    setTimeout(() => window.location.href = 'reservas.html', 1500);
+                const result = await requestJson('/reservas', { method: 'POST', body: payload });
+                const idEl = document.getElementById('rf-success-id');
+                if (idEl && result?.reservaId) idEl.textContent = `#${result.reservaId}`;
+                const overlay = document.getElementById('rf-success-overlay');
+                if (overlay) {
+                    overlay.classList.add('show');
+                    document.getElementById('rf-success-btn-ir')?.addEventListener('click', () => {
+                        window.location.href = 'pages/reservas.html';
+                    });
                 } else {
-                    const err = await res.json();
-                    UI.showToast(err.message || "Error al guardar la reserva", "error");
-                    btn.disabled = false;
-                    btn.textContent = 'Confirmar Reserva';
+                    UI.showToast("Reserva confirmada con éxito", "success");
+                    setTimeout(() => window.location.href = 'pages/reservas.html', 1500);
                 }
             } catch (error) {
-                UI.showToast("Error de conexión", "error");
+                UI.showToast(error.message || "Error al guardar la reserva", "error");
                 btn.disabled = false;
-                btn.textContent = 'Confirmar Reserva';
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Reserva';
             }
         });
     }

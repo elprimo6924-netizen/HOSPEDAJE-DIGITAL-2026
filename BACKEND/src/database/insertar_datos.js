@@ -36,14 +36,14 @@ async function main() {
         // 2. Insertar habitaciones
         console.log('--- Insertando Habitaciones ---');
         await connection.query(`INSERT INTO habitacion (IDHabitacion, NombreHabitacion, ImagenHabitacion, Descripcion, Costo, Estado) VALUES 
-            (1, 'Habitación Estándar', NULL, 'Habitación cómoda con cama doble, baño privado, TV y aire acondicionado.', 100000, 1),
-            (2, 'Habitación Deluxe', NULL, 'Habitación espaciosa con cama king, jacuzzi, mini bar y balcón con vista al mar.', 200000, 1),
-            (3, 'Suite Familiar', NULL, 'Gran habitación familiar con dos camas queen, sala de estar y cocina básica.', 350000, 1),
-            (4, 'Habitación Individual', NULL, 'Habitación económica con cama individual, baño privado y TV.', 50000, 1),
-            (5, 'Suite Presidencial', NULL, 'Lujo extremo con cama king, jacuzzi privado, sala de conferencias y terraza.', 500000, 1),
-            (6, 'Habitación Triple', NULL, 'Habitación espaciosa con tres cama individuales y espacio adicional.', 150000, 1),
-            (7, 'Cabaña Jardín', NULL, 'Acogedora cabaña rodeada de vegetación con terraza privada.', 180000, 1),
-            (8, 'Habitación Piscina', NULL, 'Habitación moderna con vista directa a la piscina y balcón.', 170000, 1)`);
+            (1, 'Habitación Estándar', NULL, 'Habitación cómoda con cama doble, baño privado, TV y aire acondicionado.', 160000, 1),
+            (2, 'Habitación Deluxe', NULL, 'Habitación espaciosa con cama king, jacuzzi, mini bar y balcón con vista al mar.', 320000, 1),
+            (3, 'Suite Familiar', NULL, 'Gran habitación familiar con dos camas queen, sala de estar y cocina básica.', 450000, 1),
+            (4, 'Habitación Individual', NULL, 'Habitación económica con cama individual, baño privado y TV.', 120000, 1),
+            (5, 'Suite Presidencial', NULL, 'Lujo extremo con cama king, jacuzzi privado, sala de conferencias y terraza.', 950000, 1),
+            (6, 'Habitación Triple', NULL, 'Habitación espaciosa con tres cama individuales y espacio adicional.', 250000, 1),
+            (7, 'Cabaña Jardín', NULL, 'Acogedora cabaña rodeada de vegetación con terraza privada.', 290000, 1),
+            (8, 'Habitación Piscina', NULL, 'Habitación moderna con vista directa a la piscina y balcón.', 270000, 1)`);
         console.log('✓ Habitaciones insertadas\n');
 
         // 3. Insertar clientes
@@ -65,31 +65,31 @@ async function main() {
         console.log('--- Insertando Servicios ---');
         await connection.query('DELETE FROM servicio WHERE IDServicio > 0');
         await connection.query(`INSERT INTO servicio (IDServicio, NombreServicio, Descripcion, Duracion, CantidadMaximaPersonas, Costo, Estado) VALUES
-            (1, 'Spa y Masajes', 'Relajantes tratamientos con aceites esenciales', '60 min', 2, 80000, 1),
+            (1, 'Spa y Masajes', 'Relajantes tratamientos con aceites esenciales', '60 min', 2, 150000, 1),
             (2, 'Restaurante', 'Restaurante con comida local e internacional', '2 horas', 20, 0, 1),
             (3, 'Piscina', 'Acceso a piscina climatizada al aire libre', 'todo el día', 50, 0, 1),
             (4, 'WiFi', 'Conexión a internet de alta velocidad', '24 horas', 10, 0, 1),
             (5, 'Gimnasio', 'Gimnasio completamente equipado', '6 horas', 15, 0, 1),
-            (6, 'Servicio a la Habitación', 'Pedidos de comida y bebidas', '45 min', 4, 15000, 1),
-            (7, 'Tour Guiado', 'Tours guiados por la ciudad', '4 horas', 12, 50000, 1),
-            (8, 'Lavandería', 'Servicio de lavandería y tintorería', '24 horas', 5, 20000, 1),
-            (9, 'Transporte', 'Servicio de transporte al aeropuerto', '1 hora', 4, 35000, 1),
+            (6, 'Servicio a la Habitación', 'Pedidos de comida y bebidas', '45 min', 4, 8000, 1),
+            (7, 'Tour Guiado', 'Tours guiados por la ciudad', '4 horas', 12, 65000, 1),
+            (8, 'Lavandería', 'Servicio de lavandería y tintorería', '24 horas', 5, 18000, 1),
+            (9, 'Transporte', 'Servicio de transporte al aeropuerto', '1 hora', 4, 60000, 1),
             (10, 'Bar y Cocktails', 'Bar con amplia carta de cocktails', '3 horas', 30, 0, 1)`);
         console.log('✓ Servicios insertados\n');
 
         // 5. Insertar reservas
         console.log('--- Insertando Reservas ---');
         await connection.query(`INSERT INTO reserva (IdReserva, NroDocumentoCliente, FechaReserva, FechaInicio, FechaFinalizacion, Sub_Total, Descuento, IVA, Monto_Total, MetodoPago, IdEstadoReserva, id_usuario) VALUES
-            (1, '1001234567', '2026-03-15 10:30:00', '2026-03-20', '2026-03-25', 500000, 0, 95000, 595000, 1, 1, 1),
-            (2, '1002345678', '2026-03-16 14:00:00', '2026-03-22', '2026-03-27', 1000000, 50000, 180500, 1180500, 2, 1, 1),
-            (3, '1003456789', '2026-03-17 09:15:00', '2026-03-25', '2026-03-30', 1750000, 0, 332500, 2082500, 1, 2, 1),
-            (4, '1004567890', '2026-03-18 08:00:00', '2026-03-18', '2026-03-20', 100000, 0, 19000, 119000, 1, 1, 1),
-            (5, '1005678901', '2026-03-17 16:45:00', '2026-04-01', '2026-04-05', 2000000, 100000, 361000, 2261000, 2, 1, 1),
-            (6, '1006789012', '2026-03-18 11:20:00', '2026-04-10', '2026-04-15', 750000, 0, 142500, 892500, 1, 2, 1),
-            (7, '1007890123', '2026-03-16 13:30:00', '2026-04-05', '2026-04-08', 540000, 0, 102600, 642600, 1, 1, 1),
-            (8, '1008901234', '2026-03-15 17:00:00', '2026-04-12', '2026-04-14', 340000, 0, 64600, 404600, 1, 3, 1),
-            (9, '1009012345', '2026-03-18 10:00:00', '2026-04-20', '2026-04-25', 500000, 0, 95000, 595000, 1, 1, 1),
-            (10, '1011123456', '2026-03-17 15:30:00', '2026-05-01', '2026-05-07', 1200000, 0, 228000, 1428000, 2, 2, 1)`);
+            (1, '1001234567', '2026-03-15 10:30:00', '2026-03-20', '2026-03-25', 800000, 0, 152000, 952000, 1, 1, 1),
+            (2, '1002345678', '2026-03-16 14:00:00', '2026-03-22', '2026-03-27', 1600000, 0, 304000, 1904000, 2, 1, 1),
+            (3, '1003456789', '2026-03-17 09:15:00', '2026-03-25', '2026-03-30', 2250000, 0, 427500, 2677500, 1, 2, 1),
+            (4, '1004567890', '2026-03-18 08:00:00', '2026-03-18', '2026-03-20', 240000, 0, 45600, 285600, 1, 1, 1),
+            (5, '1005678901', '2026-03-17 16:45:00', '2026-04-01', '2026-04-05', 3800000, 100000, 722000, 4422000, 2, 1, 1),
+            (6, '1006789012', '2026-03-18 11:20:00', '2026-04-10', '2026-04-15', 1250000, 0, 237500, 1487500, 1, 2, 1),
+            (7, '1007890123', '2026-03-16 13:30:00', '2026-04-05', '2026-04-08', 870000, 0, 165300, 1035300, 1, 1, 1),
+            (8, '1008901234', '2026-03-15 17:00:00', '2026-04-12', '2026-04-14', 540000, 0, 102600, 642600, 1, 3, 1),
+            (9, '1009012345', '2026-03-18 10:00:00', '2026-04-20', '2026-04-25', 800000, 0, 152000, 952000, 1, 1, 1),
+            (10, '1011123456', '2026-03-17 15:30:00', '2026-05-01', '2026-05-07', 1920000, 0, 364800, 2284800, 2, 2, 1)`);
         console.log('✓ Reservas insertadas\n');
 
         // 6. Verificar los datos

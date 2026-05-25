@@ -425,6 +425,7 @@
     <script src="../js/auth.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/validation.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
     <script>
     /* ── Estado ── */
     let paquetesCargados = [];
@@ -847,7 +848,116 @@
         };
     }
 
-    /* ── Submit formulario ── */
+    /* ── Detección de rol ── */
+    function getIdRolActual() {
+        try {
+            const session = window.getStoredSession ? window.getStoredSession() : null;
+            if (session?.usuario?.IDRol) return Number(session.usuario.IDRol);
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.IDRol) return Number(user.IDRol);
+            return 0;
+        } catch { return 0; }
+    }
+
+    /* ── Catálogo visual (modo no-admin) ── */
+    const IMGS_PAQ = [
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80',
+        'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&q=80',
+        'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80',
+        'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+        'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&q=80',
+        'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&q=80',
+    ];
+
+    async function cargarCatalogoPaquetes() {
+        document.querySelector('.paq-panel')?.style.setProperty('display', 'none');
+        const btnNuevo = document.getElementById('btn-nuevo-paquete');
+        if (btnNuevo) btnNuevo.style.display = 'none';
+
+        const titulo = document.querySelector('.mod-toolbar-title');
+        if (titulo) titulo.innerHTML = '<i class="fa-solid fa-box-open" style="color:#ff6a1a;margin-right:.4rem"></i> Paquetes Disponibles';
+        const sub = document.querySelector('.mod-toolbar-subtitle');
+        if (sub) sub.textContent = 'Elige el paquete perfecto para tu estadía.';
+
+        let catalogo = document.getElementById('catalogo-paquetes-cliente');
+        if (!catalogo) {
+            catalogo = document.createElement('div');
+            catalogo.id = 'catalogo-paquetes-cliente';
+            catalogo.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.5rem;padding:.25rem 0;';
+            document.querySelector('main')?.appendChild(catalogo);
+        }
+
+        catalogo.innerHTML = Array(6).fill(
+            `<div style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #e8edf2">` +
+            `<div style="height:192px;background:#f1f5f9"></div>` +
+            `<div style="padding:1.25rem"><div style="height:16px;background:#f1f5f9;border-radius:6px;width:70%;margin-bottom:.75rem"></div>` +
+            `<div style="height:12px;background:#f1f5f9;border-radius:6px;width:45%;margin-bottom:1.25rem"></div>` +
+            `<div style="height:38px;background:#f1f5f9;border-radius:10px"></div></div></div>`
+        ).join('');
+
+        try {
+            let lista = null;
+            try { lista = await requestJson('/paquetes/activos'); } catch { /* fallback */ }
+            if (!Array.isArray(lista)) {
+                const todos = await requestJson('/paquetes');
+                lista = Array.isArray(todos) ? todos.filter(p => p.Estado == 1) : [];
+            }
+
+            if (!lista.length) {
+                catalogo.innerHTML =
+                    `<div style="grid-column:1/-1;text-align:center;padding:5rem 1rem;color:#94a3b8">` +
+                    `<i class="fa-solid fa-box-open" style="font-size:3rem;margin-bottom:1rem;display:block;opacity:.3"></i>` +
+                    `<p style="font-size:.9rem;font-weight:600">No hay paquetes disponibles por el momento.</p></div>`;
+                return;
+            }
+
+            catalogo.innerHTML = lista.map((pkg, i) => {
+                const src   = pkg.ImagenPaquete || IMGS_PAQ[i % IMGS_PAQ.length];
+                const precio = Number(pkg.Precio || 0).toLocaleString('es-CO');
+                const svcs   = (pkg.NombresServicios || pkg.NombreServicio || '').split(',').map(s => s.trim()).filter(Boolean);
+                const chips  = svcs.map(s =>
+                    `<span style="font-size:.69rem;background:#f0fdf4;color:#166534;padding:.15rem .55rem;border-radius:999px;font-weight:600">${s}</span>`
+                ).join('');
+                return (
+                    `<article style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #e8edf2;` +
+                    `box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .25s,box-shadow .25s"` +
+                    ` onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 40px rgba(15,61,62,.12)'"` +
+                    ` onmouseleave="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,.05)'">` +
+                    `<div style="position:relative;height:192px;overflow:hidden">` +
+                    `<img src="${src}" alt="${pkg.NombrePaquete}"` +
+                    ` style="width:100%;height:100%;object-fit:cover;transition:transform .5s"` +
+                    ` onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform=''"` +
+                    ` onerror="this.src='${IMGS_PAQ[0]}'">` +
+                    `<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.35),transparent)"></div>` +
+                    `<span style="position:absolute;bottom:10px;left:12px;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);` +
+                    `font-size:.72rem;font-weight:700;color:#0f3d3e;padding:.2rem .65rem;border-radius:999px">` +
+                    `<i class="fa-solid fa-bed" style="margin-right:.25rem"></i>${pkg.NombreHabitacion || 'Habitación'}</span></div>` +
+                    `<div style="padding:1.25rem 1.3rem">` +
+                    `<h3 style="font-weight:800;font-size:1rem;color:#0f172a;margin:0 0 .3rem">${pkg.NombrePaquete}</h3>` +
+                    `<p style="color:#64748b;font-size:.82rem;line-height:1.5;margin:0 0 .85rem;display:-webkit-box;` +
+                    `-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${pkg.Descripcion || ''}</p>` +
+                    `<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1rem">${chips}</div>` +
+                    `<div style="display:flex;align-items:center;justify-content:space-between;padding-top:.85rem;border-top:1px solid #f1f5f9">` +
+                    `<div><span style="font-size:1.45rem;font-weight:800;color:#0f3d3e">$${precio}</span>` +
+                    `<span style="font-size:.72rem;color:#94a3b8;margin-left:.25rem">/ paquete</span></div>` +
+                    `<button onclick="cargarSeccion('reservas')"` +
+                    ` style="display:inline-flex;align-items:center;gap:.4rem;background:#0f3d3e;color:#fff;border:none;` +
+                    `padding:.55rem 1.1rem;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;` +
+                    `transition:background .2s;box-shadow:0 4px 12px rgba(15,61,62,.25)"` +
+                    ` onmouseenter="this.style.background='#1a5c5e'" onmouseleave="this.style.background='#0f3d3e'">` +
+                    `<i class="fa-solid fa-calendar-plus"></i> Reservar</button>` +
+                    `</div></div></article>`
+                );
+            }).join('');
+        } catch {
+            catalogo.innerHTML =
+                `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#dc2626">` +
+                `<i class="fa-solid fa-circle-exclamation" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>` +
+                `<p style="font-size:.85rem">Error al cargar los paquetes. Por favor recarga la página.</p></div>`;
+        }
+    }
+
+    /* ── Init con bifurcación por rol ── */
     document.addEventListener('DOMContentLoaded', async () => {
         const session = window.getStoredSession ? window.getStoredSession() : null;
         if (!session) { window.location.href = '../login.html'; return; }
@@ -855,66 +965,69 @@
         await window.loadSidebarComponent('sidebar-placeholder');
         await window.filterSidebarByPermissions();
 
-        window._imgPicker = initImgPicker();
+        const esAdmin = getIdRolActual() === 1;
 
-        cargarPaquetes();
+        if (esAdmin) {
+            window._imgPicker = initImgPicker();
+            cargarPaquetes();
 
-        document.getElementById('paq-buscar').addEventListener('input', filtrar);
-        document.getElementById('paq-filtro-estado').addEventListener('change', filtrar);
-        document.getElementById('paquetes-per-page').addEventListener('change', () => {
-            paginaActualPaq = 1;
-            renderTabla(listaFiltradaPaq);
-        });
+            document.getElementById('paq-buscar').addEventListener('input', filtrar);
+            document.getElementById('paq-filtro-estado').addEventListener('change', filtrar);
+            document.getElementById('paquetes-per-page').addEventListener('change', () => {
+                paginaActualPaq = 1;
+                renderTabla(listaFiltradaPaq);
+            });
 
-        document.getElementById('btn-nuevo-paquete').addEventListener('click', () => abrirForm());
+            document.getElementById('btn-nuevo-paquete').addEventListener('click', () => abrirForm());
 
-        /* Cerrar modales */
-        const cerrarDetalle = () => document.getElementById('modal-detalle-paq').classList.add('hidden');
-        const cerrarForm    = () => document.getElementById('modal-form-paq').classList.add('hidden');
-        document.getElementById('btn-cerrar-detalle').addEventListener('click', cerrarDetalle);
-        document.getElementById('btn-cerrar-form').addEventListener('click', cerrarForm);
-        document.getElementById('btn-form-cancelar').addEventListener('click', cerrarForm);
-        document.getElementById('modal-detalle-paq').addEventListener('click', e => { if (e.target === e.currentTarget) cerrarDetalle(); });
-        document.getElementById('modal-form-paq').addEventListener('click',    e => { if (e.target === e.currentTarget) cerrarForm(); });
+            const cerrarDetalle = () => document.getElementById('modal-detalle-paq').classList.add('hidden');
+            const cerrarForm    = () => document.getElementById('modal-form-paq').classList.add('hidden');
+            document.getElementById('btn-cerrar-detalle').addEventListener('click', cerrarDetalle);
+            document.getElementById('btn-cerrar-form').addEventListener('click', cerrarForm);
+            document.getElementById('btn-form-cancelar').addEventListener('click', cerrarForm);
+            document.getElementById('modal-detalle-paq').addEventListener('click', e => { if (e.target === e.currentTarget) cerrarDetalle(); });
+            document.getElementById('modal-form-paq').addEventListener('click',    e => { if (e.target === e.currentTarget) cerrarForm(); });
 
-        /* Submit */
-        document.getElementById('form-paquete').addEventListener('submit', async e => {
-            e.preventDefault();
-            const id  = document.getElementById('fpaq-id').value;
-            const btn = document.getElementById('btn-form-guardar');
+            document.getElementById('form-paquete').addEventListener('submit', async e => {
+                e.preventDefault();
+                const id  = document.getElementById('fpaq-id').value;
+                const btn = document.getElementById('btn-form-guardar');
 
-            const serviciosIds = [...document.querySelectorAll('#fpaq-servicios-list input[type=checkbox]:checked')]
-                .map(chk => Number(chk.dataset.id));
+                const serviciosIds = [...document.querySelectorAll('#fpaq-servicios-list input[type=checkbox]:checked')]
+                    .map(chk => Number(chk.dataset.id));
 
-            const body = {
-                NombrePaquete: document.getElementById('fpaq-nombre').value.trim(),
-                Descripcion:   document.getElementById('fpaq-desc').value.trim(),
-                IDHabitacion:  Number(document.getElementById('fpaq-habitacion').value),
-                serviciosIds,
-                Precio:        Number(document.getElementById('fpaq-precio').value),
-                Estado:        Number(document.getElementById('fpaq-estado').value),
-                ImagenURL:     document.getElementById('fpaq-imagen').value.trim() || null,
-            };
+                const body = {
+                    NombrePaquete: document.getElementById('fpaq-nombre').value.trim(),
+                    Descripcion:   document.getElementById('fpaq-desc').value.trim(),
+                    IDHabitacion:  Number(document.getElementById('fpaq-habitacion').value),
+                    serviciosIds,
+                    Precio:        Number(document.getElementById('fpaq-precio').value),
+                    Estado:        Number(document.getElementById('fpaq-estado').value),
+                    ImagenURL:     document.getElementById('fpaq-imagen').value.trim() || null,
+                };
 
-            if (!body.NombrePaquete)       { showMsg('El nombre es obligatorio.', 'error'); return; }
-            if (!body.IDHabitacion)        { showMsg('Selecciona una habitación.', 'error'); return; }
-            if (!serviciosIds.length)      { showMsg('Selecciona al menos un servicio.', 'error'); return; }
-            if (!body.Precio)              { showMsg('Ingresa un precio válido.', 'error'); return; }
+                if (!body.NombrePaquete)  { showMsg('El nombre es obligatorio.', 'error'); return; }
+                if (!body.IDHabitacion)   { showMsg('Selecciona una habitación.', 'error'); return; }
+                if (!serviciosIds.length) { showMsg('Selecciona al menos un servicio.', 'error'); return; }
+                if (!body.Precio)         { showMsg('Ingresa un precio válido.', 'error'); return; }
 
-            btn.disabled = true;
-            try {
-                if (id) {
-                    await requestJson(`/paquetes/${id}`, { method: 'PUT', body });
-                    showMsg('Paquete actualizado correctamente.', 'ok');
-                } else {
-                    await requestJson('/paquetes', { method: 'POST', body });
-                    showMsg('Paquete creado correctamente.', 'ok');
-                }
-                cerrarForm();
-                cargarPaquetes();
-            } catch { showMsg('Error al guardar el paquete.', 'error'); }
-            finally  { btn.disabled = false; }
-        });
+                btn.disabled = true;
+                try {
+                    if (id) {
+                        await requestJson(`/paquetes/${id}`, { method: 'PUT', body });
+                        showMsg('Paquete actualizado correctamente.', 'ok');
+                    } else {
+                        await requestJson('/paquetes', { method: 'POST', body });
+                        showMsg('Paquete creado correctamente.', 'ok');
+                    }
+                    cerrarForm();
+                    cargarPaquetes();
+                } catch { showMsg('Error al guardar el paquete.', 'error'); }
+                finally  { btn.disabled = false; }
+            });
+        } else {
+            cargarCatalogoPaquetes();
+        }
     });
     </script>
 </body>

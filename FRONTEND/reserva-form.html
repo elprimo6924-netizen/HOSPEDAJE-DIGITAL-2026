@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,24 +8,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --panel-bg:  #0d1b2a;
-            --accent:    #e07b39;
-            --green:     #1b4332;
-            --green-md:  #2d6a4f;
-            --card:      #ffffff;
-            --input-bg:  #f8fafc;
-            --border:    #e2e8f0;
-            --text:      #0f172a;
-            --text2:     #334155;
-            --muted:     #64748b;
-            --radius:    12px;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        html, body {
+        :root {
+            --panel-bg: #0d1b2a;
+            --accent: #e07b39;
+            --green: #1b4332;
+            --green-md: #2d6a4f;
+            --card: #ffffff;
+            --input-bg: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text2: #334155;
+            --muted: #64748b;
+            --radius: 12px;
+        }
+
+        html,
+        body {
             height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -32,7 +43,10 @@
         /* ═══════════════════════════════════════
            LAYOUT — handled by Tailwind utilities
         ═══════════════════════════════════════ */
-        .rf-layout { display: grid; min-height: 100vh; }
+        .rf-layout {
+            display: grid;
+            min-height: 100vh;
+        }
 
         /* ═══════════════════════════════════════
            LEFT PANEL
@@ -54,8 +68,8 @@
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(ellipse at 15% 10%, rgba(224,123,57,.42) 0%, transparent 52%),
-                radial-gradient(ellipse at 85% 90%, rgba(27,67,50,.65) 0%, transparent 52%);
+                radial-gradient(ellipse at 15% 10%, rgba(224, 123, 57, .42) 0%, transparent 52%),
+                radial-gradient(ellipse at 85% 90%, rgba(27, 67, 50, .65) 0%, transparent 52%);
             pointer-events: none;
         }
 
@@ -66,13 +80,42 @@
             opacity: .2;
             animation: blobMove 12s ease-in-out infinite alternate;
         }
-        .rf-blob:nth-child(1) { width:230px;height:230px;background:#e07b39;top:-70px;left:-55px;animation-delay:0s; }
-        .rf-blob:nth-child(2) { width:190px;height:190px;background:#22c55e;bottom:30px;right:-70px;animation-delay:-5s; }
-        .rf-blob:nth-child(3) { width:130px;height:130px;background:#3b82f6;top:48%;left:38%;animation-delay:-3s; }
+
+        .rf-blob:nth-child(1) {
+            width: 230px;
+            height: 230px;
+            background: #e07b39;
+            top: -70px;
+            left: -55px;
+            animation-delay: 0s;
+        }
+
+        .rf-blob:nth-child(2) {
+            width: 190px;
+            height: 190px;
+            background: #22c55e;
+            bottom: 30px;
+            right: -70px;
+            animation-delay: -5s;
+        }
+
+        .rf-blob:nth-child(3) {
+            width: 130px;
+            height: 130px;
+            background: #3b82f6;
+            top: 48%;
+            left: 38%;
+            animation-delay: -3s;
+        }
 
         @keyframes blobMove {
-            from { transform: translate(0,0) scale(1); }
-            to   { transform: translate(16px,22px) scale(1.1); }
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(16px, 22px) scale(1.1);
+            }
         }
 
         .rf-panel-inner {
@@ -89,8 +132,17 @@
             gap: .55rem;
             margin-bottom: 2rem;
         }
-        .rf-logo i { font-size: 1.35rem; color: var(--accent); }
-        .rf-logo span { font-size: .88rem; font-weight: 700; letter-spacing: .02em; }
+
+        .rf-logo i {
+            font-size: 1.35rem;
+            color: var(--accent);
+        }
+
+        .rf-logo span {
+            font-size: .88rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
 
         .rf-badge {
             display: inline-flex;
@@ -98,8 +150,8 @@
             gap: .4rem;
             padding: .3rem .75rem;
             border-radius: 999px;
-            background: rgba(255,255,255,.07);
-            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .12);
             font-size: .69rem;
             font-weight: 700;
             letter-spacing: .07em;
@@ -115,11 +167,15 @@
             line-height: 1.18;
             margin-bottom: .8rem;
         }
-        .rf-panel-title em { font-style: normal; color: var(--accent); }
+
+        .rf-panel-title em {
+            font-style: normal;
+            color: var(--accent);
+        }
 
         .rf-panel-sub {
             font-size: .78rem;
-            color: rgba(255,255,255,.52);
+            color: rgba(255, 255, 255, .52);
             line-height: 1.65;
             margin-bottom: 2rem;
         }
@@ -131,19 +187,24 @@
             gap: .55rem;
             flex: 1;
         }
+
         .rf-steps li {
             display: flex;
             align-items: center;
             gap: .65rem;
             font-size: .79rem;
-            color: rgba(255,255,255,.68);
+            color: rgba(255, 255, 255, .68);
         }
+
         .rf-step-dot {
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
             border-radius: 8px;
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.11);
-            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .11);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: .75rem;
             color: var(--accent);
             flex-shrink: 0;
@@ -156,15 +217,19 @@
             margin-top: 1.5rem;
             padding: .58rem 1rem;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,.13);
-            background: rgba(255,255,255,.05);
-            color: rgba(255,255,255,.72);
+            border: 1px solid rgba(255, 255, 255, .13);
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .72);
             font-size: .8rem;
             text-decoration: none;
             transition: background .2s, color .2s;
             width: fit-content;
         }
-        .rf-back:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+        .rf-back:hover {
+            background: rgba(255, 255, 255, .12);
+            color: #fff;
+        }
 
         /* ═══════════════════════════════════════
            CENTER — scrollable form (sin max-width)
@@ -181,29 +246,37 @@
             grid-template-columns: 1fr 1fr;
             gap: .9rem;
         }
-        .rf-span2 { grid-column: span 2; }
+
+        .rf-span2 {
+            grid-column: span 2;
+        }
 
         .rf-form-header {
             margin-bottom: 1.4rem;
         }
+
         .rf-form-header h2 {
             font-size: 1.45rem;
             font-weight: 800;
             color: var(--text);
             margin-bottom: .2rem;
         }
+
         .rf-form-header p {
             font-size: .78rem;
             color: var(--muted);
         }
-        .rf-form-header .req { color: #ef4444; }
+
+        .rf-form-header .req {
+            color: #ef4444;
+        }
 
         /* Cards */
         .rf-card {
             background: var(--card);
             border-radius: var(--radius);
             border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.03);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 1px 8px rgba(0, 0, 0, .03);
         }
 
         .rf-card-head {
@@ -217,17 +290,40 @@
         }
 
         .rf-icon {
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
             border-radius: 7px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: .8rem;
             flex-shrink: 0;
         }
-        .rf-icon.green  { background: #dcfce7; color: #16a34a; }
-        .rf-icon.blue   { background: #dbeafe; color: #2563eb; }
-        .rf-icon.amber  { background: #fef3c7; color: #d97706; }
-        .rf-icon.purple { background: #ede9fe; color: #7c3aed; }
-        .rf-icon.teal   { background: #ccfbf1; color: #0d9488; }
+
+        .rf-icon.green {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .rf-icon.blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .rf-icon.amber {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .rf-icon.purple {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+
+        .rf-icon.teal {
+            background: #ccfbf1;
+            color: #0d9488;
+        }
 
         .rf-card-head h3 {
             font-size: .78rem;
@@ -236,6 +332,7 @@
             letter-spacing: .07em;
             color: var(--text2);
         }
+
         .rf-card-head small {
             font-size: .7rem;
             font-weight: 400;
@@ -245,7 +342,9 @@
             margin-left: .25rem;
         }
 
-        .rf-card-body { padding: 1.1rem 1.3rem; }
+        .rf-card-body {
+            padding: 1.1rem 1.3rem;
+        }
 
         /* Fields */
         .rf-field {
@@ -254,9 +353,20 @@
             gap: .28rem;
             margin-bottom: .8rem;
         }
-        .rf-field:last-child { margin-bottom: 0; }
-        .rf-field > label { font-size: .75rem; font-weight: 600; color: var(--text2); }
-        .rf-field .req { color: #ef4444; }
+
+        .rf-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .rf-field>label {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text2);
+        }
+
+        .rf-field .req {
+            color: #ef4444;
+        }
 
         .rf-field input[type="text"],
         .rf-field input[type="date"],
@@ -273,29 +383,40 @@
             transition: border-color .2s, box-shadow .2s;
             font-family: inherit;
         }
+
         .rf-field input:focus,
         .rf-field select:focus {
             border-color: var(--green);
-            box-shadow: 0 0 0 3px rgba(27,67,50,.09);
+            box-shadow: 0 0 0 3px rgba(27, 67, 50, .09);
         }
 
-        .rf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+        .rf-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+        }
 
         /* Autocomplete */
-        .rf-auto-wrap { position: relative; }
+        .rf-auto-wrap {
+            position: relative;
+        }
+
         .cliente-autocomplete {
             position: absolute;
-            top: calc(100% + 4px); left: 0; right: 0;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
             background: #fff;
             border: 1.5px solid var(--border);
             border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
             z-index: 200;
             max-height: 200px;
             overflow-y: auto;
             list-style: none;
             padding: .3rem 0;
         }
+
         .cliente-autocomplete li {
             padding: .52rem .88rem;
             cursor: pointer;
@@ -303,12 +424,23 @@
             color: var(--text);
             transition: background .14s;
         }
+
         .cliente-autocomplete li:hover,
-        .cliente-autocomplete li.activo { background: #f0fdf4; color: #16a34a; }
-        .cliente-autocomplete.hidden { display: none; }
+        .cliente-autocomplete li.activo {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .cliente-autocomplete.hidden {
+            display: none;
+        }
 
         /* ── Paquetes grid ── */
-        .paquetes-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: .75rem; }
+        .paquetes-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: .75rem;
+        }
 
         .paquete-card {
             border: 2px solid #e2e8f0;
@@ -319,41 +451,123 @@
             transition: all .25s;
             user-select: none;
         }
-        .paquete-card:hover { border-color:#94a3b8; transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.10); }
-        .paquete-card.seleccionado { border-color:#1b4332; background:#f0fdf4; box-shadow:0 0 0 3px rgba(27,67,50,.15); }
 
-        .paquete-img-wrap { position:relative; height:130px; overflow:hidden; background:#f1f5f9; }
-        .paquete-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s; }
-        .paquete-card:hover .paquete-img-wrap img { transform:scale(1.04); }
+        .paquete-card:hover {
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .10);
+        }
+
+        .paquete-card.seleccionado {
+            border-color: #1b4332;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 3px rgba(27, 67, 50, .15);
+        }
+
+        .paquete-img-wrap {
+            position: relative;
+            height: 130px;
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+
+        .paquete-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .3s;
+        }
+
+        .paquete-card:hover .paquete-img-wrap img {
+            transform: scale(1.04);
+        }
 
         .paquete-badge-sel {
-            position:absolute; top:.5rem; right:.5rem;
-            width:26px; height:26px;
-            background:#1b4332; border-radius:50%;
-            display:flex; align-items:center; justify-content:center;
-            box-shadow:0 2px 6px rgba(0,0,0,.25);
-            animation:popIn .18s ease;
+            position: absolute;
+            top: .5rem;
+            right: .5rem;
+            width: 26px;
+            height: 26px;
+            background: #1b4332;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+            animation: popIn .18s ease;
         }
-        .paquete-badge-sel i { color:#fff; font-size:.72rem; }
-        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
 
-        .paquete-body   { padding:.7rem .85rem .8rem; }
-        .paquete-nombre { font-weight:700; color:#0f172a; font-size:.86rem; margin-bottom:.2rem; line-height:1.3; }
-        .paquete-precio { color:#16a34a; font-weight:800; font-size:.95rem; margin-bottom:.3rem; }
+        .paquete-badge-sel i {
+            color: #fff;
+            font-size: .72rem;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0)
+            }
+
+            to {
+                transform: scale(1)
+            }
+        }
+
+        .paquete-body {
+            padding: .7rem .85rem .8rem;
+        }
+
+        .paquete-nombre {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: .86rem;
+            margin-bottom: .2rem;
+            line-height: 1.3;
+        }
+
+        .paquete-precio {
+            color: #16a34a;
+            font-weight: 800;
+            font-size: .95rem;
+            margin-bottom: .3rem;
+        }
 
         .paquete-desc {
-            font-size:.75rem; color:#475569; line-height:1.5;
-            max-height:0; overflow:hidden; opacity:0;
-            transition:max-height .3s ease, opacity .25s ease, margin .2s;
-            margin-top:0;
+            font-size: .75rem;
+            color: #475569;
+            line-height: 1.5;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height .3s ease, opacity .25s ease, margin .2s;
+            margin-top: 0;
         }
-        .paquete-desc.visible { max-height:120px; opacity:1; margin-top:.4rem; }
-        .paquete-desc-sep { height:1px; background:#d1fae5; margin:.35rem 0; display:none; }
-        .paquete-desc.visible ~ .paquete-desc-sep,
-        .paquete-desc-sep.visible { display:block; }
+
+        .paquete-desc.visible {
+            max-height: 120px;
+            opacity: 1;
+            margin-top: .4rem;
+        }
+
+        .paquete-desc-sep {
+            height: 1px;
+            background: #d1fae5;
+            margin: .35rem 0;
+            display: none;
+        }
+
+        .paquete-desc.visible~.paquete-desc-sep,
+        .paquete-desc-sep.visible {
+            display: block;
+        }
 
         /* Servicios */
-        .servicios-botones-grid { display: flex; flex-wrap: wrap; gap: .4rem; }
+        .servicios-botones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+        }
+
         .servicio-toggle-btn {
             text-align: left;
             display: flex;
@@ -363,7 +577,12 @@
             min-width: 12.5rem;
             max-width: 100%;
         }
-        .servicio-toggle-btn .svc-title { font-size: .82rem; font-weight: 600; }
+
+        .servicio-toggle-btn .svc-title {
+            font-size: .82rem;
+            font-weight: 600;
+        }
+
         .servicio-toggle-btn .svc-desc,
         .servicio-toggle-btn .svc-hours {
             font-size: .72rem;
@@ -371,16 +590,33 @@
             line-height: 1.35;
             display: none;
         }
+
         .servicio-toggle-btn.seleccionado .svc-desc,
         .servicio-toggle-btn.seleccionado .svc-hours {
             display: block;
         }
 
         /* Mensaje */
-        .crud-reservas-mensaje { padding: .58rem .95rem; border-radius: 8px; font-size: .82rem; margin-bottom: 1rem; }
-        .crud-reservas-mensaje.exito { background: #dcfce7; color: #166534; }
-        .crud-reservas-mensaje.error { background: #fee2e2; color: #991b1b; }
-        .crud-reservas-mensaje:empty { display: none; }
+        .crud-reservas-mensaje {
+            padding: .58rem .95rem;
+            border-radius: 8px;
+            font-size: .82rem;
+            margin-bottom: 1rem;
+        }
+
+        .crud-reservas-mensaje.exito {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .crud-reservas-mensaje.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .crud-reservas-mensaje:empty {
+            display: none;
+        }
 
         /* ═══════════════════════════════════════
            RIGHT SIDEBAR — sticky summary
@@ -408,7 +644,10 @@
             align-items: center;
             gap: .4rem;
         }
-        .rf-sidebar-label i { color: var(--green); }
+
+        .rf-sidebar-label i {
+            color: var(--green);
+        }
 
         .rf-sblock {
             background: #f8fafc;
@@ -417,6 +656,7 @@
             padding: .85rem 1rem;
             margin-bottom: .65rem;
         }
+
         .rf-sblock-title {
             font-size: .67rem;
             font-weight: 700;
@@ -425,6 +665,7 @@
             color: var(--muted);
             margin-bottom: .55rem;
         }
+
         .rf-srow {
             display: flex;
             justify-content: space-between;
@@ -432,8 +673,15 @@
             padding: .2rem 0;
             font-size: .8rem;
         }
-        .rf-srow .lbl { color: var(--muted); }
-        .rf-srow .val { font-weight: 600; color: var(--text2); }
+
+        .rf-srow .lbl {
+            color: var(--muted);
+        }
+
+        .rf-srow .val {
+            font-weight: 600;
+            color: var(--text2);
+        }
 
         .rf-room-name {
             font-size: .83rem;
@@ -441,9 +689,19 @@
             color: var(--text);
             line-height: 1.35;
         }
-        .rf-room-name.empty { color: #c0cfe0; font-weight: 400; font-style: italic; font-size: .8rem; }
 
-        .rf-sep { height: 1px; background: var(--border); margin: .45rem 0; }
+        .rf-room-name.empty {
+            color: #c0cfe0;
+            font-weight: 400;
+            font-style: italic;
+            font-size: .8rem;
+        }
+
+        .rf-sep {
+            height: 1px;
+            background: var(--border);
+            margin: .45rem 0;
+        }
 
         .rf-pblock {
             background: #f8fafc;
@@ -452,6 +710,7 @@
             padding: .85rem 1rem;
             margin-bottom: .65rem;
         }
+
         .rf-pblock-title {
             font-size: .67rem;
             font-weight: 700;
@@ -460,6 +719,7 @@
             color: var(--muted);
             margin-bottom: .55rem;
         }
+
         .rf-prow {
             display: flex;
             justify-content: space-between;
@@ -467,11 +727,28 @@
             padding: .2rem 0;
             font-size: .79rem;
         }
-        .rf-prow .lbl { color: var(--muted); }
-        .rf-prow .val { font-weight: 600; color: var(--text2); }
 
-        .rf-desc-field { margin: .5rem 0; }
-        .rf-desc-field label { display: block; font-size: .71rem; font-weight: 600; color: var(--text2); margin-bottom: .25rem; }
+        .rf-prow .lbl {
+            color: var(--muted);
+        }
+
+        .rf-prow .val {
+            font-weight: 600;
+            color: var(--text2);
+        }
+
+        .rf-desc-field {
+            margin: .5rem 0;
+        }
+
+        .rf-desc-field label {
+            display: block;
+            font-size: .71rem;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: .25rem;
+        }
+
         .rf-desc-field input {
             width: 100%;
             padding: .46rem .7rem;
@@ -484,7 +761,10 @@
             transition: border-color .18s;
             font-family: inherit;
         }
-        .rf-desc-field input:focus { border-color: var(--green); }
+
+        .rf-desc-field input:focus {
+            border-color: var(--green);
+        }
 
         .rf-total-row {
             display: flex;
@@ -494,8 +774,18 @@
             margin-top: .3rem;
             border-top: 1.5px solid var(--border);
         }
-        .rf-total-row .lbl { font-size: .84rem; font-weight: 700; color: var(--text); }
-        .rf-total-row .val { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+
+        .rf-total-row .lbl {
+            font-size: .84rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .rf-total-row .val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--green);
+        }
 
         /* ── Soft alert de éxito ── */
         .rf-success-overlay {
@@ -511,45 +801,59 @@
             pointer-events: none;
             transition: opacity .3s ease;
         }
+
         .rf-success-overlay.show {
             opacity: 1;
             pointer-events: all;
         }
+
         .rf-success-card {
             background: #fff;
             border-radius: 20px;
             padding: 2.5rem 2.8rem;
             text-align: center;
-            box-shadow: 0 32px 64px rgba(15,23,42,.22);
+            box-shadow: 0 32px 64px rgba(15, 23, 42, .22);
             max-width: 380px;
             width: 90%;
             transform: scale(.88) translateY(16px);
-            transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+            transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
         }
+
         .rf-success-overlay.show .rf-success-card {
             transform: scale(1) translateY(0);
         }
+
         .rf-success-icon {
-            width: 72px; height: 72px;
+            width: 72px;
+            height: 72px;
             background: linear-gradient(135deg, #1b4332, #2d6a4f);
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin: 0 auto 1.2rem;
-            box-shadow: 0 8px 24px rgba(27,67,50,.3);
+            box-shadow: 0 8px 24px rgba(27, 67, 50, .3);
         }
-        .rf-success-icon i { color: #fff; font-size: 1.8rem; }
+
+        .rf-success-icon i {
+            color: #fff;
+            font-size: 1.8rem;
+        }
+
         .rf-success-title {
             font-size: 1.35rem;
             font-weight: 800;
             color: #0f172a;
             margin-bottom: .5rem;
         }
+
         .rf-success-msg {
             font-size: .88rem;
             color: #64748b;
             line-height: 1.6;
             margin-bottom: 1.5rem;
         }
+
         .rf-success-id {
             display: inline-block;
             background: #f0fdf4;
@@ -561,17 +865,27 @@
             padding: .4rem 1rem;
             margin-bottom: 1.5rem;
         }
+
         .rf-success-btn {
-            display: inline-flex; align-items: center; gap: .4rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
             padding: .7rem 1.6rem;
             background: linear-gradient(135deg, #1b4332, #2d6a4f);
-            color: #fff; border: none; border-radius: 10px;
-            font-size: .88rem; font-weight: 700;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: .88rem;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(27,67,50,.28);
+            box-shadow: 0 4px 14px rgba(27, 67, 50, .28);
             transition: opacity .2s, transform .15s;
         }
-        .rf-success-btn:hover { opacity: .88; transform: translateY(-1px); }
+
+        .rf-success-btn:hover {
+            opacity: .88;
+            transform: translateY(-1px);
+        }
 
         /* Actions */
         .rf-actions {
@@ -598,19 +912,28 @@
             font-family: inherit;
             width: 100%;
         }
-        .rf-btn:hover { opacity: .87; transform: translateY(-1px); }
-        .rf-btn:active { transform: translateY(0); }
+
+        .rf-btn:hover {
+            opacity: .87;
+            transform: translateY(-1px);
+        }
+
+        .rf-btn:active {
+            transform: translateY(0);
+        }
 
         .rf-btn-primary {
             background: linear-gradient(135deg, var(--green) 0%, var(--green-md) 100%);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(27,67,50,.28);
+            box-shadow: 0 4px 14px rgba(27, 67, 50, .28);
         }
+
         .rf-btn-secondary {
             background: #f1f5f9;
             color: var(--text2);
             border: 1px solid var(--border);
         }
+
         .rf-btn-ghost {
             background: transparent;
             color: var(--muted);
@@ -631,725 +954,1142 @@
 
         /* Responsive */
         @media (max-width: 860px) {
-            .rf-center { padding: 1.25rem; }
-            .rf-sections { grid-template-columns: 1fr; }
-            .rf-span2 { grid-column: span 1; }
+            .rf-center {
+                padding: 1.25rem;
+            }
+
+            .rf-sections {
+                grid-template-columns: 1fr;
+            }
+
+            .rf-span2 {
+                grid-column: span 1;
+            }
         }
+
         @media (max-width: 580px) {
-            .rf-grid-2 { grid-template-columns: 1fr; }
+            .rf-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ════════════════════════════════════════════════════════
+           LUX THEME — unificar con módulo reservas.html
+           Navy oscuro en el centro, tarjetas ivory cálidas, oro
+        ════════════════════════════════════════════════════════ */
+        :root {
+            --lux-navy: #0b1424;
+            --lux-gold: #d6b25e;
+            --lux-gold2: #b78a2a;
+            --lux-gold3: #ead483;
+            --lux-ivory: #fbf7ef;
+            --lux-iv2: #f6efe1;
+            --lux-border: #e3d4b4;
+            --lux-text: #1a2230;
+            --lux-amber: #7a5a18;
+            --lux-shadow: 0 22px 60px rgba(15, 21, 34, 0.18);
+        }
+
+        /* ── Centro: fondo navy oscuro ── */
+        .rf-center {
+            background:
+                radial-gradient(1400px 600px at 8% 0%, rgba(26, 49, 76, .55), transparent 60%),
+                linear-gradient(180deg, #0b1424 0%, #0d1a2c 40%, #0f1b2b 100%) !important;
+        }
+
+        /* Título principal */
+        .rf-form-title {
+            font-family: 'Cinzel', 'Trajan Pro', 'Times New Roman', serif !important;
+            color: #f8f4ea !important;
+            letter-spacing: .08em;
+            text-shadow: 0 4px 14px rgba(0, 0, 0, .45);
+        }
+
+        /* Subtítulos de sección (h2 con números) */
+        .rf-center h2 {
+            color: #1a2230 !important;
+        }
+
+        /* Step circles: verde → dorado */
+        .rf-center .bg-green-800 {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+        }
+
+        .rf-center .bg-green-800:not(#btn-confirmar-reserva):not(.paquete-badge-sel) {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+        }
+
+        /* ── Cards blancas → ivory cálido ── */
+        .rf-center .bg-white {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%) !important;
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-center .bg-gray-50 {
+            background: #f8f2e3 !important;
+        }
+
+        .rf-center .border-gray-200 {
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-center .border-gray-100 {
+            border-color: #eedfc5 !important;
+        }
+
+        /* Texto dentro de las cards */
+        .rf-center .bg-white .text-gray-800,
+        .rf-center .bg-white .text-gray-700,
+        .rf-center .text-gray-800 {
+            color: #5b3c11 !important;
+        }
+
+        .rf-center .bg-white .text-gray-700 {
+            color: #6b5b3a !important;
+        }
+
+        .rf-center .bg-white label,
+        .rf-center .bg-white .text-sm.font-semibold,
+        .rf-center label.block.text-sm.font-semibold {
+            color: #7a5a18 !important;
+        }
+
+        .rf-center .text-gray-500 {
+            color: #7a8799 !important;
+        }
+
+        .rf-center .text-gray-400 {
+            color: #94a3b8 !important;
+        }
+
+        /* ── Inputs y selects ── */
+        .rf-center input[type="text"],
+        .rf-center input[type="date"],
+        .rf-center input[type="number"],
+        .rf-center input[type="search"],
+        .rf-center select {
+            background: #fffdf7 !important;
+            border-color: var(--lux-border) !important;
+            color: var(--lux-text) !important;
+        }
+
+        .rf-center input:focus,
+        .rf-center select:focus {
+            border-color: var(--lux-gold) !important;
+            box-shadow: 0 0 0 3px rgba(214, 178, 94, .18) !important;
+            outline: none !important;
+        }
+
+        .rf-center input::placeholder {
+            color: rgba(122, 90, 24, .35) !important;
+        }
+
+        .rf-center .focus\:ring-green-700:focus {
+            --tw-ring-color: rgba(214, 178, 94, .35) !important;
+        }
+
+        /* ── Toggle modo ── */
+        #modo-toggle {
+            border-color: var(--lux-border) !important;
+            background: #f8f2e3 !important;
+        }
+
+        #btn-habitacion.bg-green-800 {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+        }
+
+        #btn-paquete.bg-white {
+            background: #f8f2e3 !important;
+            color: #7a5a18 !important;
+        }
+
+        #btn-paquete.bg-green-800 {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+        }
+
+        #btn-habitacion.bg-white {
+            background: #f8f2e3 !important;
+            color: #7a5a18 !important;
+        }
+
+        /* ── Cliente seleccionado ── */
+        .rf-center .bg-green-50 {
+            background: #f8f2e3 !important;
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-center .border-green-200 {
+            border-color: #d6b25e !important;
+        }
+
+        /* ── Paquetes ── */
+        .rf-center .paquete-card {
+            border-color: var(--lux-border) !important;
+            background: #fbf7ef !important;
+        }
+
+        .rf-center .paquete-card:hover {
+            border-color: var(--lux-gold) !important;
+        }
+
+        .rf-center .paquete-card.seleccionado {
+            border-color: #b78a2a !important;
+            background: linear-gradient(180deg, #fbf7ef, #f6efe1) !important;
+            box-shadow: 0 0 0 3px rgba(214, 178, 94, .22) !important;
+        }
+
+        .rf-center .paquete-badge-sel {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+        }
+
+        .rf-center .paquete-precio {
+            color: #b78a2a !important;
+        }
+
+        .rf-center .paquete-nombre {
+            color: var(--lux-text) !important;
+        }
+
+        /* ── Servicios ── */
+        .rf-center .servicio-toggle-btn {
+            border-color: rgba(214, 178, 94, .40) !important;
+            background: #fffdf7 !important;
+            color: #5b3c11 !important;
+        }
+
+        .rf-center .servicio-toggle-btn:hover {
+            border-color: var(--lux-gold) !important;
+        }
+
+        .rf-center .servicio-toggle-btn.seleccionado {
+            border-color: var(--lux-gold) !important;
+            background: linear-gradient(180deg, #fbf7ef, #f6efe1) !important;
+            color: #5b3c11 !important;
+            box-shadow: 0 0 14px rgba(214, 178, 94, .30) !important;
+        }
+
+        .rf-center .servicio-toggle-btn .svc-desc,
+        .rf-center .servicio-toggle-btn .svc-hours {
+            color: #7a8799 !important;
+        }
+
+        /* Autocomplete dropdown */
+        .rf-center .cliente-autocomplete {
+            background: #fbf7ef !important;
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-center .cliente-autocomplete li {
+            color: var(--lux-text) !important;
+        }
+
+        .rf-center .cliente-autocomplete li:hover {
+            background: #f6efe1 !important;
+            color: #7a5a18 !important;
+        }
+
+        /* ── Botones principales ── */
+        .rf-btn-primary {
+            background: linear-gradient(135deg, #d6b25e 0%, #b78a2a 100%) !important;
+            color: #1b1205 !important;
+            box-shadow: 0 4px 14px rgba(183, 138, 42, .28) !important;
+        }
+
+        .rf-btn-primary:hover {
+            background: linear-gradient(135deg, #e8ca78, #d6b25e) !important;
+        }
+
+        /* ── Right sidebar ── */
+        .rf-sidebar {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f4ead8 100%) !important;
+            border-left-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar h3 {
+            color: var(--lux-amber) !important;
+        }
+
+        .rf-sidebar .border-b {
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar .text-gray-900 {
+            color: var(--lux-text) !important;
+        }
+
+        .rf-sidebar .text-gray-700 {
+            color: #6b5b3a !important;
+        }
+
+        .rf-sidebar .text-gray-500 {
+            color: #7a8799 !important;
+        }
+
+        .rf-sidebar .text-green-700 {
+            color: var(--lux-gold2) !important;
+        }
+
+        .rf-sidebar .bg-gray-50 {
+            background: #f8f2e3 !important;
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar .border-gray-100 {
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar .text-amber-600 {
+            color: #c27a2a !important;
+        }
+
+        .rf-sidebar .bg-green-50 {
+            background: linear-gradient(180deg, #fbf7ef, #f6efe1) !important;
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar .border-green-100 {
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar .text-green-900 {
+            color: var(--lux-amber) !important;
+        }
+
+        .rf-sidebar .text-green-800 {
+            color: var(--lux-gold2) !important;
+        }
+
+        .rf-sidebar .border-dashed {
+            border-color: var(--lux-border) !important;
+        }
+
+        .rf-sidebar .font-black.text-green-800 {
+            color: var(--lux-gold2) !important;
+        }
+
+        #btn-confirmar-reserva {
+            background: linear-gradient(135deg, #d6b25e 0%, #b78a2a 100%) !important;
+            color: #1b1205 !important;
+            box-shadow: 0 8px 20px rgba(183, 138, 42, .30) !important;
+            border: none !important;
+        }
+
+        #btn-confirmar-reserva:hover {
+            background: linear-gradient(135deg, #e8ca78 0%, #d6b25e 100%) !important;
+        }
+
+        /* Success overlay: adaptar colores */
+        .rf-success-card {
+            background: #fbf7ef !important;
+        }
+
+        .rf-success-title {
+            color: var(--lux-text) !important;
+        }
+
+        .rf-success-id {
+            background: #f6efe1 !important;
+            border-color: var(--lux-border) !important;
+            color: var(--lux-amber) !important;
+        }
+
+        .rf-success-icon {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+        }
+
+        .rf-success-icon i {
+            color: #1b1205 !important;
+        }
+
+        .rf-success-btn {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+        }
+
+        /* ── Calendar visibility tweaks ── */
+        .rf-center #mes-actual,
+        .rf-center #mes-siguiente {
+            color: #7a5a18 !important;
+        }
+
+        .rf-center #mes-actual .day-btn,
+        .rf-center #mes-siguiente .day-btn {
+            color: #7a5a18 !important;
+        }
+
+        .rf-center #mes-actual .text-gray-400,
+        .rf-center #mes-siguiente .text-gray-400 {
+            color: #b0893a !important;
+        }
+
+        .rf-center #mes-actual .opacity-30,
+        .rf-center #mes-siguiente .opacity-30 {
+            color: rgba(122, 90, 24, 0.35) !important;
         }
     </style>
 </head>
+
 <body>
 
-<div id="main-wrapper" class="rf-layout grid min-h-screen grid-cols-[16.5rem_1fr_16rem] max-[1080px]:grid-cols-[14.5rem_1fr_14rem] max-[860px]:grid-cols-[1fr]">
+    <div id="main-wrapper"
+        class="rf-layout grid min-h-screen grid-cols-1 lg:grid-cols-[10.5rem_1fr_380px] max-[1080px]:grid-cols-[9rem_1fr_340px]">
 
-    <!-- ══ LEFT: Global sidebar (from components/sidebar.html) ═══════════════ -->
-    <aside id="sidebar"
-        class="sticky top-0 h-screen sidebar-shell sidebar-open max-[860px]:hidden
+        <!-- ══ LEFT: Global sidebar (from components/sidebar.html) ═══════════════ -->
+        <aside id="sidebar" class="sticky top-0 h-screen sidebar-shell sidebar-open max-[860px]:hidden
                flex flex-col overflow-y-auto overflow-x-hidden
                shadow-[4px_0_20px_rgba(0,0,0,0.3)] transition-[width] duration-300">
 
-        <div class="sidebar-header flex items-center justify-between px-4 pt-3 pb-3 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/8 ring-1 ring-white/10 text-[#ff6a1a] shadow-[0_0_24px_rgba(255,106,26,.18)]">
-                    <i class="fa-solid fa-microchip"></i>
+            <div class="sidebar-header flex items-center justify-between px-4 pt-3 pb-3 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/8 ring-1 ring-white/10 text-[#ff6a1a] shadow-[0_0_24px_rgba(255,106,26,.18)]">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white text-[0.72rem] font-semibold m-0 uppercase tracking-[0.45em] opacity-70"
+                            style="font-family:'Oswald',sans-serif;">
+                            Menú
+                        </h2>
+                        <p class="m-0 text-[0.72rem] text-white/45">Control central</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-white text-[0.72rem] font-semibold m-0 uppercase tracking-[0.45em] opacity-70"
-                        style="font-family:'Oswald',sans-serif;">
-                        Menú
-                    </h2>
-                    <p class="m-0 text-[0.72rem] text-white/45">Control central</p>
-                </div>
-            </div>
-            <div class="pl-3">
-                <button id="sidebar-toggle"
-                    class="flex items-center justify-center
+                <div class="pl-3">
+                    <button id="sidebar-toggle"
+                        class="flex items-center justify-center
                         w-11 h-11 rounded-2xl shrink-0
                         border-0 cursor-pointer bg-[#ff6a1a] hover:bg-[#ff853c]
                         shadow-[0_0_0_1px_rgba(255,255,255,.08),0_10px_30px_rgba(255,106,26,.28)] transition-all duration-200 hover:-translate-y-0.5"
-                    aria-label="Abrir o cerrar menú">
-                    <i class="fa-solid fa-bars text-white text-lg"></i>
-                </button>
-            </div>
-        </div>
-
-        <nav class="sidebar-nav flex-1 px-3 pt-1 pb-3">
-            <ul class="list-none p-0 m-0 space-y-1.5">
-
-                <li class="sidebar-item" data-module="dashboard">
-                    <a href="#" onclick="cargarSeccion('dashboard', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-chart-line"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Dashboard
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="habitaciones">
-                    <a href="#" onclick="cargarSeccion('administrar-habitaciones', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-bed"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Habitaciones
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="paquetes">
-                    <a href="#" onclick="cargarSeccion('paquetes', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-box-open"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Paquetes
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="servicios">
-                    <a href="#" onclick="cargarSeccion('servicios', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-concierge-bell"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Servicios
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="usuarios">
-                    <a href="#" onclick="cargarSeccion('usuarios', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-users"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Usuarios
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="clientes">
-                    <a href="#" onclick="cargarSeccion('clientes', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-address-book"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Clientes
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="roles">
-                    <a href="#" onclick="cargarSeccion('roles', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-shield-halved"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Roles
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="reservas">
-                    <a href="#" onclick="cargarSeccion('reservas', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-calendar-check"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Reservas
-                        </span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item" data-module="perfil">
-                    <a href="#" onclick="cargarSeccion('perfil', event)"
-                              class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
-                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
-                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
-                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
-                        <span class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
-                            <i class="fa-solid fa-circle-user"></i>
-                        </span>
-                          <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
-                              style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
-                            Mi Perfil
-                        </span>
-                    </a>
-                </li>
-
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer block px-3 py-3 shrink-0">
-            <div class="rounded-[22px] border border-white/10 bg-white/5 p-3 shadow-[0_12px_30px_rgba(0,0,0,.18)] backdrop-blur-sm">
-                <p class="text-white/45 text-[0.65rem] m-0 p-0 uppercase tracking-[0.35em]"
-                   style="font-family:'Oswald',sans-serif;">Bienvenido</p>
-                <div class="mt-2 rounded-2xl border border-white/8 bg-black/10 px-3 py-2">
-                    <p id="sidebar-user-name" class="text-white/90 text-sm font-semibold m-0 p-0 wrap-break-word leading-tight"></p>
-                    <p id="sidebar-user-role" class="text-white/55 text-xs m-0 p-0 mt-1"
-                       style="font-family:'Oswald',sans-serif; letter-spacing:.04em;"></p>
+                        aria-label="Abrir o cerrar menú">
+                        <i class="fa-solid fa-bars text-white text-lg"></i>
+                    </button>
                 </div>
-                <div class="mt-3 flex gap-2">
-                    <button id="sidebar-btn-perfil"
-                        onclick="cargarSeccion('perfil', event)"
-                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2
+            </div>
+
+            <nav class="sidebar-nav flex-1 px-3 pt-1 pb-3">
+                <ul class="list-none p-0 m-0 space-y-1.5">
+
+                    <li class="sidebar-item" data-module="dashboard">
+                        <a href="#" onclick="cargarSeccion('dashboard', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Dashboard
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="habitaciones">
+                        <a href="#" onclick="cargarSeccion('administrar-habitaciones', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-bed"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Habitaciones
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="paquetes">
+                        <a href="#" onclick="cargarSeccion('paquetes', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-box-open"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Paquetes
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="servicios">
+                        <a href="#" onclick="cargarSeccion('servicios', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-concierge-bell"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Servicios
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="usuarios">
+                        <a href="#" onclick="cargarSeccion('usuarios', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-users"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Usuarios
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="clientes">
+                        <a href="#" onclick="cargarSeccion('clientes', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-address-book"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Clientes
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="roles">
+                        <a href="#" onclick="cargarSeccion('roles', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Roles
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="reservas">
+                        <a href="#" onclick="cargarSeccion('reservas', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Reservas
+                            </span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" data-module="perfil">
+                        <a href="#" onclick="cargarSeccion('perfil', event)" class="flex flex-col in-[.open]:flex-row items-center justify-center in-[.open]:justify-start
+                                  py-3 px-2 in-[.open]:px-3 rounded-2xl text-white/85 no-underline border border-white/0
+                                  bg-transparent hover:bg-white/8 hover:text-white hover:border-white/10
+                                  in-[.open]:hover:translate-x-1 transition-all duration-200 sidebar-link">
+                            <span
+                                class="text-lg w-9 h-9 rounded-xl bg-white/8 ring-1 ring-white/10 text-white/92 text-center shrink-0 flex items-center justify-center shadow-[0_8px_18px_rgba(0,0,0,.12)]">
+                                <i class="fa-solid fa-circle-user"></i>
+                            </span>
+                            <span class="sidebar-label whitespace-nowrap ml-0 in-[.open]:ml-3"
+                                style="font-family:'Oswald',sans-serif; font-weight:500; font-size:.92rem; letter-spacing:.05em;">
+                                Mi Perfil
+                            </span>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer block px-3 py-3 shrink-0">
+                <div
+                    class="rounded-[22px] border border-white/10 bg-white/5 p-3 shadow-[0_12px_30px_rgba(0,0,0,.18)] backdrop-blur-sm">
+                    <p class="text-white/45 text-[0.65rem] m-0 p-0 uppercase tracking-[0.35em]"
+                        style="font-family:'Oswald',sans-serif;">Bienvenido</p>
+                    <div class="mt-2 rounded-2xl border border-white/8 bg-black/10 px-3 py-2">
+                        <p id="sidebar-user-name"
+                            class="text-white/90 text-sm font-semibold m-0 p-0 wrap-break-word leading-tight"></p>
+                        <p id="sidebar-user-role" class="text-white/55 text-xs m-0 p-0 mt-1"
+                            style="font-family:'Oswald',sans-serif; letter-spacing:.04em;"></p>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button id="sidebar-btn-perfil" onclick="cargarSeccion('perfil', event)"
+                            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2
                                bg-[#4A90E2] hover:bg-[#3A7BC8] text-white text-xs font-semibold
                                rounded-xl border-0 cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_10px_18px_rgba(74,144,226,.18)]">
-                        <i class="fa-solid fa-user"></i> Perfil
-                    </button>
-                    <button id="sidebar-btn-logout"
-                        onclick="cerrarSesion()"
-                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2
+                            <i class="fa-solid fa-user"></i> Perfil
+                        </button>
+                        <button id="sidebar-btn-logout" onclick="cerrarSesion()"
+                            class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2
                                bg-[#E74C3C] hover:bg-[#C0392B] text-white text-xs font-semibold
                                rounded-xl border-0 cursor-pointer transition-all hover:-translate-y-0.5 shadow-[0_10px_18px_rgba(231,76,60,.16)]">
-                        <i class="fa-solid fa-right-from-bracket"></i> Salir
-                    </button>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <div id="sidebar-overlay" class="hidden"></div>
-
-    <style>
-        #sidebar.sidebar-shell {
-            z-index: 1002;
-            background:
-                radial-gradient(circle at 20% 12%, rgba(255,106,26,.14), transparent 32%),
-                radial-gradient(circle at 82% 18%, rgba(38,212,255,.10), transparent 28%),
-                linear-gradient(to bottom, #0f3d3e 0%, #082427 52%, #071b1d 100%);
-            color: rgba(255, 255, 255, 0.92);
-            overflow-x: hidden;
-            border-right: 1px solid rgba(255,255,255,.06);
-        }
-
-        #sidebar.sidebar-open {
-            width: 16.5rem;
-        }
-
-        #sidebar .sidebar-item + .sidebar-item {
-            margin-top: 0.25rem !important;
-        }
-
-        #sidebar .sidebar-link {
-            padding-top: 0.625rem !important;
-            padding-bottom: 0.625rem !important;
-        }
-
-        #sidebar .sidebar-label {
-            margin-left: 0.5rem !important;
-        }
-
-        #sidebar:not(.sidebar-open) {
-            width: 5rem;
-            overflow: hidden;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-nav {
-            display: block;
-            padding-top: 0.35rem;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-nav ul {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-nav .sidebar-item {
-            width: 100%;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-footer {
-            display: none;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 0.5rem 0.9rem;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-header > div:first-child {
-            display: none;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-header > div:last-child {
-            display: flex;
-            justify-content: center;
-            padding: 0;
-            width: 100%;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-header #sidebar-toggle {
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #sidebar .sidebar-nav {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,.16) transparent;
-        }
-
-        #sidebar .sidebar-nav::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #sidebar .sidebar-nav::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,.16);
-            border-radius: 999px;
-        }
-
-        #sidebar .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #sidebar.sidebar-open .sidebar-label {
-            opacity: 1;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-label {
-            opacity: 0;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-link {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
-            justify-content: center;
-        }
-
-        #sidebar.sidebar-open .sidebar-link {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
-            justify-content: flex-start;
-        }
-
-        #sidebar:not(.sidebar-open) .sidebar-link {
-            flex-direction: column;
-        }
-
-        #sidebar.sidebar-open .sidebar-link {
-            flex-direction: row;
-        }
-
-        #sidebar-toggle {
-            backdrop-filter: blur(8px);
-        }
-    </style>
-
-    <!-- ══ CENTER FORM ════════════════════════════════════ -->
-    <main class="rf-center bg-gray-50 !p-8">
-        <h1 class="text-2xl font-black text-gray-900 mb-8">Nueva Reserva</h1>
-        <form id="form-reserva-v2">
-            <!-- PASO 1: FECHAS -->
-            <section class="mb-10">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-full bg-green-800 text-white flex items-center justify-center text-xs">1</span> 
-                    Fechas de Estancia
-                </h2>
-                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
-                        <button type="button" id="cal-prev" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-chevron-left"></i></button>
-                        <span class="text-sm text-gray-500 font-medium">Selecciona entrada y salida</span>
-                        <button type="button" id="cal-next" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50"><i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
-                    <div id="calendario-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div id="mes-actual"></div>
-                        <div id="mes-siguiente"></div>
+                            <i class="fa-solid fa-right-from-bracket"></i> Salir
+                        </button>
                     </div>
                 </div>
-            </section>
+            </div>
+        </aside>
 
-            <!-- PASO 2: MODO -->
-            <section class="mb-10">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-full bg-green-800 text-white flex items-center justify-center text-xs">2</span> 
-                    Opciones de Hospedaje
-                </h2>
-                <div id="modo-toggle" class="flex rounded-xl border border-gray-200 overflow-hidden w-fit mb-6 bg-white shadow-sm">
-                    <button type="button" id="btn-habitacion" data-modo="habitacion" class="px-6 py-3 text-sm font-medium flex items-center gap-2 transition-all duration-200 bg-green-800 text-white">
-                        <i class="fa-solid fa-bed"></i> Solo Habitación
-                    </button>
-                    <button type="button" id="btn-paquete" data-modo="paquete" class="px-6 py-3 text-sm font-medium flex items-center gap-2 transition-all duration-200 bg-white text-gray-500 hover:bg-gray-50">
-                        <i class="fa-solid fa-box-open"></i> Paquete Completo
-                    </button>
-                </div>
+        <div id="sidebar-overlay" class="hidden"></div>
 
-                <div id="seccion-habitacion">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Selecciona una habitación</label>
-                    <select id="select-habitacion" name="habitacion_id" class="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-700 bg-white shadow-sm"></select>
-                </div>
+        <style>
+            #sidebar.sidebar-shell {
+                z-index: 1002;
+                background:
+                    radial-gradient(circle at 20% 12%, rgba(255, 106, 26, .14), transparent 32%),
+                    radial-gradient(circle at 82% 18%, rgba(38, 212, 255, .10), transparent 28%),
+                    linear-gradient(to bottom, #0f3d3e 0%, #082427 52%, #071b1d 100%);
+                color: rgba(255, 255, 255, 0.92);
+                overflow-x: hidden;
+                border-right: 1px solid rgba(255, 255, 255, .06);
+            }
 
-                <div id="seccion-paquetes" class="hidden">
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4" id="grid-paquetes"></div>
-                </div>
-            </section>
+            #sidebar.sidebar-open {
+                width: 16.5rem;
+            }
 
-            <!-- PASO 3: CLIENTE -->
-            <section class="mb-10 relative">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-full bg-green-800 text-white flex items-center justify-center text-xs">3</span> 
-                    Datos del Cliente
-                </h2>
-                <div class="relative">
-                    <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i>
-                    <input id="buscador-cliente" type="text" autocomplete="off" placeholder="Escribe nombre, apellido o documento..." class="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-transparent transition-all shadow-sm bg-white">
-                </div>
-                
-                <div id="dropdown-clientes" class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto"></div>
-                <div id="cliente-seleccionado" class="hidden mt-4 flex items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-xl shadow-sm"></div>
-            </section>
+            #sidebar .sidebar-item+.sidebar-item {
+                margin-top: 0.25rem !important;
+            }
 
-            <!-- PASO 4: SERVICIOS -->
-            <section id="seccion-servicios-adicionales" class="mb-10">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-full bg-green-800 text-white flex items-center justify-center text-xs">4</span> 
-                    Servicios Adicionales
-                </h2>
-                <div id="servicios-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-            </section>
+            #sidebar .sidebar-link {
+                padding-top: 0.625rem !important;
+                padding-bottom: 0.625rem !important;
+            }
 
-            <!-- PASO 5: PAGO -->
-            <section class="mb-10">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-full bg-green-800 text-white flex items-center justify-center text-xs">5</span> 
-                    Pago y Detalles
-                </h2>
-                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Método de pago</label>
-                        <select id="metodo-pago" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-700 bg-white shadow-sm">
-                            <option value="1">Efectivo</option>
-                            <option value="2">Tarjeta de Crédito</option>
-                            <option value="3">Transferencia</option>
-                            <option value="4">Cortesía</option>
-                        </select>
+            #sidebar .sidebar-label {
+                margin-left: 0.5rem !important;
+            }
+
+            #sidebar:not(.sidebar-open) {
+                width: 5rem;
+                overflow: hidden;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-nav {
+                display: block;
+                padding-top: 0.35rem;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-nav ul {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-nav .sidebar-item {
+                width: 100%;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-footer {
+                display: none;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-header {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.75rem 0.5rem 0.9rem;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-header>div:first-child {
+                display: none;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-header>div:last-child {
+                display: flex;
+                justify-content: center;
+                padding: 0;
+                width: 100%;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-header #sidebar-toggle {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #sidebar .sidebar-nav {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, .16) transparent;
+            }
+
+            #sidebar .sidebar-nav::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            #sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, .16);
+                border-radius: 999px;
+            }
+
+            #sidebar .sidebar-nav::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            #sidebar.sidebar-open .sidebar-label {
+                opacity: 1;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-label {
+                opacity: 0;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-link {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                justify-content: center;
+            }
+
+            #sidebar.sidebar-open .sidebar-link {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+                justify-content: flex-start;
+            }
+
+            #sidebar:not(.sidebar-open) .sidebar-link {
+                flex-direction: column;
+            }
+
+            #sidebar.sidebar-open .sidebar-link {
+                flex-direction: row;
+            }
+
+            #sidebar-toggle {
+                backdrop-filter: blur(8px);
+            }
+        </style>
+
+        <!-- ══ CENTER FORM ════════════════════════════════════ -->
+        <main class="rf-center !px-6 !py-4 lg:!px-8 w-full max-w-none relative">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="rf-form-title text-2xl font-bold text-white tracking-wide font-serif uppercase">Nueva Reserva
+                </h1>
+                <button id="btn-cerrar-reserva" onclick="window.history.back()"
+                    class="fixed top-4 right-4 z-50 w-9 h-9 flex items-center justify-center bg-white/90 hover:bg-red-50 border border-stone-200 hover:border-red-300 text-stone-400 hover:text-red-500 rounded-full shadow-md transition-all duration-200 backdrop-blur-sm group lg:static"
+                    title="Cerrar formulario" aria-label="Cerrar formulario de reserva">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 transition-transform duration-200 group-hover:rotate-90 group-hover:scale-110"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="form-reserva-v2" class="flex flex-col gap-4">
+                <!-- PASO 1: FECHAS -->
+                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
+                        <span
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                        Fechas de Estancia
+                    </h2>
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <button type="button" id="cal-prev"
+                                class="p-1.5 rounded-lg hover:bg-amber-100 text-amber-700 transition-colors"><i
+                                    class="fa-solid fa-chevron-left"></i></button>
+                            <span class="text-xs font-semibold text-amber-700">Selecciona entrada y salida</span>
+                            <button type="button" id="cal-next"
+                                class="p-1.5 rounded-lg hover:bg-amber-100 text-amber-700 transition-colors"><i
+                                    class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div id="calendario-wrapper" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div id="mes-actual"></div>
+                            <div id="mes-siguiente"></div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
-                        <select id="estado-reserva" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-700 bg-white shadow-sm">
-                            <option value="1">Activa</option>
-                            <option value="2">Pendiente</option>
-                            <option value="3">Cancelada</option>
-                        </select>
+                </section>
+
+                <!-- PASO 2: MODO -->
+                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
+                        <span
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                        Opciones de Hospedaje
+                    </h2>
+                    <div id="modo-toggle" class="flex gap-1 p-1 bg-stone-100 rounded-lg w-fit">
+                        <button type="button" id="btn-habitacion" data-modo="habitacion"
+                            class="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-md transition-all duration-200 shadow-sm">
+                            <i class="fa-solid fa-bed"></i> Solo Habitación
+                        </button>
+                        <button type="button" id="btn-paquete" data-modo="paquete"
+                            class="flex items-center gap-2 px-4 py-2 text-stone-600 text-sm font-medium rounded-md hover:bg-stone-200 transition-all duration-200">
+                            <i class="fa-solid fa-box-open"></i> Paquete Completo
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Descuento ($)</label>
-                        <input type="number" id="descuento" min="0" value="0" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-700 bg-white shadow-sm">
+
+                    <div id="seccion-habitacion">
+                        <label
+                            class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Selecciona
+                            una habitación</label>
+                        <select id="select-habitacion" name="habitacion_id"
+                            class="w-full h-10 px-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"></select>
                     </div>
+
+                    <div id="seccion-paquetes" class="hidden">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3" id="grid-paquetes"></div>
+                    </div>
+                </section>
+
+                <!-- PASO 3: CLIENTE -->
+                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5 relative">
+                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
+                        <span
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                        Datos del Cliente
+                    </h2>
+                    <div class="relative">
+                        <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                        <input id="buscador-cliente" type="text" autocomplete="off"
+                            placeholder="Escribe nombre, apellido o documento..."
+                            class="w-full h-10 pl-11 pr-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                    </div>
+
+                    <div id="dropdown-clientes"
+                        class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto">
+                    </div>
+                    <div id="cliente-seleccionado"
+                        class="hidden mt-4 flex items-center gap-4 p-3 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
+                    </div>
+                </section>
+
+                <!-- PASO 4: SERVICIOS -->
+                <section id="seccion-servicios-adicionales"
+                    class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
+                        <span
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">4</span>
+                        Servicios Adicionales
+                    </h2>
+                    <div id="servicios-container" class="grid gap-3"
+                        style="grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));"></div>
+                </section>
+
+                <!-- PASO 5: PAGO -->
+                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
+                        <span
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">5</span>
+                        Pago y Detalles
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Método
+                                de pago</label>
+                            <select id="metodo-pago"
+                                class="w-full h-10 px-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                                <option value="1">Efectivo</option>
+                                <option value="2">Tarjeta de Crédito</option>
+                                <option value="3">Transferencia</option>
+                                <option value="4">Cortesía</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Estado</label>
+                            <select id="estado-reserva"
+                                class="w-full h-10 px-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                                <option value="1">Activa</option>
+                                <option value="2">Pendiente</option>
+                                <option value="3">Cancelada</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Descuento
+                                ($)</label>
+                            <input type="number" id="descuento" min="0" value="0"
+                                class="w-full h-10 px-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                        </div>
+                    </div>
+                </section>
+            </form>
+        </main>
+
+        <!-- ══ RIGHT SIDEBAR ══════════════════════════════════ -->
+        <aside
+            class="rf-sidebar max-[860px]:hidden bg-amber-50 border border-amber-200 rounded-2xl p-5 sticky top-4 h-fit shadow-lg shadow-amber-100/50">
+            <h3 class="text-base font-bold text-stone-800 mb-4">Resumen</h3>
+
+            <div id="resumen-img-wrap" class="hidden mb-5">
+                <img id="resumen-img" src="" class="w-full h-32 object-cover rounded-2xl shadow-sm bg-gray-100">
+            </div>
+
+            <h4 id="resumen-title" class="font-bold text-gray-900 mb-2 text-md">Sin selección</h4>
+            <div
+                class="flex items-center gap-2 text-xs text-stone-400 bg-white rounded-lg p-2.5 mb-4 border border-stone-200">
+                <i class="fa-regular fa-calendar text-green-700"></i>
+                <p id="resumen-fechas" class="text-xs font-medium">Fechas no seleccionadas</p>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <div class="flex justify-between items-center py-1.5 text-sm text-stone-600">
+                    <span>Alojamiento/Paquete</span>
+                    <span id="resumen-habitacion" class="text-gray-900 font-bold">$0</span>
                 </div>
-            </section>
-        </form>
-    </main>
+                <div class="flex justify-between items-center py-1.5 text-sm text-stone-600">
+                    <span>Servicios</span>
+                    <span id="resumen-servicios" class="text-gray-900 font-bold">$0</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5 text-sm text-emerald-600 font-semibold">
+                    <span>Descuento</span>
+                    <span id="resumen-descuento" class="font-bold">-$0</span>
+                </div>
+                <div class="border-t-2 border-amber-300 my-3"></div>
+                <div class="flex justify-between items-center py-1.5 text-sm text-stone-600">
+                    <span>Subtotal</span>
+                    <span id="resumen-subtotal">$0</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5 text-sm text-stone-600">
+                    <span>IVA (19%)</span>
+                    <span id="resumen-iva">$0</span>
+                </div>
+            </div>
 
-    <!-- ══ RIGHT SIDEBAR ══════════════════════════════════ -->
-    <aside class="rf-sidebar max-[860px]:hidden !p-6 !bg-white">
-        <h3 class="font-black text-gray-900 mb-6 text-xl tracking-tight border-b border-gray-100 pb-4">Resumen</h3>
-        
-        <div id="resumen-img-wrap" class="hidden mb-5">
-            <img id="resumen-img" src="" class="w-full h-32 object-cover rounded-2xl shadow-sm bg-gray-100">
-        </div>
-        
-        <h4 id="resumen-title" class="font-bold text-gray-900 mb-2 text-md">Sin selección</h4>
-        <div class="flex items-center gap-2 text-gray-500 mb-6 bg-gray-50 p-3 rounded-xl border border-gray-100">
-            <i class="fa-regular fa-calendar text-green-700"></i>
-            <p id="resumen-fechas" class="text-xs font-medium">Fechas no seleccionadas</p>
-        </div>
-        
-        <div class="space-y-3 mb-6">
-            <div class="flex justify-between items-center text-sm font-medium text-gray-700">
-                <span>Alojamiento/Paquete</span>
-                <span id="resumen-habitacion" class="text-gray-900 font-bold">$0</span>
+            <div class="bg-green-50 rounded-2xl p-4 border border-green-100 mb-6">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-bold text-stone-800 uppercase tracking-wide">TOTAL</span>
+                    <span id="resumen-total" class="text-2xl font-black text-amber-600">$0</span>
+                </div>
             </div>
-            <div class="flex justify-between items-center text-sm font-medium text-gray-700">
-                <span>Servicios</span>
-                <span id="resumen-servicios" class="text-gray-900 font-bold">$0</span>
-            </div>
-            <div class="flex justify-between items-center text-sm font-medium text-amber-600">
-                <span>Descuento</span>
-                <span id="resumen-descuento" class="font-bold">-$0</span>
-            </div>
-            <div class="pt-3 border-t border-gray-100 border-dashed"></div>
-            <div class="flex justify-between items-center text-xs font-medium text-gray-500">
-                <span>Subtotal</span>
-                <span id="resumen-subtotal">$0</span>
-            </div>
-            <div class="flex justify-between items-center text-xs font-medium text-gray-500">
-                <span>IVA (19%)</span>
-                <span id="resumen-iva">$0</span>
-            </div>
-        </div>
 
-        <div class="bg-green-50 rounded-2xl p-4 border border-green-100 mb-6">
-            <div class="flex justify-between items-end">
-                <span class="text-sm font-bold text-green-900">TOTAL</span>
-                <span id="resumen-total" class="text-xl font-black text-green-800">$0</span>
-            </div>
-        </div>
+            <button type="button" id="btn-confirmar-reserva"
+                class="w-full mt-4 h-12 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-amber-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-check"></i> Confirmar
+            </button>
+        </aside>
 
-        <button type="button" id="btn-confirmar-reserva" class="w-full flex items-center justify-center gap-2 bg-green-800 hover:bg-green-900 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 shadow-md">
-            <i class="fa-solid fa-check"></i> Confirmar
-        </button>
-    </aside>
-
-</div>
-
-<!-- Soft alert confirmación -->
-<div id="rf-success-overlay" class="rf-success-overlay" role="dialog" aria-modal="true">
-    <div class="rf-success-card">
-        <div class="rf-success-icon">
-            <i class="fa-solid fa-check"></i>
-        </div>
-        <div class="rf-success-title">¡Reserva guardada!</div>
-        <p class="rf-success-msg">La reserva fue registrada correctamente en el sistema.</p>
-        <div id="rf-success-id" class="rf-success-id">#—</div>
-        <br>
-        <button class="rf-success-btn" id="rf-success-btn-ir">
-            <i class="fa-solid fa-list"></i> Ver todas las reservas
-        </button>
     </div>
-</div>
 
-<script src="js/config.js"></script>
-<script src="js/main.js"></script>
-<script src="js/api.js"></script>
-<script src="js/notifications.js"></script>
-<script src="js/reserva.js"></script>
+    <!-- Soft alert confirmación -->
+    <div id="rf-success-overlay" class="rf-success-overlay" role="dialog" aria-modal="true">
+        <div class="rf-success-card">
+            <div class="rf-success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div class="rf-success-title">¡Reserva guardada!</div>
+            <p class="rf-success-msg">La reserva fue registrada correctamente en el sistema.</p>
+            <div id="rf-success-id" class="rf-success-id">#—</div>
+            <br>
+            <button class="rf-success-btn" id="rf-success-btn-ir">
+                <i class="fa-solid fa-list"></i> Ver todas las reservas
+            </button>
+        </div>
+    </div>
 
-<script>
-function actualizarSidebar() {
-    const fmt = v => '$' + Number(v || 0).toLocaleString('es-CO');
-    const el  = id => document.getElementById(id);
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/reserva.js"></script>
 
-    // Room
-    const habSel = el('reserva-admin-habitacion');
-    const roomEl = el('sb-room');
-    if (roomEl && habSel) {
-        const opt = habSel.options[habSel.selectedIndex];
-        const ok  = opt && opt.value;
-        roomEl.textContent = ok ? opt.text : 'Sin seleccionar';
-        roomEl.classList.toggle('empty', !ok);
-    }
+    <script>
+        function actualizarSidebar() {
+            const fmt = v => '$' + Number(v || 0).toLocaleString('es-CO');
+            const el = id => document.getElementById(id);
 
-    // Dates
-    const fi = el('reserva-admin-fecha-inicio')?.value;
-    const ff = el('reserva-admin-fecha-fin')?.value;
-    const fmtD = d => d ? d.split('-').reverse().join('/') : '—';
-    if (el('sb-fi')) el('sb-fi').textContent = fmtD(fi);
-    if (el('sb-ff')) el('sb-ff').textContent = fmtD(ff);
-    if (el('sb-noches')) {
-        if (fi && ff) {
-            const n = Math.ceil((new Date(ff) - new Date(fi)) / 86400000);
-            el('sb-noches').textContent = n > 0 ? `${n} noche${n !== 1 ? 's' : ''}` : '—';
-        } else { el('sb-noches').textContent = '—'; }
-    }
+            // Room
+            const habSel = el('reserva-admin-habitacion');
+            const roomEl = el('sb-room');
+            if (roomEl && habSel) {
+                const opt = habSel.options[habSel.selectedIndex];
+                const ok = opt && opt.value;
+                roomEl.textContent = ok ? opt.text : 'Sin seleccionar';
+                roomEl.classList.toggle('empty', !ok);
+            }
 
-    // Costs
-    const hab = (() => {
-        if (!habSel?.value || !fi || !ff) return 0;
-        const h = (window.habitacionesParaReserva || []).find(h => String(h.IDHabitacion) === String(habSel.value));
-        if (!h) return 0;
-        const n = Math.max(1, Math.round((new Date(ff) - new Date(fi)) / 86400000));
-        return Number(h.Costo || 0) * n;
-    })();
-    const paq = Array.from(document.querySelectorAll('#reserva-admin-paquetes-grid .paquete-card.seleccionado'))
-                     .reduce((s, e) => s + Number(e.dataset.precio || 0), 0);
-    const svc = Array.from(document.querySelectorAll('#reserva-admin-servicios-grid .servicio-toggle-btn.seleccionado'))
-                     .reduce((s, e) => s + Number(e.dataset.costo || 0), 0);
-    const desc  = parseFloat(el('reserva-admin-descuento')?.value) || 0;
-    const iva   = parseFloat(el('reserva-admin-iva')?.value) || 0;
-    const total = Math.max(0, hab + paq + svc - desc + iva);
+            // Dates
+            const fi = el('reserva-admin-fecha-inicio')?.value;
+            const ff = el('reserva-admin-fecha-fin')?.value;
+            const fmtD = d => d ? d.split('-').reverse().join('/') : '—';
+            if (el('sb-fi')) el('sb-fi').textContent = fmtD(fi);
+            if (el('sb-ff')) el('sb-ff').textContent = fmtD(ff);
+            if (el('sb-noches')) {
+                if (fi && ff) {
+                    const n = Math.ceil((new Date(ff) - new Date(fi)) / 86400000);
+                    el('sb-noches').textContent = n > 0 ? `${n} noche${n !== 1 ? 's' : ''}` : '—';
+                } else { el('sb-noches').textContent = '—'; }
+            }
 
-    if (el('sb-costo-hab')) el('sb-costo-hab').textContent = fmt(hab);
-    if (el('sb-costo-paq')) el('sb-costo-paq').textContent = fmt(paq);
-    if (el('sb-costo-svc')) el('sb-costo-svc').textContent = fmt(svc);
-    if (el('sb-iva'))       el('sb-iva').textContent       = fmt(iva);
-    if (el('sb-total'))     el('sb-total').textContent     = fmt(total);
+            // Costs
+            const hab = (() => {
+                if (!habSel?.value || !fi || !ff) return 0;
+                const h = (window.habitacionesParaReserva || []).find(h => String(h.IDHabitacion) === String(habSel.value));
+                if (!h) return 0;
+                const n = Math.max(1, Math.round((new Date(ff) - new Date(fi)) / 86400000));
+                return Number(h.Costo || 0) * n;
+            })();
+            const paq = Array.from(document.querySelectorAll('#reserva-admin-paquetes-grid .paquete-card.seleccionado'))
+                .reduce((s, e) => s + Number(e.dataset.precio || 0), 0);
+            const svc = Array.from(document.querySelectorAll('#reserva-admin-servicios-grid .servicio-toggle-btn.seleccionado'))
+                .reduce((s, e) => s + Number(e.dataset.costo || 0), 0);
+            const desc = parseFloat(el('reserva-admin-descuento')?.value) || 0;
+            const iva = parseFloat(el('reserva-admin-iva')?.value) || 0;
+            const total = Math.max(0, hab + paq + svc - desc + iva);
 
-    if (el('reserva-admin-subtotal')) el('reserva-admin-subtotal').value = hab + paq + svc;
-    if (el('reserva-admin-total'))    el('reserva-admin-total').value    = total;
-}
+            if (el('sb-costo-hab')) el('sb-costo-hab').textContent = fmt(hab);
+            if (el('sb-costo-paq')) el('sb-costo-paq').textContent = fmt(paq);
+            if (el('sb-costo-svc')) el('sb-costo-svc').textContent = fmt(svc);
+            if (el('sb-iva')) el('sb-iva').textContent = fmt(iva);
+            if (el('sb-total')) el('sb-total').textContent = fmt(total);
 
-document.addEventListener('DOMContentLoaded', async () => {
-    if (typeof window.initSidebarControls === 'function') {
-        await window.initSidebarControls();
-    }
-    const raw    = sessionStorage.getItem('reserva_form_data');
-    const reserva = raw ? JSON.parse(raw) : null;
-    sessionStorage.removeItem('reserva_form_data');
-
-    if (reserva) {
-        document.getElementById('rf-subtitulo').textContent = `Editar reserva #${reserva.IDReserva}`;
-        document.title = `Editar reserva #${reserva.IDReserva} — Hospedaje Digital`;
-
-        document.getElementById('reserva-admin-id').value           = reserva.IDReserva           || '';
-        document.getElementById('reserva-admin-fecha-inicio').value = reserva.FechaInicio          ? reserva.FechaInicio.split('T')[0]       : '';
-        document.getElementById('reserva-admin-fecha-fin').value    = reserva.FechaFinalizacion    ? reserva.FechaFinalizacion.split('T')[0] : '';
-        document.getElementById('reserva-admin-subtotal').value     = reserva.SubTotal             || 0;
-        document.getElementById('reserva-admin-descuento').value    = reserva.Descuento            || 0;
-        document.getElementById('reserva-admin-iva').value          = reserva.IVA                 || 0;
-        document.getElementById('reserva-admin-total').value        = reserva.MontoTotal           || 0;
-        document.getElementById('reserva-admin-metodo-pago').value  = reserva.MetodoPago           || 1;
-        document.getElementById('reserva-admin-estado').value       = reserva.IdEstadoReserva      || 1;
-
-        const clienteBuscar = document.getElementById('reserva-admin-cliente-buscar');
-        const clienteId     = document.getElementById('reserva-admin-cliente-id');
-        if (clienteBuscar && reserva.NroDocumento) {
-            const nombre = `${reserva.Nombre || ''} ${reserva.Apellido || ''}`.trim();
-            clienteBuscar.value = nombre ? `${nombre} — ${reserva.NroDocumento}` : reserva.NroDocumento;
-            clienteBuscar.dataset.documentoSeleccionado = reserva.NroDocumento;
+            if (el('reserva-admin-subtotal')) el('reserva-admin-subtotal').value = hab + paq + svc;
+            if (el('reserva-admin-total')) el('reserva-admin-total').value = total;
         }
-        if (clienteId) clienteId.value = reserva.NroDocumento || '';
 
-        const paqIds = reserva.PaquetesIds  ? String(reserva.PaquetesIds).split(',').map(s => s.trim())  : [];
-        const svcIds = reserva.ServiciosIds ? String(reserva.ServiciosIds).split(',').map(s => s.trim()) : [];
-        await cargarSelectsReserva(paqIds, svcIds);
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (typeof window.initSidebarControls === 'function') {
+                await window.initSidebarControls();
+            }
+            const raw = sessionStorage.getItem('reserva_form_data');
+            const reserva = raw ? JSON.parse(raw) : null;
+            sessionStorage.removeItem('reserva_form_data');
 
-        const selectHab = document.getElementById('reserva-admin-habitacion');
-        if (selectHab && reserva.IDHabitacion) selectHab.value = reserva.IDHabitacion;
-    } else {
-        await cargarSelectsReserva([], []);
-        limpiarFormularioReservaAdmin();
-    }
+            if (reserva) {
+                document.getElementById('rf-subtitulo').textContent = `Editar reserva #${reserva.IDReserva}`;
+                document.title = `Editar reserva #${reserva.IDReserva} — Hospedaje Digital`;
 
-    configurarBuscadorCliente();
+                document.getElementById('reserva-admin-id').value = reserva.IDReserva || '';
+                document.getElementById('reserva-admin-fecha-inicio').value = reserva.FechaInicio ? reserva.FechaInicio.split('T')[0] : '';
+                document.getElementById('reserva-admin-fecha-fin').value = reserva.FechaFinalizacion ? reserva.FechaFinalizacion.split('T')[0] : '';
+                document.getElementById('reserva-admin-subtotal').value = reserva.SubTotal || 0;
+                document.getElementById('reserva-admin-descuento').value = reserva.Descuento || 0;
+                document.getElementById('reserva-admin-iva').value = reserva.IVA || 0;
+                document.getElementById('reserva-admin-total').value = reserva.MontoTotal || 0;
+                document.getElementById('reserva-admin-metodo-pago').value = reserva.MetodoPago || 1;
+                document.getElementById('reserva-admin-estado').value = reserva.IdEstadoReserva || 1;
 
-    // Patch recalcularPrecio para sincronizar sidebar
-    if (typeof recalcularPrecio === 'function') {
-        const _orig = recalcularPrecio;
-        window.recalcularPrecio = function () { _orig(); actualizarSidebar(); };
-        ['reserva-admin-habitacion','reserva-admin-fecha-inicio','reserva-admin-fecha-fin'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) { el.removeEventListener('change', _orig); el.addEventListener('change', window.recalcularPrecio); }
+                const clienteBuscar = document.getElementById('reserva-admin-cliente-buscar');
+                const clienteId = document.getElementById('reserva-admin-cliente-id');
+                if (clienteBuscar && reserva.NroDocumento) {
+                    const nombre = `${reserva.Nombre || ''} ${reserva.Apellido || ''}`.trim();
+                    clienteBuscar.value = nombre ? `${nombre} — ${reserva.NroDocumento}` : reserva.NroDocumento;
+                    clienteBuscar.dataset.documentoSeleccionado = reserva.NroDocumento;
+                }
+                if (clienteId) clienteId.value = reserva.NroDocumento || '';
+
+                const paqIds = reserva.PaquetesIds ? String(reserva.PaquetesIds).split(',').map(s => s.trim()) : [];
+                const svcIds = reserva.ServiciosIds ? String(reserva.ServiciosIds).split(',').map(s => s.trim()) : [];
+                await cargarSelectsReserva(paqIds, svcIds);
+
+                const selectHab = document.getElementById('reserva-admin-habitacion');
+                if (selectHab && reserva.IDHabitacion) selectHab.value = reserva.IDHabitacion;
+            } else {
+                await cargarSelectsReserva([], []);
+                limpiarFormularioReservaAdmin();
+            }
+
+            configurarBuscadorCliente();
+
+            // Patch recalcularPrecio para sincronizar sidebar
+            if (typeof recalcularPrecio === 'function') {
+                const _orig = recalcularPrecio;
+                window.recalcularPrecio = function () { _orig(); actualizarSidebar(); };
+                ['reserva-admin-habitacion', 'reserva-admin-fecha-inicio', 'reserva-admin-fecha-fin'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.removeEventListener('change', _orig); el.addEventListener('change', window.recalcularPrecio); }
+                });
+                const descEl = document.getElementById('reserva-admin-descuento');
+                if (descEl) { descEl.removeEventListener('input', _orig); descEl.addEventListener('input', window.recalcularPrecio); }
+            }
+
+            // Observar selección de paquetes/servicios
+            const obs = new MutationObserver(actualizarSidebar);
+            ['reserva-admin-paquetes-grid', 'reserva-admin-servicios-grid'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) obs.observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] });
+            });
+
+            document.getElementById('form-reserva-admin')?.addEventListener('submit', guardarReservaAdmin);
+
+            actualizarSidebar();
+
+            // ── Validación de salida sin guardar ─────────────────────────────────────
+            let formularioModificado = false;
+            let guardadoExitoso = false;
+
+            // Marca el formulario como modificado ante cualquier interacción
+            const marcarModificado = () => { formularioModificado = true; };
+
+            document.getElementById('form-reserva-admin')
+                ?.addEventListener('input', marcarModificado);
+            document.getElementById('form-reserva-admin')
+                ?.addEventListener('change', marcarModificado);
+
+            // También al seleccionar paquetes / servicios (clicks en el grid)
+            ['reserva-admin-paquetes-grid', 'reserva-admin-servicios-grid'].forEach(id => {
+                document.getElementById(id)?.addEventListener('click', marcarModificado);
+            });
+
+            // Cuando el formulario se guarda exitosamente, desactivar la guardia
+            const formEl = document.getElementById('form-reserva-admin');
+            if (formEl) {
+                formEl.addEventListener('submit', () => {
+                    guardadoExitoso = true;
+                });
+            }
+
+            // Función central: pregunta al usuario si realmente desea salir
+            async function confirmarSalida() {
+                if (!formularioModificado || guardadoExitoso) return true;
+                return await confirmarAccion(
+                    'Tienes cambios sin guardar. Si sales ahora, perderás la información ingresada.',
+                    '¿Salir sin guardar?'
+                );
+            }
+
+            // Helper: navega a reservas después de confirmar
+            function navegarAReservas() {
+                window.location.href = 'pages/reservas.html';
+            }
+
+            // Botón "Volver a reservas" (panel izquierdo)
+            document.getElementById('btn-volver-panel')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await confirmarSalida()) navegarAReservas();
+            });
+
+            // Botón "Cancelar" (sidebar)
+            document.getElementById('btn-cancelar-sidebar')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (await confirmarSalida()) navegarAReservas();
+            });
+
+            // Botón "Limpiar": también advierte si hay datos
+            document.getElementById('btn-reserva-admin-limpiar')?.addEventListener('click', async () => {
+                if (formularioModificado) {
+                    const ok = await confirmarAccion(
+                        'Se borrarán todos los campos del formulario.',
+                        '¿Limpiar formulario?'
+                    );
+                    if (!ok) return;
+                }
+                limpiarFormularioReservaAdmin();
+                formularioModificado = false;
+                setTimeout(actualizarSidebar, 50);
+            }, { once: false });   // reemplaza el listener anterior
+
         });
-        const descEl = document.getElementById('reserva-admin-descuento');
-        if (descEl) { descEl.removeEventListener('input', _orig); descEl.addEventListener('input', window.recalcularPrecio); }
-    }
-
-    // Observar selección de paquetes/servicios
-    const obs = new MutationObserver(actualizarSidebar);
-    ['reserva-admin-paquetes-grid','reserva-admin-servicios-grid'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) obs.observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] });
-    });
-
-    document.getElementById('form-reserva-admin')?.addEventListener('submit', guardarReservaAdmin);
-
-    actualizarSidebar();
-
-    // ── Validación de salida sin guardar ─────────────────────────────────────
-    let formularioModificado = false;
-    let guardadoExitoso = false;
-
-    // Marca el formulario como modificado ante cualquier interacción
-    const marcarModificado = () => { formularioModificado = true; };
-
-    document.getElementById('form-reserva-admin')
-        ?.addEventListener('input',  marcarModificado);
-    document.getElementById('form-reserva-admin')
-        ?.addEventListener('change', marcarModificado);
-
-    // También al seleccionar paquetes / servicios (clicks en el grid)
-    ['reserva-admin-paquetes-grid','reserva-admin-servicios-grid'].forEach(id => {
-        document.getElementById(id)?.addEventListener('click', marcarModificado);
-    });
-
-    // Cuando el formulario se guarda exitosamente, desactivar la guardia
-    const formEl = document.getElementById('form-reserva-admin');
-    if (formEl) {
-        formEl.addEventListener('submit', () => {
-            guardadoExitoso = true;
-        });
-    }
-
-    // Función central: pregunta al usuario si realmente desea salir
-    async function confirmarSalida() {
-        if (!formularioModificado || guardadoExitoso) return true;
-        return await confirmarAccion(
-            'Tienes cambios sin guardar. Si sales ahora, perderás la información ingresada.',
-            '¿Salir sin guardar?'
-        );
-    }
-
-    // Helper: navega a reservas después de confirmar
-    function navegarAReservas() {
-        window.location.href = 'pages/reservas.html';
-    }
-
-    // Botón "Volver a reservas" (panel izquierdo)
-    document.getElementById('btn-volver-panel')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (await confirmarSalida()) navegarAReservas();
-    });
-
-    // Botón "Cancelar" (sidebar)
-    document.getElementById('btn-cancelar-sidebar')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (await confirmarSalida()) navegarAReservas();
-    });
-
-    // Botón "Limpiar": también advierte si hay datos
-    document.getElementById('btn-reserva-admin-limpiar')?.addEventListener('click', async () => {
-        if (formularioModificado) {
-            const ok = await confirmarAccion(
-                'Se borrarán todos los campos del formulario.',
-                '¿Limpiar formulario?'
-            );
-            if (!ok) return;
-        }
-        limpiarFormularioReservaAdmin();
-        formularioModificado = false;
-        setTimeout(actualizarSidebar, 50);
-    }, { once: false });   // reemplaza el listener anterior
-
-});
-</script>
+    </script>
 </body>
+
 </html>

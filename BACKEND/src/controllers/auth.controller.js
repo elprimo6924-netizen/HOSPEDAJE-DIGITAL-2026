@@ -225,7 +225,6 @@ exports.actualizarPerfil = async (req, res) => {
 exports.register = async (req, res) => {
     try {
         const {
-            NombreUsuario,
             Apellido,
             Email,
             Contrasena,
@@ -236,6 +235,7 @@ exports.register = async (req, res) => {
             Direccion,
             IDRol,
         } = req.body;
+        const NombreUsuario = req.body.NombreUsuario || req.body.Nombre;
 
         if (!NombreUsuario || !Email || !Contrasena) {
             return res.status(400).json({ error: 'NombreUsuario, Email y Contrasena son obligatorios' });
@@ -287,7 +287,15 @@ exports.register = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Error al registrar usuario', detalle: error.message });
+        console.error('[REGISTER ERROR]', error.code, error.message);
+        const esDuplicado = error.code === 'ER_DUP_ENTRY';
+        const esFKFaltante = error.code === 'ER_NO_REFERENCED_ROW_2';
+        const esColumnaInvalida = error.code === 'ER_BAD_FIELD_ERROR';
+        let mensaje = 'Error al registrar usuario';
+        if (esDuplicado) mensaje = 'Ya existe un usuario con ese correo o documento.';
+        else if (esFKFaltante) mensaje = 'El rol especificado no existe. Contacte al administrador.';
+        else if (esColumnaInvalida) mensaje = 'Error de configuración en base de datos: ' + error.message;
+        res.status(esDuplicado || esFKFaltante ? 409 : 500).json({ success: false, error: mensaje, detalle: error.message });
     }
 };
 

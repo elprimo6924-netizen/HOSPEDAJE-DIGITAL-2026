@@ -10,22 +10,112 @@
     <link rel="stylesheet" href="../css/reset.css">
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- ✏️ MODIFICADO: Agregar Tailwind CDN para modales y notificaciones -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
+        :root {
+            --lux-ink: #0f1522;
+            --lux-navy: #0b1424;
+            --lux-emerald: #0f3d3e;
+            --lux-gold: #d6b25e;
+            --lux-gold-soft: #f4e6c1;
+            --lux-ivory: #f7f2e6;
+            --lux-stone: #e7dfcf;
+            --lux-shadow: 0 22px 60px rgba(15, 21, 34, 0.18);
+        }
+
         * { box-sizing: border-box; }
         html, body {
-            background-color: var(--color-background) !important;
+            background-color: var(--lux-navy) !important;
             color: var(--color-text) !important;
             margin: 0 !important;
             padding: 0 !important;
         }
         body { font-family: var(--font-family); }
-        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; }
-        main { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; }
-        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+        #main-wrapper {
+            background: radial-gradient(1400px 600px at 8% 0%, rgba(26, 49, 76, 0.55), transparent 60%),
+                        linear-gradient(180deg, #0b1424 0%, #0d1a2c 40%, #0f1b2b 100%) !important;
+            min-height: 100vh;
+        }
+        main { background-color: transparent !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; }
+        footer { background-color: rgba(255, 255, 255, 0.04) !important; color: #c3c8d4 !important; }
+
+        .mod-toolbar-title {
+            font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+            color: #f8f4ea;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        }
+        .mod-toolbar-title .mod-icon { color: var(--lux-gold); }
+        .mod-toolbar-subtitle { color: #cfd5e0; }
+        .btn-mod-nuevo {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+            box-shadow: 0 14px 28px rgba(183, 138, 42, 0.35) !important;
+            border: none !important;
+        }
+        .btn-mod-nuevo:hover { filter: brightness(1.03); transform: translateY(-1px); }
+
+        .crud-clientes-panel {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%);
+            border: 1px solid #efe3c9 !important;
+            box-shadow: var(--lux-shadow);
+        }
+        .crud-clientes-filtros input,
+        .crud-clientes-filtros select {
+            border: 1px solid #e3d4b4 !important;
+            background: #fffdf7 !important;
+            color: #1a2230 !important;
+        }
+        .crud-clientes-filtros input:focus,
+        .crud-clientes-filtros select:focus {
+            border-color: var(--lux-gold) !important;
+            box-shadow: 0 0 0 4px rgba(214, 178, 94, 0.18) !important;
+        }
+        .crud-clientes-tabla-wrap {
+            border: 1px solid #eadfca !important;
+            background: #fffdf7 !important;
+        }
+        .crud-clientes-tabla thead th {
+            background: #f8f2e3 !important;
+            color: #7a5a18 !important;
+            letter-spacing: .08em !important;
+            border-bottom: 1px solid #eadfca !important;
+        }
+        .crud-clientes-tabla td { color: #1a2230 !important; }
+        .crud-clientes-tabla tbody tr:hover { background: #fff6e6 !important; }
+
+        .crud-modal-content {
+            background: #fffdf7 !important;
+            border: 1px solid #eadfca !important;
+            box-shadow: var(--lux-shadow);
+        }
+        .crud-modal-content h4 { color: #7a5a18 !important; }
+        .crud-clientes-form input,
+        .crud-clientes-form select {
+            border: 1px solid #e3d4b4 !important;
+            background: #fffdf7 !important;
+            color: #1a2230 !important;
+        }
+        .crud-clientes-form input:focus,
+        .crud-clientes-form select:focus {
+            border-color: var(--lux-gold) !important;
+            box-shadow: 0 0 0 4px rgba(214, 178, 94, 0.18) !important;
+        }
+        .btn-accion-principal {
+            background: linear-gradient(135deg, #0f3d3e, #0b2c31) !important;
+            box-shadow: 0 14px 28px rgba(15, 61, 62, 0.25) !important;
+        }
+        .btn-accion-secundaria {
+            background: #c9d1dc !important;
+            color: #1a2230 !important;
+        }
     </style>
 </head>
 <body>
@@ -191,7 +281,8 @@
     <script src="../js/app.js"></script>
     <script src="../js/eventos.js"></script>
     <script src="../js/main.js"></script>
-    
+    <script src="../js/campana-notificaciones.js"></script>
+
     <!-- Script para cargar sidebar y inicializar página -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {

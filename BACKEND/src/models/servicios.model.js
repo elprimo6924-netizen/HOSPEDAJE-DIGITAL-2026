@@ -64,22 +64,15 @@ const servicio = {
             imagen_url
         } = servicio;
 
-        const sql = `
-            UPDATE servicio
-            SET NombreServicio=?, Descripcion=?, Duracion=?, CantidadMaximaPersonas=?, Costo=?, Estado=?, imagen_url=?
-            WHERE IDServicio=?
-        `;
+        const sqlActualizar = imagen_url !== undefined
+            ? `UPDATE servicio SET NombreServicio=?, Descripcion=?, Duracion=?, CantidadMaximaPersonas=?, Costo=?, Estado=?, imagen_url=? WHERE IDServicio=?`
+            : `UPDATE servicio SET NombreServicio=?, Descripcion=?, Duracion=?, CantidadMaximaPersonas=?, Costo=?, Estado=? WHERE IDServicio=?`;
 
-        const [result] = await db.query(sql, [
-            NombreServicio,
-            Descripcion,
-            Duracion,
-            CantidadMaximaPersonas,
-            Costo,
-            Estado,
-            imagen_url ?? null,
-            id
-        ]);
+        const valores = imagen_url !== undefined
+            ? [NombreServicio, Descripcion, Duracion, CantidadMaximaPersonas, Costo, Estado, imagen_url, id]
+            : [NombreServicio, Descripcion, Duracion, CantidadMaximaPersonas, Costo, Estado, id];
+
+        const [result] = await db.query(sqlActualizar, valores);
 
         return result;
 

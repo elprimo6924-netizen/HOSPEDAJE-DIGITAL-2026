@@ -2382,37 +2382,28 @@ async function cambiarEstadoServicioAdmin(id, nuevoEstado, inputToggle = null) {
     }
 
     try {
-        if (inputToggle) {
-            inputToggle.disabled = true;
-        }
+        if (inputToggle) inputToggle.disabled = true;
 
-        const payload = {
-            NombreServicio: servicio.NombreServicio,
-            Descripcion: servicio.Descripcion,
-            Duracion: servicio.Duracion,
-            CantidadMaximaPersonas: servicio.CantidadMaximaPersonas,
-            Costo: Number(servicio.Costo),
-            Estado: nuevoEstado ? 1 : 0
-        };
-
-        const resultado = await actualizarServicio(id, payload);
-        if (!resultado) {
-            throw new Error('No se pudo actualizar el estado del servicio');
-        }
+        await requestJson(
+            `/servicios/${id}/estado`,
+            { method: 'PATCH', body: { Estado: nuevoEstado ? 1 : 0 } }
+        );
 
         servicio.Estado = nuevoEstado ? 1 : 0;
         renderizarServiciosAdmin();
-        mostrarMensajeServicioAdmin(`Estado actualizado: ${servicio.NombreServicio} ${nuevoEstado ? 'activado' : 'desactivado'}.`, 'ok');
+        mostrarMensajeServicioAdmin(
+            `${nuevoEstado ? 'Activado' : 'Desactivado'}: ${servicio.NombreServicio}.`,
+            'ok'
+        );
     } catch (error) {
         console.error('Error al cambiar estado de servicio:', error);
-        if (inputToggle) {
-            inputToggle.checked = !nuevoEstado;
-        }
-        mostrarMensajeServicioAdmin(error.message || 'No se pudo actualizar el estado', 'error');
+        if (inputToggle) inputToggle.checked = !nuevoEstado;
+        mostrarMensajeServicioAdmin(
+            error.message || 'No se pudo actualizar el estado del servicio',
+            'error'
+        );
     } finally {
-        if (inputToggle) {
-            inputToggle.disabled = false;
-        }
+        if (inputToggle) inputToggle.disabled = false;
     }
 }
 

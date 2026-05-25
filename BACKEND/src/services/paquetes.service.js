@@ -6,6 +6,10 @@ const PaquetesService = {
         return await Paquetes.obtenerTodos();
     },
 
+    listarActivos: async () => {
+        return await Paquetes.obtenerActivos();
+    },
+
     obtener: async (id) => {
         return await Paquetes.obtenerPorId(id);
     },

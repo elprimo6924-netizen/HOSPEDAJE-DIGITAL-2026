@@ -8,17 +8,106 @@
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } };</script>
 
     <style>
+        :root {
+            --lux-ink: #0f1522;
+            --lux-navy: #0b1424;
+            --lux-emerald: #0f3d3e;
+            --lux-gold: #d6b25e;
+            --lux-gold-soft: #f4e6c1;
+            --lux-ivory: #f7f2e6;
+            --lux-stone: #e7dfcf;
+            --lux-shadow: 0 22px 60px rgba(15, 21, 34, 0.18);
+        }
+
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        html, body { background-color: var(--lux-navy) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
         body { font-family: var(--font-family); display: block !important; }
-        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
-        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
-        footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+        #main-wrapper {
+            background: radial-gradient(1400px 600px at 10% 0%, rgba(26, 49, 76, 0.55), transparent 60%),
+                        linear-gradient(180deg, #0b1424 0%, #0d1a2c 40%, #0f1b2b 100%) !important;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        main  { background-color: transparent !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        footer { background-color: rgba(255, 255, 255, 0.04) !important; color: #c3c8d4 !important; }
         input:disabled, select:disabled { cursor: not-allowed; background-color: #f1f5f9; }
+
+        .perfil-hero-title {
+            font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+            color: #f8f4ea;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        }
+        .perfil-hero-sub {
+            color: #cfd5e0;
+        }
+        .perfil-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #1d2c42, #0f1b2b);
+            border: 1px solid rgba(214, 178, 94, 0.45);
+            color: var(--lux-gold);
+            display: inline-grid;
+            place-items: center;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+            margin-right: 10px;
+        }
+        .perfil-card {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f6efe1 100%);
+            border: 1px solid #efe3c9;
+            box-shadow: var(--lux-shadow);
+        }
+        .perfil-section-title {
+            color: #7a5a18 !important;
+            border-bottom-color: #ead9b0 !important;
+        }
+        .perfil-field-label {
+            color: #7a8799 !important;
+            letter-spacing: 0.12em;
+        }
+        .perfil-field-box {
+            background: #fbfaf6 !important;
+            border: 1px solid #eadfca !important;
+            color: var(--lux-ink);
+        }
+        .perfil-role {
+            background: #fff6dc !important;
+            border: 1px solid #ecd39b !important;
+            color: #7a5a18 !important;
+        }
+        .perfil-edit {
+            background: linear-gradient(135deg, #d6b25e, #b78a2a) !important;
+            color: #1b1205 !important;
+            box-shadow: 0 14px 28px rgba(183, 138, 42, 0.35) !important;
+        }
+        .perfil-edit:hover {
+            filter: brightness(1.03);
+            transform: translateY(-1px);
+        }
+        .perfil-form {
+            background: linear-gradient(180deg, #fbf7ef 0%, #f4eddf 100%) !important;
+        }
+        .perfil-input {
+            border: 1px solid #e3d4b4 !important;
+            background: #fffdf7 !important;
+            color: #1a2230 !important;
+        }
+        .perfil-input:focus {
+            box-shadow: 0 0 0 4px rgba(214, 178, 94, 0.18) !important;
+            border-color: #d6b25e !important;
+        }
+        .perfil-primary {
+            background: linear-gradient(135deg, #0f3d3e, #0b2c31) !important;
+            box-shadow: 0 14px 28px rgba(15, 61, 62, 0.35) !important;
+        }
     </style>
 </head>
 <body>
@@ -37,76 +126,79 @@
             <div class="max-w-4xl mx-auto">
                 <!-- Encabezado de Perfil -->
                 <div class="text-center mb-10">
-                    <h1 class="text-3xl font-extrabold text-slate-900 mb-2">👤 Mi Perfil</h1>
-                    <p class="text-slate-500">Administra tu información personal y credenciales</p>
+                    <h1 class="text-3xl font-extrabold mb-2 perfil-hero-title">
+                        <span class="perfil-icon"><i class="fa-solid fa-user"></i></span>
+                        Mi Perfil
+                    </h1>
+                    <p class="perfil-hero-sub">Administra tu información personal y credenciales</p>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="perfil-card rounded-2xl overflow-hidden">
                     
                     <!-- MODO VISTA -->
                     <div id="profileViewMode" class="view-mode p-8 space-y-8">
                         
                         <!-- Sección 1 -->
                         <section>
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">📋 Información de Documento</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wider mb-4 border-b-2 pb-2 perfil-section-title">Información de Documento</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tipo de Documento</label>
-                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewTipoDocumento">-</div>
+                                    <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Tipo de Documento</label>
+                                    <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewTipoDocumento">-</div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Número de Documento</label>
-                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewNumeroDocumento">-</div>
+                                    <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Número de Documento</label>
+                                    <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewNumeroDocumento">-</div>
                                 </div>
                             </div>
                         </section>
 
                         <!-- Sección 2 -->
                         <section>
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">📱 Datos de Contacto</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wider mb-4 border-b-2 pb-2 perfil-section-title">Datos de Contacto</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre</label>
-                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewNombre">-</div>
+                                    <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Nombre</label>
+                                    <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewNombre">-</div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Apellido</label>
-                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewApellido">-</div>
+                                    <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Apellido</label>
+                                    <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewApellido">-</div>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Teléfono</label>
-                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewTelefono">-</div>
+                                    <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Teléfono</label>
+                                    <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewTelefono">-</div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">País</label>
-                                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewPais">-</div>
+                                    <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">País</label>
+                                    <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewPais">-</div>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Dirección</label>
-                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewDireccion">-</div>
+                                <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Dirección</label>
+                                <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewDireccion">-</div>
                             </div>
                         </section>
 
                         <!-- Sección 3 y 4 en grid -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <section>
-                                <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">🔐 Acceso</h2>
-                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label>
-                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 font-medium" id="viewEmail">-</div>
+                                <h2 class="text-sm font-bold uppercase tracking-wider mb-4 border-b-2 pb-2 perfil-section-title">Acceso</h2>
+                                <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Email</label>
+                                <div class="p-3 rounded-lg font-medium perfil-field-box" id="viewEmail">-</div>
                             </section>
                             <section>
-                                <h2 class="text-sm font-bold uppercase tracking-wider text-orange-600 mb-4 border-b-2 border-orange-100 pb-2">🔑 Rol</h2>
-                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tu Rol</label>
-                                <div class="bg-orange-50 text-orange-700 p-3 rounded-lg border border-orange-100 font-bold text-center" id="viewRol">-</div>
+                                <h2 class="text-sm font-bold uppercase tracking-wider mb-4 border-b-2 pb-2 perfil-section-title">Rol</h2>
+                                <label class="block text-xs font-bold uppercase mb-1 perfil-field-label">Tu Rol</label>
+                                <div class="p-3 rounded-lg font-bold text-center perfil-role" id="viewRol">-</div>
                             </section>
                         </div>
 
                         <!-- Botones Vista -->
                         <div class="flex flex-col md:flex-row gap-4 justify-center pt-8 border-top border-slate-100">
-                            <button type="button" id="editProfileBtn" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-amber-100 flex items-center justify-center gap-2">
+                            <button type="button" id="editProfileBtn" class="perfil-edit font-bold py-3 px-8 rounded-xl transition-all flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
                             </button>
                             <button type="button" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-bold py-3 px-8 rounded-xl transition-all flex items-center justify-center gap-2" onclick="cerrarSesion()">
@@ -116,14 +208,14 @@
                     </div>
 
                     <!-- MODO EDICIÓN -->
-                    <form id="profileForm" class="edit-mode hidden p-8 space-y-8 bg-slate-50/50">
+                    <form id="profileForm" class="edit-mode hidden p-8 space-y-8 perfil-form">
                         
                         <section>
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4 border-b-2 border-blue-100 pb-2">📋 Editar Documento</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wider mb-4 border-b-2 pb-2 perfil-section-title">Editar Documento</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label for="TipoDocumento" class="block text-sm font-semibold text-slate-700">Tipo de Documento <span class="text-red-500">*</span></label>
-                                    <select id="TipoDocumento" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                    <select id="TipoDocumento" required class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                                         <option value="">Selecciona un tipo</option>
                                         <option value="CC">Cédula de Ciudadanía</option>
                                         <option value="CE">Cédula de Extranjería</option>
@@ -133,47 +225,47 @@
                                 </div>
                                 <div class="space-y-2">
                                     <label for="NumeroDocumento" class="block text-sm font-semibold text-slate-700">Número de Documento <span class="text-red-500">*</span></label>
-                                    <input type="text" id="NumeroDocumento" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                    <input type="text" id="NumeroDocumento" required class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                                 </div>
                             </div>
                         </section>
 
                         <section>
-                            <h2 class="text-sm font-bold uppercase tracking-wider text-blue-600 mb-4 border-b-2 border-blue-100 pb-2">📱 Datos Personales</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wider mb-4 border-b-2 pb-2 perfil-section-title">Datos Personales</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                                 <div class="space-y-2">
                                     <label for="Nombre" class="block text-sm font-semibold text-slate-700">Nombre <span class="text-red-500">*</span></label>
-                                    <input type="text" id="Nombre" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                    <input type="text" id="Nombre" required class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                                 </div>
                                 <div class="space-y-2">
                                     <label for="Apellido" class="block text-sm font-semibold text-slate-700">Apellido <span class="text-red-500">*</span></label>
-                                    <input type="text" id="Apellido" required class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                    <input type="text" id="Apellido" required class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                                 <div class="space-y-2">
                                     <label for="Telefono" class="block text-sm font-semibold text-slate-700">Teléfono</label>
-                                    <input type="text" id="Telefono" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                    <input type="text" id="Telefono" class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                                 </div>
                                 <div class="space-y-2">
                                     <label for="Pais" class="block text-sm font-semibold text-slate-700">País</label>
-                                    <input type="text" id="Pais" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                    <input type="text" id="Pais" class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label for="Direccion" class="block text-sm font-semibold text-slate-700">Dirección</label>
-                                <input type="text" id="Direccion" class="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+                                <input type="text" id="Direccion" class="w-full p-3 rounded-xl outline-none transition-all perfil-input">
                             </div>
                         </section>
 
                         <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label for="Email" class="block text-sm font-semibold text-slate-400">Email (No editable)</label>
-                                <input type="email" id="Email" disabled class="w-full p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
+                                <input type="email" id="Email" disabled class="w-full p-3 rounded-xl text-slate-500 perfil-input">
                             </div>
                             <div class="space-y-2">
                                 <label for="Rol" class="block text-sm font-semibold text-slate-400">Rol (No editable)</label>
-                                <input type="text" id="Rol" disabled class="w-full p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 font-bold">
+                                <input type="text" id="Rol" disabled class="w-full p-3 rounded-xl text-slate-500 font-bold perfil-input">
                             </div>
                         </section>
 
@@ -186,7 +278,7 @@
                                 <button type="button" id="cancelEditBtn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-8 rounded-xl transition-all">
                                     Cancelar
                                 </button>
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-10 rounded-xl shadow-lg shadow-blue-200 transition-all">
+                                <button type="submit" class="perfil-primary text-white font-bold py-3 px-10 rounded-xl transition-all">
                                     ✅ Guardar Cambios
                                 </button>
                             </div>

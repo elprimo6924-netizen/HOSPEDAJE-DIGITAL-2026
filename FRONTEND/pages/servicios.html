@@ -183,27 +183,141 @@
     <script src="../js/api.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/eventos.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
+    function getIdRolActual() {
+        try {
+            const session = window.getStoredSession ? window.getStoredSession() : null;
+            if (session?.usuario?.IDRol) return Number(session.usuario.IDRol);
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.IDRol) return Number(user.IDRol);
+            return 0;
+        } catch { return 0; }
+    }
 
-                if (!session) {
-                    window.location.href = '../login.html';
-                    return;
-                }
+    const SVC_ICONOS = {
+        'spa': 'fa-spa', 'masaje': 'fa-hand-holding-heart', 'restaurante': 'fa-utensils',
+        'gym': 'fa-dumbbell', 'gimnasio': 'fa-dumbbell', 'piscina': 'fa-water-ladder',
+        'lavanderia': 'fa-shirt', 'lavandería': 'fa-shirt', 'transporte': 'fa-van-shuttle',
+        'tour': 'fa-map-location-dot', 'servicio': 'fa-concierge-bell', 'bar': 'fa-martini-glass',
+    };
+    function getSvcIcono(nombre) {
+        const n = (nombre || '').toLowerCase();
+        for (const [k, v] of Object.entries(SVC_ICONOS)) { if (n.includes(k)) return v; }
+        return 'fa-concierge-bell';
+    }
 
-                await window.loadSidebarComponent('sidebar-placeholder');
-                await window.filterSidebarByPermissions();
+    async function cargarCatalogoServicios() {
+        const seccion = document.getElementById('seccion-administrar-servicios');
+        if (seccion) {
+            const layout = seccion.querySelector('.crud-servicios-layout');
+            if (layout) layout.style.display = 'none';
+        }
+        const btnNuevo = document.getElementById('btn-nuevo-servicio-admin');
+        if (btnNuevo) btnNuevo.style.display = 'none';
 
-                // Cargar servicios
+        const titulo = document.querySelector('.mod-toolbar-title');
+        if (titulo) titulo.innerHTML = '<i class="fa-solid fa-bell-concierge" style="color:#ff6a1a;margin-right:.4rem"></i> Servicios Disponibles';
+        const sub = document.querySelector('.mod-toolbar-subtitle');
+        if (sub) sub.textContent = 'Servicios y amenidades incluidos en tu estadía.';
+
+        let catalogo = document.getElementById('catalogo-servicios-cliente');
+        if (!catalogo) {
+            catalogo = document.createElement('div');
+            catalogo.id = 'catalogo-servicios-cliente';
+            catalogo.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.1rem;padding:.25rem 0;';
+            document.querySelector('main')?.appendChild(catalogo);
+        }
+
+        catalogo.innerHTML = Array(8).fill(
+            `<div style="background:#fff;border-radius:16px;border:1px solid #e8edf2;padding:1.25rem">` +
+            `<div style="width:52px;height:52px;background:#f1f5f9;border-radius:14px;margin-bottom:.85rem"></div>` +
+            `<div style="height:15px;background:#f1f5f9;border-radius:6px;width:70%;margin-bottom:.5rem"></div>` +
+            `<div style="height:11px;background:#f1f5f9;border-radius:6px;width:90%;margin-bottom:.3rem"></div>` +
+            `<div style="height:11px;background:#f1f5f9;border-radius:6px;width:60%"></div></div>`
+        ).join('');
+
+        try {
+            let lista = null;
+            try { lista = await requestJson('/servicios/activos'); } catch { /* fallback */ }
+            if (!Array.isArray(lista) || !lista.length) {
+                const todos = await requestJson('/servicios');
+                lista = Array.isArray(todos) ? todos.filter(s => s.Estado == 1) : [];
+            }
+
+            if (!lista.length) {
+                catalogo.innerHTML =
+                    `<div style="grid-column:1/-1;text-align:center;padding:5rem 1rem;color:#94a3b8">` +
+                    `<i class="fa-solid fa-bell-concierge" style="font-size:3rem;margin-bottom:1rem;display:block;opacity:.3"></i>` +
+                    `<p style="font-size:.9rem;font-weight:600">No hay servicios disponibles en este momento.</p></div>`;
+                return;
+            }
+
+            catalogo.innerHTML = lista.map(s => {
+                const icono   = getSvcIcono(s.NombreServicio);
+                const costo   = Number(s.Costo || 0);
+                const precio  = costo === 0 ? 'Incluido' : '$' + costo.toLocaleString('es-CO');
+                const precioColor = costo === 0 ? '#166534' : '#0f3d3e';
+                const precioBg    = costo === 0 ? '#f0fdf4'  : 'transparent';
+                const durMin  = s.Duracion ? `${s.Duracion} min` : '';
+                const cap     = s.CantidadMaximaPersonas ? `Máx. ${s.CantidadMaximaPersonas} pers.` : '';
+                const meta    = [durMin, cap].filter(Boolean).join(' · ');
+                return (
+                    `<div style="background:#fff;border-radius:16px;border:1px solid #e8edf2;padding:1.25rem 1.3rem;` +
+                    `box-shadow:0 1px 4px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s"` +
+                    ` onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 28px rgba(15,61,62,.1)'"` +
+                    ` onmouseleave="this.style.transform='';this.style.boxShadow='0 1px 4px rgba(0,0,0,.04)'">` +
+                    `<div style="width:52px;height:52px;background:rgba(15,61,62,.08);border-radius:14px;` +
+                    `display:flex;align-items:center;justify-content:center;margin-bottom:.9rem">` +
+                    `<i class="fa-solid ${icono}" style="font-size:1.25rem;color:#0f3d3e"></i></div>` +
+                    `<h4 style="font-weight:700;font-size:.92rem;color:#0f172a;margin:0 0 .35rem">${s.NombreServicio}</h4>` +
+                    `<p style="font-size:.78rem;color:#64748b;line-height:1.5;margin:0 0 .85rem;display:-webkit-box;` +
+                    `-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${s.Descripcion || ''}</p>` +
+                    (meta ? `<p style="font-size:.7rem;color:#94a3b8;margin:0 0 .7rem"><i class="fa-regular fa-clock" style="margin-right:.25rem"></i>${meta}</p>` : '') +
+                    `<div style="display:flex;align-items:center;justify-content:space-between;gap:.65rem;` +
+                    `padding-top:.75rem;border-top:1px solid #f1f5f9">` +
+                    `<div style="display:inline-flex;align-items:center;padding:.25rem .7rem;border-radius:999px;` +
+                    `background:${precioBg};border:1px solid ${costo===0?'#bbf7d0':'#d1fae5'};` +
+                    `font-size:.78rem;font-weight:700;color:${precioColor}">${precio}</div>` +
+                    `<button onclick="cargarSeccion('reservas')"` +
+                    ` style="display:inline-flex;align-items:center;gap:.4rem;background:#0f3d3e;color:#fff;border:none;` +
+                    `padding:.5rem 1rem;border-radius:10px;font-size:.78rem;font-weight:700;cursor:pointer;` +
+                    `transition:background .2s;box-shadow:0 4px 12px rgba(15,61,62,.25)"` +
+                    ` onmouseenter="this.style.background='#1a5c5e'" onmouseleave="this.style.background='#0f3d3e'">` +
+                    `<i class="fa-solid fa-calendar-plus"></i> Reservar</button>` +
+                    `</div>` +
+                    `</div>`
+                );
+            }).join('');
+        } catch {
+            catalogo.innerHTML =
+                `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#dc2626">` +
+                `<i class="fa-solid fa-circle-exclamation" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>` +
+                `<p style="font-size:.85rem">Error al cargar los servicios. Por favor recarga la página.</p></div>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
+            if (!session) { window.location.href = '../login.html'; return; }
+
+            await window.loadSidebarComponent('sidebar-placeholder');
+            await window.filterSidebarByPermissions();
+
+            const esAdmin = getIdRolActual() === 1;
+
+            if (esAdmin) {
                 if (typeof cargarServiciosAdmin === 'function') {
                     cargarServiciosAdmin();
                 }
-            } catch (error) {
-                console.error('Error en servicios.html:', error);
+            } else {
+                cargarCatalogoServicios();
             }
-        });
+        } catch (error) {
+            console.error('Error en servicios.html:', error);
+        }
+    });
     </script>
 </body>
 </html>

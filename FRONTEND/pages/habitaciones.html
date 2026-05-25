@@ -176,27 +176,140 @@
     <script src="../js/api.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/eventos.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
+    function getIdRolActual() {
+        try {
+            const session = window.getStoredSession ? window.getStoredSession() : null;
+            if (session?.usuario?.IDRol) return Number(session.usuario.IDRol);
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.IDRol) return Number(user.IDRol);
+            return 0;
+        } catch { return 0; }
+    }
 
-                if (!session) {
-                    window.location.href = '../login.html';
-                    return;
-                }
+    const IMGS_HAB = [
+        'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80',
+        'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&q=80',
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80',
+        'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=80',
+        'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&q=80',
+        'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&q=80',
+    ];
 
-                await window.loadSidebarComponent('sidebar-placeholder');
-                await window.filterSidebarByPermissions();
+    async function cargarCatalogoHabitaciones() {
+        const seccion = document.getElementById('seccion-administrar-habitaciones');
+        if (seccion) {
+            const layout = seccion.querySelector('.crud-habitaciones-layout');
+            if (layout) layout.style.display = 'none';
+        }
+        const btnNuevo = document.getElementById('btn-nueva-habitacion-admin');
+        if (btnNuevo) btnNuevo.style.display = 'none';
 
-                // Cargar habitaciones
+        const titulo = document.querySelector('.mod-toolbar-title');
+        if (titulo) titulo.innerHTML = '<i class="fa-solid fa-bed" style="color:#0f3d3e;margin-right:.4rem"></i> Habitaciones Disponibles';
+        const sub = document.querySelector('.mod-toolbar-subtitle');
+        if (sub) sub.textContent = 'Consulta disponibilidad y elige la habitación ideal para tu estadía.';
+
+        let catalogo = document.getElementById('catalogo-habitaciones-cliente');
+        if (!catalogo) {
+            catalogo = document.createElement('div');
+            catalogo.id = 'catalogo-habitaciones-cliente';
+            catalogo.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;padding:.25rem 0;';
+            document.querySelector('main')?.appendChild(catalogo);
+        }
+
+        catalogo.innerHTML = Array(6).fill(
+            `<div style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #e8edf2">` +
+            `<div style="height:200px;background:#f1f5f9"></div>` +
+            `<div style="padding:1.25rem"><div style="height:16px;background:#f1f5f9;border-radius:6px;width:65%;margin-bottom:.6rem"></div>` +
+            `<div style="height:12px;background:#f1f5f9;border-radius:6px;width:80%;margin-bottom:1.25rem"></div>` +
+            `<div style="height:38px;background:#f1f5f9;border-radius:10px"></div></div></div>`
+        ).join('');
+
+        try {
+            let lista = null;
+            try { lista = await requestJson('/habitaciones/disponibles'); } catch { /* fallback */ }
+            if (!Array.isArray(lista) || !lista.length) {
+                const todos = await requestJson('/habitaciones');
+                lista = Array.isArray(todos) ? todos.filter(h => h.Estado == 1 || h.Estado === true) : [];
+            }
+
+            if (!lista.length) {
+                catalogo.innerHTML =
+                    `<div style="grid-column:1/-1;text-align:center;padding:5rem 1rem;color:#94a3b8">` +
+                    `<i class="fa-solid fa-door-closed" style="font-size:3rem;margin-bottom:1rem;display:block;opacity:.3"></i>` +
+                    `<p style="font-size:.9rem;font-weight:600">No hay habitaciones disponibles en este momento.</p></div>`;
+                return;
+            }
+
+            catalogo.innerHTML = lista.map((h, i) => {
+                const src    = (h.ImagenHabitacion || '').split(',')[0].trim() || IMGS_HAB[i % IMGS_HAB.length];
+                const precio = Number(h.PrecioPorNoche || h.Costo || 0).toLocaleString('es-CO');
+                const tipo   = h.TipoHabitacion || h.Tipo || '';
+                const desc   = h.Descripcion || '';
+                return (
+                    `<article style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #e8edf2;` +
+                    `box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .25s,box-shadow .25s"` +
+                    ` onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 40px rgba(15,61,62,.12)'"` +
+                    ` onmouseleave="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,.05)'">` +
+                    `<div style="position:relative;height:200px;overflow:hidden">` +
+                    `<img src="${src}" alt="${h.NombreHabitacion || 'Habitación'}"` +
+                    ` style="width:100%;height:100%;object-fit:cover;transition:transform .5s"` +
+                    ` onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform=''"` +
+                    ` onerror="this.src='${IMGS_HAB[0]}'">` +
+                    `<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.35),transparent)"></div>` +
+                    (tipo ? `<span style="position:absolute;bottom:10px;left:12px;background:rgba(255,255,255,.92);` +
+                    `backdrop-filter:blur(4px);font-size:.72rem;font-weight:700;color:#0f3d3e;padding:.2rem .65rem;border-radius:999px">${tipo}</span>` : '') +
+                    `<span style="position:absolute;top:10px;right:12px;background:#dcfce7;` +
+                    `font-size:.7rem;font-weight:700;color:#166534;padding:.2rem .65rem;border-radius:999px">Disponible</span>` +
+                    `</div>` +
+                    `<div style="padding:1.25rem 1.3rem">` +
+                    `<h3 style="font-weight:800;font-size:1rem;color:#0f172a;margin:0 0 .3rem">${h.NombreHabitacion || 'Habitación'}</h3>` +
+                    `<p style="color:#64748b;font-size:.82rem;line-height:1.5;margin:0 0 1rem;display:-webkit-box;` +
+                    `-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${desc}</p>` +
+                    `<div style="display:flex;align-items:center;justify-content:space-between;` +
+                    `padding-top:.85rem;border-top:1px solid #f1f5f9">` +
+                    `<div><span style="font-size:1.45rem;font-weight:800;color:#0f3d3e">$${precio}</span>` +
+                    `<span style="font-size:.72rem;color:#94a3b8;margin-left:.25rem">/ noche</span></div>` +
+                    `<button onclick="cargarSeccion('reservas')"` +
+                    ` style="display:inline-flex;align-items:center;gap:.4rem;background:#0f3d3e;color:#fff;border:none;` +
+                    `padding:.55rem 1.1rem;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;` +
+                    `transition:background .2s;box-shadow:0 4px 12px rgba(15,61,62,.25)"` +
+                    ` onmouseenter="this.style.background='#1a5c5e'" onmouseleave="this.style.background='#0f3d3e'">` +
+                    `<i class="fa-solid fa-calendar-plus"></i> Reservar</button>` +
+                    `</div></div></article>`
+                );
+            }).join('');
+        } catch {
+            catalogo.innerHTML =
+                `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#dc2626">` +
+                `<i class="fa-solid fa-circle-exclamation" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>` +
+                `<p style="font-size:.85rem">Error al cargar las habitaciones. Por favor recarga la página.</p></div>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
+            if (!session) { window.location.href = '../login.html'; return; }
+
+            await window.loadSidebarComponent('sidebar-placeholder');
+            await window.filterSidebarByPermissions();
+
+            const esAdmin = getIdRolActual() === 1;
+
+            if (esAdmin) {
                 if (typeof cargarHabitacionesAdmin === 'function') {
                     cargarHabitacionesAdmin();
                 }
-            } catch (error) {
-                console.error('Error en habitaciones.html:', error);
+            } else {
+                cargarCatalogoHabitaciones();
             }
-        });
+        } catch (error) {
+            console.error('Error en habitaciones.html:', error);
+        }
+    });
     </script>
 </body>
 </html>

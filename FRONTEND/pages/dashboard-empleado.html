@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio — Hospedaje Digital</title>
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background-color: #f8fafb !important; color: #1a2332 !important; margin: 0 !important; padding: 0 !important; }
+        body { font-family: var(--font-family); display: block !important; }
+        #main-wrapper { background-color: #f8fafb !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main { background-color: transparent !important; padding: 0 !important; flex: 1; }
+        footer { background-color: #f1f5f9 !important; color: #6b7a8d !important; }
+
+        /* ── Hero ── */
+        .emp-hero {
+            background: linear-gradient(135deg, #0f3d3e 0%, #1a5c5e 60%, #0f3d3e 100%);
+            padding: 2.5rem 1.75rem 2.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .emp-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        .emp-hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        .emp-hero-left { flex: 1; min-width: 0; }
+        .emp-hero-saludo {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.2;
+            margin: 0 0 0.4rem;
+            letter-spacing: 0.01em;
+        }
+        .emp-hero-sub {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.6);
+            margin: 0 0 1rem;
+        }
+        .emp-hero-reloj-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 999px;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.88);
+            font-weight: 500;
+        }
+        .emp-hero-avatar {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: rgba(255,106,26,0.18);
+            border: 2.5px solid rgba(255,106,26,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff6a1a;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            user-select: none;
+        }
+
+        /* ── Content wrapper ── */
+        .emp-main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.75rem 1.75rem 2rem;
+            width: 100%;
+        }
+
+        /* ── Section label ── */
+        .emp-section-label {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #94a3b8;
+            margin: 0 0 0.85rem;
+        }
+        .emp-section-label i { color: #0f3d3e; margin-right: 0.35rem; }
+
+        /* ── Quick actions ── */
+        .emp-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+        .emp-action-card {
+            background: #ffffff;
+            border: 1px solid #e8edf2;
+            border-radius: 18px;
+            padding: 1.4rem 1.25rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .emp-action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+            border-color: rgba(15,61,62,0.22);
+        }
+        .emp-action-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+        .emp-action-title {
+            font-weight: 700;
+            font-size: 0.93rem;
+            color: #1a2332;
+            margin: 0 0 0.3rem;
+        }
+        .emp-action-desc {
+            font-size: 0.78rem;
+            color: #6b7a8d;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* ── Two-column panel ── */
+        .emp-panel-row {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 1.25rem;
+        }
+        .emp-card {
+            background: #ffffff;
+            border: 1px solid #e8edf2;
+            border-radius: 18px;
+            overflow: hidden;
+        }
+        .emp-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.3rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafbfc;
+        }
+        .emp-card-head h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #1a2332;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .emp-card-head h3 i { color: #0f3d3e; font-size: 0.82rem; }
+        .emp-card-link {
+            font-size: 0.77rem;
+            color: #0f3d3e;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border: none;
+            background: none;
+            padding: 0;
+            transition: color 0.15s;
+        }
+        .emp-card-link:hover { color: #ff6a1a; }
+        .emp-card-body { padding: 1.1rem 1.3rem; }
+
+        /* ── Reservas table ── */
+        .emp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .emp-table thead th {
+            background: #f8fafc;
+            color: #6b7a8d;
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.69rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #e8edf2;
+            white-space: nowrap;
+            font-weight: 700;
+        }
+        .emp-table tbody td {
+            padding: 0.7rem 0.8rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1a2332;
+            vertical-align: middle;
+        }
+        .emp-table tbody tr:last-child td { border-bottom: none; }
+        .emp-table tbody tr:hover td { background: #fafafa; }
+
+        /* ── Estado badges ── */
+        .ebadge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.18rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .ebadge-confirmada { background: #dcfce7; color: #166534; }
+        .ebadge-pendiente  { background: #fef3c7; color: #92400e; }
+        .ebadge-cancelada  { background: #fee2e2; color: #991b1b; }
+        .ebadge-completada { background: #dbeafe; color: #1e40af; }
+        .ebadge-encurso    { background: #f0fdfa; color: #0f766e; }
+        .ebadge-default    { background: #f1f5f9; color: #475569; }
+
+        /* ── Habitaciones list ── */
+        .emp-hab-list { display: flex; flex-direction: column; gap: 0.65rem; }
+        .emp-hab-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.7rem 0.9rem;
+            border-radius: 12px;
+            background: #f8fafb;
+            border: 1px solid #eef1f4;
+            transition: background 0.15s;
+        }
+        .emp-hab-item:hover { background: #f0f6f6; border-color: rgba(15,61,62,0.15); }
+        .emp-hab-nombre { font-weight: 600; font-size: 0.83rem; color: #1a2332; }
+        .emp-hab-tipo   { font-size: 0.69rem; color: #94a3b8; margin-top: 0.1rem; }
+        .emp-hab-right  { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0; }
+        .emp-hab-precio { font-size: 0.8rem; font-weight: 700; color: #0f3d3e; }
+        .emp-hab-precio small { font-weight: 400; color: #94a3b8; font-size: 0.65rem; }
+        .ebadge-disponible {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #166534;
+            background: #dcfce7;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+        }
+
+        /* ── Skeleton ── */
+        .skeleton {
+            background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* ── Empty state ── */
+        .emp-empty {
+            text-align: center;
+            padding: 2.25rem 1rem;
+            color: #94a3b8;
+        }
+        .emp-empty i { font-size: 2.2rem; margin-bottom: 0.6rem; display: block; opacity: 0.35; }
+        .emp-empty p { font-size: 0.82rem; margin: 0; }
+
+        /* ── Motivational footer band ── */
+        .emp-frase-band {
+            padding: 1.1rem 1.75rem;
+            background: #f1f5f9;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .emp-frase-text {
+            font-size: 0.8rem;
+            color: #6b7a8d;
+            font-style: italic;
+            flex: 1;
+            min-width: 200px;
+        }
+        .emp-frase-meta {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            text-align: right;
+            white-space: nowrap;
+            line-height: 1.6;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 960px) {
+            .emp-actions-grid { grid-template-columns: repeat(2, 1fr); }
+            .emp-panel-row    { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 540px) {
+            .emp-hero-saludo  { font-size: 1.5rem; }
+            .emp-hero-avatar  { width: 58px; height: 58px; font-size: 1.5rem; }
+        }
+        @media (max-width: 400px) {
+            .emp-actions-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar-placeholder"></div>
+
+    <div id="main-wrapper" class="main-wrapper">
+        <header>
+            <nav>
+                <h1><i class="fa-solid fa-hotel" aria-hidden="true"></i> Hospedaje Digital</h1>
+            </nav>
+        </header>
+
+        <main>
+            <!-- ── Hero de bienvenida ── -->
+            <section class="emp-hero">
+                <div class="emp-hero-inner">
+                    <div class="emp-hero-left">
+                        <h2 class="emp-hero-saludo" id="emp-saludo">Bienvenido</h2>
+                        <p class="emp-hero-sub">¿Qué necesitas gestionar hoy?</p>
+                        <span class="emp-hero-reloj-pill">
+                            <i class="fa-regular fa-clock"></i>
+                            <span id="emp-reloj">--:--</span>
+                            <span style="opacity:.5">&nbsp;·&nbsp;</span>
+                            <span id="emp-fecha-texto">---</span>
+                        </span>
+                    </div>
+                    <div class="emp-hero-avatar" id="emp-avatar" aria-hidden="true">?</div>
+                </div>
+            </section>
+
+            <!-- ── Contenido principal ── -->
+            <div class="emp-main">
+
+                <!-- Acciones rápidas -->
+                <p class="emp-section-label"><i class="fa-solid fa-bolt"></i>Acciones rápidas</p>
+                <div class="emp-actions-grid" role="list">
+
+                    <div class="emp-action-card" role="listitem" tabindex="0"
+                         onclick="cargarSeccion('reservas')"
+                         onkeydown="if(event.key==='Enter')cargarSeccion('reservas')"
+                         aria-label="Nueva Reserva">
+                        <div class="emp-action-icon" style="background:rgba(15,61,62,0.1)">
+                            <i class="fa-solid fa-calendar-plus" style="color:#0f3d3e"></i>
+                        </div>
+                        <p class="emp-action-title">Nueva Reserva</p>
+                        <p class="emp-action-desc">Registra una reserva para un huésped</p>
+                    </div>
+
+                    <div class="emp-action-card" role="listitem" tabindex="0"
+                         onclick="cargarSeccion('administrar-habitaciones')"
+                         onkeydown="if(event.key==='Enter')cargarSeccion('administrar-habitaciones')"
+                         aria-label="Ver Habitaciones">
+                        <div class="emp-action-icon" style="background:rgba(15,61,62,0.1)">
+                            <i class="fa-solid fa-bed" style="color:#0f3d3e"></i>
+                        </div>
+                        <p class="emp-action-title">Habitaciones</p>
+                        <p class="emp-action-desc">Consulta disponibilidad y estado</p>
+                    </div>
+
+                    <div class="emp-action-card" role="listitem" tabindex="0"
+                         onclick="cargarSeccion('paquetes')"
+                         onkeydown="if(event.key==='Enter')cargarSeccion('paquetes')"
+                         aria-label="Ver Paquetes">
+                        <div class="emp-action-icon" style="background:rgba(255,106,26,0.1)">
+                            <i class="fa-solid fa-box-open" style="color:#ff6a1a"></i>
+                        </div>
+                        <p class="emp-action-title">Paquetes</p>
+                        <p class="emp-action-desc">Explora paquetes disponibles</p>
+                    </div>
+
+                    <div class="emp-action-card" role="listitem" tabindex="0"
+                         onclick="cargarSeccion('perfil')"
+                         onkeydown="if(event.key==='Enter')cargarSeccion('perfil')"
+                         aria-label="Mi Perfil">
+                        <div class="emp-action-icon" style="background:rgba(74,144,226,0.1)">
+                            <i class="fa-solid fa-user-gear" style="color:#4A90E2"></i>
+                        </div>
+                        <p class="emp-action-title">Mi Perfil</p>
+                        <p class="emp-action-desc">Actualiza tu información personal</p>
+                    </div>
+
+                </div>
+
+                <!-- Panel central dos columnas -->
+                <div class="emp-panel-row">
+
+                    <!-- Reservas recientes -->
+                    <div class="emp-card">
+                        <div class="emp-card-head">
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial de Reservas</h3>
+                            <button class="emp-card-link" onclick="cargarSeccion('reservas')" type="button">
+                                Ver todas <i class="fa-solid fa-arrow-right" style="font-size:.65rem"></i>
+                            </button>
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table class="emp-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Paquete / Habitación</th>
+                                        <th>Habitación</th>
+                                        <th>Fechas</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="emp-tbody-reservas">
+                                    <tr>
+                                        <td colspan="5">
+                                            <div class="emp-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Cargando reservas...</p></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Habitaciones disponibles -->
+                    <div class="emp-card">
+                        <div class="emp-card-head">
+                            <h3><i class="fa-solid fa-door-open"></i> Disponibles Ahora</h3>
+                            <button class="emp-card-link" onclick="cargarSeccion('administrar-habitaciones')" type="button">
+                                Ver todas <i class="fa-solid fa-arrow-right" style="font-size:.65rem"></i>
+                            </button>
+                        </div>
+                        <div class="emp-card-body">
+                            <div class="emp-hab-list" id="emp-hab-list">
+                                <div class="skeleton" style="height:54px;border-radius:12px"></div>
+                                <div class="skeleton" style="height:54px;border-radius:12px;opacity:.7"></div>
+                                <div class="skeleton" style="height:54px;border-radius:12px;opacity:.45"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <!-- Banda de frase motivacional -->
+        <div class="emp-frase-band">
+            <p class="emp-frase-text" id="emp-frase"></p>
+            <div class="emp-frase-meta">
+                <div style="font-weight:600;color:#6b7a8d">Hospedaje Digital</div>
+                <div>v1.0</div>
+            </div>
+        </div>
+
+        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/campana-notificaciones.js"></script>
+    <script>
+    // ── Dashboard Empleado ──────────────────────────────────────────────
+
+    const EMP_FRASES = [
+        '"Cada huésped que llega es una nueva historia que comienza."',
+        '"La hospitalidad es el arte de hacer sentir a todos como en casa."',
+        '"Un servicio excepcional comienza con cada pequeño detalle."',
+        '"Crear momentos memorables es nuestra razón de ser."',
+        '"La calidez humana es el lujo más genuino que podemos ofrecer."',
+    ];
+
+    function empGetSaludo() {
+        const h = new Date().getHours();
+        if (h >= 5  && h < 12) return 'Buenos días';
+        if (h >= 12 && h < 19) return 'Buenas tardes';
+        return 'Buenas noches';
+    }
+
+    function empActualizarReloj() {
+        const el = document.getElementById('emp-reloj');
+        if (el) el.textContent = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function empFmtFechaCorta(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        return isNaN(d) ? '—' : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+    }
+
+    function empFmtCOP(valor) {
+        return '$' + Number(valor || 0).toLocaleString('es-CO');
+    }
+
+    function empBadgeReserva(estado) {
+        const n = (estado || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        if (n.includes('confirmad')) return `<span class="ebadge ebadge-confirmada">${estado}</span>`;
+        if (n.includes('pendiente')) return `<span class="ebadge ebadge-pendiente">${estado}</span>`;
+        if (n.includes('cancelad'))  return `<span class="ebadge ebadge-cancelada">${estado}</span>`;
+        if (n.includes('completad')) return `<span class="ebadge ebadge-completada">${estado}</span>`;
+        if (n.includes('curso'))     return `<span class="ebadge ebadge-encurso">${estado}</span>`;
+        return `<span class="ebadge ebadge-default">${estado || '—'}</span>`;
+    }
+
+    async function cargarReservasRecientes() {
+        const tbody = document.getElementById('emp-tbody-reservas');
+        if (!tbody) return;
+
+        const msgVacio = `<tr>
+            <td colspan="5" style="text-align:center;padding:2.5rem 1rem;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:.75rem">
+                    <i class="fa-regular fa-calendar-xmark"
+                       style="font-size:2.2rem;color:#cbd5e1"></i>
+                    <p style="margin:0;font-size:.9rem;font-weight:600;color:#64748b">
+                        Aún no tiene reservas registradas
+                    </p>
+                    <p style="margin:0;font-size:.78rem;color:#94a3b8">
+                        Cuando realice una reserva aparecerá aquí su historial
+                    </p>
+                    <button onclick="cargarSeccion('reservas')"
+                        style="margin-top:.5rem;background:#0f3d3e;color:white;border:none;
+                               padding:.5rem 1.25rem;border-radius:.75rem;
+                               font-size:.8rem;font-weight:600;cursor:pointer">
+                        <i class="fa-solid fa-calendar-plus"></i> Hacer una reserva
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+
+        try {
+            const data  = await requestJson('/reservas/mis-reservas');
+            const lista = Array.isArray(data) ? data.slice(0, 5) : [];
+
+            if (lista.length === 0) {
+                tbody.innerHTML = msgVacio;
+                return;
+            }
+
+            tbody.innerHTML = lista.map(r => `
+                <tr>
+                    <td><strong style="color:#0f3d3e;font-size:.8rem">#${r.IDReserva || r.IdReserva || r.id || '?'}</strong></td>
+                    <td style="font-size:.78rem;color:#6b7a8d">${r.Paquetes || r.NombrePaquete || '—'}</td>
+                    <td style="font-size:.78rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.NombreHabitacion || r.habitacion || '—'}</td>
+                    <td style="font-size:.74rem;color:#94a3b8;white-space:nowrap">
+                        ${empFmtFechaCorta(r.FechaInicio)} → ${empFmtFechaCorta(r.FechaFinalizacion)}
+                    </td>
+                    <td>${empBadgeReserva(r.NombreEstadoReserva || r.estado || r.Estado)}</td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.warn('[Dashboard] No se pudieron cargar reservas:', error.message);
+            tbody.innerHTML = msgVacio;
+        }
+    }
+
+    async function cargarHabitacionesDisponibles() {
+        const container = document.getElementById('emp-hab-list');
+        if (!container) return;
+        try {
+            const data  = await requestJson('/habitaciones/disponibles');
+            const lista = Array.isArray(data) ? data.slice(0, 5) : [];
+
+            if (lista.length === 0) {
+                container.innerHTML = `<div class="emp-empty">
+                    <i class="fa-solid fa-door-closed"></i>
+                    <p>No hay habitaciones disponibles</p>
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = lista.map(h => `
+                <div class="emp-hab-item">
+                    <div style="min-width:0;flex:1">
+                        <div class="emp-hab-nombre" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            ${h.NombreHabitacion || h.Nombre || 'Habitación'}
+                        </div>
+                        <div class="emp-hab-tipo">${h.TipoHabitacion || h.Tipo || ''}</div>
+                    </div>
+                    <div class="emp-hab-right">
+                        <span class="ebadge-disponible">Disponible</span>
+                        <span class="emp-hab-precio">
+                            ${empFmtCOP(h.PrecioPorNoche || h.Precio)}
+                            <small>/noche</small>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        } catch {
+            container.innerHTML = `<div class="emp-empty">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <p>No se pudo cargar habitaciones</p>
+            </div>`;
+        }
+    }
+
+    function initDashboardEmpleado() {
+        const session = window.getStoredSession ? window.getStoredSession() : null;
+        if (!session) { window.location.href = '../login.html'; return; }
+
+        const user      = session.usuario || {};
+        const firstName = (user.NombreUsuario || user.Nombre || user.nombre || '').trim();
+        const inicial   = firstName ? firstName.charAt(0).toUpperCase() : 'U';
+
+        const saludoEl = document.getElementById('emp-saludo');
+        const avatarEl = document.getElementById('emp-avatar');
+        const fechaEl  = document.getElementById('emp-fecha-texto');
+        const fraseEl  = document.getElementById('emp-frase');
+
+        if (saludoEl) saludoEl.textContent = `${empGetSaludo()}, ${firstName || 'bienvenido'}`;
+        if (avatarEl) avatarEl.textContent  = inicial;
+        if (fechaEl)  fechaEl.textContent   = new Date().toLocaleDateString('es-CO', {
+            weekday: 'long', day: '2-digit', month: 'long'
+        });
+        if (fraseEl)  fraseEl.textContent   = EMP_FRASES[Math.floor(Math.random() * EMP_FRASES.length)];
+
+        empActualizarReloj();
+        setInterval(empActualizarReloj, 1000);
+
+        window.loadSidebarComponent('sidebar-placeholder');
+
+        Promise.allSettled([
+            cargarReservasRecientes(),
+            cargarHabitacionesDisponibles(),
+        ]);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDashboardEmpleado);
+    } else {
+        initDashboardEmpleado();
+    }
+    </script>
+</body>
+</html>
