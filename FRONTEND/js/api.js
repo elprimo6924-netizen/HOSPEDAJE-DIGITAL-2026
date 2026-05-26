@@ -2,6 +2,15 @@
 // FUNCIONES DE API - SOLO BACKEND REAL
 // ============================================
 
+// Silenciar el warning de Tailwind CDN (se usa CDN intencionalmente)
+;(function () {
+    const _warn = console.warn.bind(console);
+    console.warn = (...args) => {
+        if (typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        _warn(...args);
+    };
+})();
+
 const API_BASE_URL = (typeof CONFIG !== 'undefined' && CONFIG.API_URL)
     ? CONFIG.API_URL
     : 'http://localhost:3000/api';
