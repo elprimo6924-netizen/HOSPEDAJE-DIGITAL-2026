@@ -191,13 +191,12 @@ function buildItemHTML(tipo, item) {
 function actualizarBadge(badge, cantidad) {
     if (cantidad > 0) {
         badge.textContent = cantidad > 99 ? '99+' : cantidad;
-        // flex se añade aquí para no conflictuar con hidden en el HTML estático
+        badge.style.display = 'flex';
         badge.classList.remove('hidden');
-        badge.classList.add('flex');
         badge.classList.add('animate-bounce');
         setTimeout(() => badge.classList.remove('animate-bounce'), 1500);
     } else {
-        badge.classList.remove('flex');
+        badge.style.display = 'none';
         badge.classList.add('hidden');
     }
 }
@@ -344,15 +343,68 @@ async function marcarComoLeido() {
 
     const badge = document.getElementById('campana-badge');
     if (badge) {
-        badge.classList.remove('flex');
+        badge.style.display = 'none';
         badge.classList.add('hidden');
     }
+}
+
+// ── INYECTAR CAMPANA EN HEADER ────────────────
+
+function inyectarCampanaEnHeader() {
+    if (document.getElementById('btn-campana')) return;
+    const nav = document.querySelector('header nav');
+    if (!nav) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'campana-header';
+    wrapper.style.cssText = 'position:relative;display:flex;align-items:center;margin-left:auto;flex-shrink:0';
+    wrapper.innerHTML = `
+      <button id="btn-campana"
+        style="position:relative;display:flex;align-items:center;justify-content:center;
+               width:2.6rem;height:2.6rem;border-radius:0.75rem;border:none;cursor:pointer;
+               background:rgba(255,255,255,0.12);transition:background 0.2s,transform 0.2s"
+        onmouseenter="this.style.background='rgba(255,255,255,0.22)';this.style.transform='translateY(-1px)'"
+        onmouseleave="this.style.background='rgba(255,255,255,0.12)';this.style.transform=''"
+        aria-label="Notificaciones">
+        <i class="fa-solid fa-bell" style="color:#fff;font-size:1rem"></i>
+        <span id="campana-badge"
+          style="position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;
+                 padding:0 4px;background:#ef4444;color:#fff;font-size:10px;
+                 font-weight:700;border-radius:999px;display:none;
+                 align-items:center;justify-content:center;
+                 box-shadow:0 0 0 2px var(--color-primary,#0f3d3e)">
+          0
+        </span>
+      </button>
+
+      <div id="panel-notificaciones"
+        class="hidden fixed w-80 bg-[#1e2a3a] border border-white/10 rounded-2xl
+               shadow-2xl shadow-black/40 overflow-hidden"
+        style="z-index:2010">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <span class="text-white font-semibold text-sm">Notificaciones</span>
+          <button id="btn-marcar-leidas"
+            class="text-white/50 hover:text-white text-xs transition-colors cursor-pointer border-0 bg-transparent">
+            Marcar todo como leído
+          </button>
+        </div>
+        <ul id="lista-notificaciones"
+          class="max-h-72 overflow-y-auto divide-y divide-white/5 p-0 m-0 list-none">
+          <li class="px-4 py-8 text-center text-white/40 text-sm">Sin notificaciones nuevas</li>
+        </ul>
+        <div class="px-4 py-2.5 border-t border-white/10 text-center">
+          <span id="campana-pie" class="text-white/40 text-xs">0 notificaciones</span>
+        </div>
+      </div>`;
+
+    nav.appendChild(wrapper);
 }
 
 // ── INICIALIZACIÓN ────────────────────────────
 
 function initCampana() {
     const intentar = () => {
+        inyectarCampanaEnHeader();
         const btn = document.getElementById('btn-campana');
         if (!btn) {
             setTimeout(intentar, 200);
