@@ -12,11 +12,16 @@
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        html, body { background-color: #0f1e1c !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
         body { font-family: var(--font-family); display: block !important; }
-        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
-        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        #main-wrapper { background-color: #0f1e1c !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: #0f1e1c !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
         footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
+
+        /* ── Design system overrides mod-toolbar ── */
+        .mod-toolbar-title { color: #e07020 !important; font-weight: 900 !important; text-transform: uppercase !important; letter-spacing: .08em !important; }
+        .mod-icon { color: #e07020 !important; }
+        .mod-toolbar-subtitle { color: rgba(255,255,255,0.5) !important; }
 
         /* ── Toolbar ── */
         .paq-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; margin-bottom:1.2rem; }
@@ -25,40 +30,40 @@
 
         .btn-paq-nuevo {
             display:inline-flex; align-items:center; gap:.45rem;
-            padding:.7rem 1.4rem; background:var(--color-secondary); color:#fff;
+            padding:.7rem 1.4rem; background:#c89820; color:#fff;
             border:none; border-radius:10px; font-size:.88rem; font-weight:700;
             cursor:pointer; letter-spacing:.02em; transition:background .2s, transform .15s;
         }
-        .btn-paq-nuevo:hover { background:#9a3412; transform:translateY(-1px); }
+        .btn-paq-nuevo:hover { background:#a07810; transform:translateY(-1px); }
 
         /* ── Summary ── */
         .paq-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.4rem; }
-        .paq-stat    { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 1px 4px rgba(0,0,0,.05); }
-        .paq-stat-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#64748b; margin-bottom:.3rem; }
-        .paq-stat-value { font-size:2rem; font-weight:800; color:var(--color-secondary); line-height:1; }
+        .paq-stat    { background:#faf6ef; border:1px solid #e8e0d0; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+        .paq-stat-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:.3rem; }
+        .paq-stat-value { font-size:2rem; font-weight:800; color:#e07020; line-height:1; }
         .paq-stat-value.green { color:#16a34a; }
         .paq-stat-value.gray  { color:#94a3b8; }
 
         /* ── Panel ── */
-        .paq-panel { background:#fff; border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 1px 6px rgba(0,0,0,.05); overflow:hidden; }
-        .paq-panel-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:1.1rem 1.4rem; border-bottom:1px solid #f1f5f9; background:#fafbfc; }
-        .paq-panel-head h4 { font-size:.95rem; font-weight:700; color:#0f172a; margin:0; }
+        .paq-panel { background:#faf6ef; border:1px solid #e8e0d0; border-radius:16px; box-shadow:0 1px 6px rgba(0,0,0,.05); overflow:hidden; }
+        .paq-panel-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:1.1rem 1.4rem; border-bottom:1px solid #e8e0d0; background:#faf6ef; }
+        .paq-panel-head h4 { font-size:.95rem; font-weight:700; color:#c89820; margin:0; }
         .paq-filtros { display:flex; gap:.6rem; flex-wrap:wrap; }
         .paq-filtros input, .paq-filtros select {
-            padding:.55rem .85rem; border:1.5px solid #e2e8f0; border-radius:9px;
-            font:inherit; font-size:.83rem; background:#fff; color:#0f172a;
+            padding:.55rem .85rem; border:1.5px solid #e8e0d0; border-radius:9px;
+            font:inherit; font-size:.83rem; background:#fff; color:#1a1a1a;
             outline:none; transition:border-color .2s;
         }
         .paq-filtros input  { min-width:220px; }
         .paq-filtros select { min-width:150px; }
-        .paq-filtros input:focus, .paq-filtros select:focus { border-color:var(--color-secondary); box-shadow:0 0 0 3px rgba(255, 140, 66, .1); }
+        .paq-filtros input:focus, .paq-filtros select:focus { border-color:#e07020; box-shadow:0 0 0 3px rgba(224,112,32,.1); }
 
         /* ── Tabla ── */
         .paq-tabla-wrap { overflow-x:auto; }
         .paq-tabla { width:100%; border-collapse:collapse; min-width:860px; }
-        .paq-tabla thead th { background:#f8fafc; color:var(--color-secondary); text-align:left; padding:.85rem 1rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; border-bottom:1.5px solid #e2e8f0; white-space:nowrap; }
-        .paq-tabla tbody td { padding:.85rem 1rem; border-bottom:1px solid #f1f5f9; vertical-align:middle; font-size:.875rem; color:#0f172a; }
-        .paq-tabla tbody tr:hover td { background:#fafafa; }
+        .paq-tabla thead th { background:#faf6ef; color:#e07020; text-align:left; padding:.85rem 1rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; border-bottom:1.5px solid #e8e0d0; white-space:nowrap; }
+        .paq-tabla tbody td { padding:.85rem 1rem; border-bottom:1px solid #e8e0d0; vertical-align:middle; font-size:.875rem; color:#1a1a1a; }
+        .paq-tabla tbody tr:hover td { background:rgba(251,191,36,.08); }
         .paq-tabla tbody tr:last-child td { border-bottom:none; }
 
         /* Imagen miniatura */
@@ -155,27 +160,27 @@
         .paq-form-section textarea:focus { border-color:var(--color-secondary); background:#fff; box-shadow:0 0 0 3px rgba(255, 140, 66, .09); }
         .paq-form-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }
         .paq-form-actions { display:flex; gap:.65rem; justify-content:flex-end; padding-top:1rem; border-top:1px solid #f1f5f9; margin-top:1rem; }
-        .btn-paq-guardar  { padding:.65rem 1.4rem; background:var(--color-secondary); color:#fff; border:none; border-radius:9px; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .2s; }
-        .btn-paq-guardar:hover  { background:#9a3412; }
+        .btn-paq-guardar  { padding:.65rem 1.4rem; background:#c89820; color:#fff; border:none; border-radius:9px; font-size:.88rem; font-weight:700; cursor:pointer; transition:background .2s; }
+        .btn-paq-guardar:hover  { background:#a07810; }
         .btn-paq-cancelar { padding:.65rem 1.1rem; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:9px; font-size:.88rem; font-weight:600; cursor:pointer; }
 
         /* ── Pagination ── */
-        .pag-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.9rem 1.2rem; border-top:1px solid #f1f5f9; }
-        .pag-info { font-size:.8rem; color:#64748b; }
-        .pag-info strong { color:#0f172a; }
+        .pag-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding:.9rem 1.2rem; border-top:1px solid #e8e0d0; }
+        .pag-info { font-size:.8rem; color:#6b7280; }
+        .pag-info strong { color:#1a1a1a; }
         .pag-controls { display:flex; align-items:center; gap:.35rem; }
         .pag-per-page { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:#64748b; }
-        .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e2e8f0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#0f172a; cursor:pointer; outline:none; }
-        .pag-per-page select:focus { border-color:var(--color-secondary); }
+        .pag-per-page select { padding:.3rem .55rem; border:1.5px solid #e8e0d0; border-radius:7px; font:inherit; font-size:.8rem; background:#fff; color:#1a1a1a; cursor:pointer; outline:none; }
+        .pag-per-page select:focus { border-color:#e07020; }
         .pag-btn {
             min-width:34px; height:34px; padding:0 .5rem;
-            border:1.5px solid #e2e8f0; border-radius:8px;
-            background:#fff; color:#334155; font-size:.82rem; font-weight:600;
+            border:1.5px solid #e8e0d0; border-radius:8px;
+            background:#fff; color:#6b7280; font-size:.82rem; font-weight:600;
             cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
             transition:all .15s;
         }
-        .pag-btn:hover:not(:disabled) { border-color:var(--color-secondary); color:var(--color-secondary); background:#fff7ed; }
-        .pag-btn.active  { background:var(--color-secondary); color:#fff; border-color:var(--color-secondary); }
+        .pag-btn:hover:not(:disabled) { border-color:#e07020; color:#e07020; background:#fff7ed; }
+        .pag-btn.active  { background:#e07020; color:#fff; border-color:#e07020; }
         .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
         .pag-btn.dots { cursor:default; border-color:transparent; background:transparent; }
 
@@ -252,6 +257,22 @@
                 <button class="btn-mod-nuevo" id="btn-nuevo-paquete">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Paquete
                 </button>
+            </div>
+
+            <!-- Stats cards (populadas por updateStats en el script inline) -->
+            <div class="paq-summary">
+                <div class="paq-stat">
+                    <div class="paq-stat-label">Total paquetes</div>
+                    <div class="paq-stat-value" id="stat-total">—</div>
+                </div>
+                <div class="paq-stat">
+                    <div class="paq-stat-label">Activos</div>
+                    <div class="paq-stat-value green" id="stat-activos">—</div>
+                </div>
+                <div class="paq-stat">
+                    <div class="paq-stat-label">Inactivos</div>
+                    <div class="paq-stat-value gray" id="stat-inactivos">—</div>
+                </div>
             </div>
 
             <div id="paq-msg" class="paq-msg"></div>

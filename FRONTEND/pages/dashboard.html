@@ -13,10 +13,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+        html, body { background-color: #0f1e1c !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
         body { font-family: var(--font-family); display: block !important; }
-        #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
-        main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+        #main-wrapper { background-color: #0f1e1c !important; min-height: 100vh; display: flex; flex-direction: column; }
+        main  { background-color: #0f1e1c !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
         footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
 
         /* ── Layout ── */
@@ -24,26 +24,26 @@
 
         /* ── Header ── */
         .db-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.6rem; }
-        .db-title  { font-size: 1.55rem; font-weight: 800; color: var(--color-text-white); margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
-        .db-title span { color: var(--color-secondary); }
-        .db-date   { font-size: .82rem; color: #64748b; font-weight: 500; }
+        .db-title  { font-size: 1.55rem; font-weight: 900; color: #e07020; margin: 0; text-transform: uppercase; letter-spacing: .08em; }
+        .db-title span { color: #c89820; }
+        .db-date   { font-size: .82rem; color: rgba(255,255,255,0.45); font-weight: 500; }
 
         /* ── KPI cards ── */
         .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1.4rem; }
         .kpi-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+            background: #faf6ef; border: 1px solid #e8e0d0; border-radius: 16px;
             padding: 1.1rem 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,.05);
             display: flex; flex-direction: column; gap: .25rem;
             transition: transform .18s, box-shadow .18s;
         }
-        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.09); }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
         .kpi-icon {
             width: 44px; height: 44px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.15rem; margin-bottom: .45rem;
         }
-        .kpi-label { font-size: .71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
-        .kpi-value { font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+        .kpi-label { font-size: .71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; }
+        .kpi-value { font-size: 1.75rem; font-weight: 800; color: #e07020; line-height: 1.1; }
         .kpi-value.sm { font-size: 1.35rem; }
         .kpi-sub   { font-size: .72rem; color: #94a3b8; margin-top: .1rem; }
 
@@ -59,16 +59,16 @@
 
         /* ── Card panel ── */
         .db-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+            background: #faf6ef; border: 1px solid #e8e0d0; border-radius: 16px;
             box-shadow: 0 1px 6px rgba(0,0,0,.05); overflow: hidden;
         }
         .db-card-head {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 1rem 1.3rem; border-bottom: 1px solid #f1f5f9;
-            background: #fafbfc;
+            padding: 1rem 1.3rem; border-bottom: 1px solid #e8e0d0;
+            background: #faf6ef;
         }
-        .db-card-head h4 { font-size: .92rem; font-weight: 700; color: #0f172a; margin: 0; }
-        .db-card-head h4 i { color: var(--color-secondary); margin-right: .4rem; }
+        .db-card-head h4 { font-size: .92rem; font-weight: 700; color: #c89820; margin: 0; }
+        .db-card-head h4 i { color: #e07020; margin-right: .4rem; }
         .db-card-body { padding: 1.2rem 1.3rem; }
 
         /* ── Chart ── */
@@ -77,16 +77,16 @@
         /* ── Tabla recientes ── */
         .db-table { width: 100%; border-collapse: collapse; }
         .db-table thead th {
-            background: #f8fafc; color: var(--color-secondary); text-align: left;
+            background: #faf6ef; color: #e07020; text-align: left;
             padding: .7rem .9rem; font-size: .72rem; text-transform: uppercase;
-            letter-spacing: .05em; border-bottom: 1.5px solid #e2e8f0; white-space: nowrap;
+            letter-spacing: .05em; border-bottom: 1.5px solid #e8e0d0; white-space: nowrap;
         }
         .db-table tbody td {
-            padding: .75rem .9rem; border-bottom: 1px solid #f1f5f9;
-            font-size: .84rem; color: #0f172a; vertical-align: middle;
+            padding: .75rem .9rem; border-bottom: 1px solid #e8e0d0;
+            font-size: .84rem; color: #1a1a1a; vertical-align: middle;
         }
         .db-table tbody tr:last-child td { border-bottom: none; }
-        .db-table tbody tr:hover td { background: #fafafa; }
+        .db-table tbody tr:hover td { background: rgba(251,191,36,.08); }
 
         /* Badge estado */
         .badge { display: inline-flex; align-items: center; gap: .3rem; padding: .18rem .55rem; border-radius: 999px; font-size: .7rem; font-weight: 700; }
@@ -102,9 +102,9 @@
         .rank-item { display: flex; flex-direction: column; gap: .25rem; }
         .rank-label { display: flex; justify-content: space-between; font-size: .8rem; }
         .rank-name  { font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-        .rank-count { font-weight: 700; color: var(--color-secondary); }
-        .rank-bar-bg { height: 7px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
-        .rank-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,var(--color-secondary),#ea580c); transition: width .6s cubic-bezier(.4,0,.2,1); }
+        .rank-count { font-weight: 700; color: #e07020; }
+        .rank-bar-bg { height: 7px; background: #e8e0d0; border-radius: 999px; overflow: hidden; }
+        .rank-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#e07020,#c89820); transition: width .6s cubic-bezier(.4,0,.2,1); }
 
         /* ── Skeleton ── */
         .skeleton { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
@@ -139,7 +139,7 @@
 
                 <!-- Header -->
                 <div class="db-header">
-                    <h2 class="db-title"><i class="fa-solid fa-chart-line" style="color:var(--color-secondary);margin-right:.45rem"></i>Panel de <span>Control</span></h2>
+                    <h2 class="db-title"><i class="fa-solid fa-chart-line" style="color:#e07020;margin-right:.45rem"></i>Panel de <span>Control</span></h2>
                     <span class="db-date" id="db-fecha"></span>
                 </div>
 
@@ -202,7 +202,7 @@
                 <div class="db-card" style="margin-bottom:1rem">
                     <div class="db-card-head">
                         <h4><i class="fa-solid fa-calendar-check"></i> Reservas Recientes</h4>
-                        <a href="reservas.html" style="font-size:.78rem;color:var(--color-secondary);font-weight:700;text-decoration:none">
+                        <a href="reservas.html" style="font-size:.78rem;color:#e07020;font-weight:700;text-decoration:none">
                             Ver todas <i class="fa-solid fa-arrow-right" style="font-size:.7rem"></i>
                         </a>
                     </div>

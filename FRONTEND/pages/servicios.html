@@ -28,6 +28,30 @@
             color: #1f2937 !important;
             background-color: #ffffff !important;
         }
+
+        /* ── Design system overrides ── */
+        html, body { background-color: #0f1e1c !important; }
+        #main-wrapper, main { background-color: #0f1e1c !important; }
+        .mod-toolbar-title { color: #e07020 !important; font-weight: 900 !important; text-transform: uppercase !important; letter-spacing: .08em !important; }
+        .mod-icon { color: #e07020 !important; }
+        .mod-toolbar-subtitle { color: rgba(255,255,255,0.5) !important; }
+        .btn-mod-nuevo { background: #c89820 !important; color: #fff !important; border: none !important; border-radius: 8px !important; }
+        .btn-mod-nuevo:hover { background: #a07810 !important; }
+
+        /* Tabla panel de servicios */
+        .crud-servicios-panel { background: #faf6ef !important; border: 1px solid #e8e0d0 !important; border-radius: 16px !important; }
+        .crud-servicios-lista-top { background: #faf6ef !important; border-bottom: 1px solid #e8e0d0 !important; }
+        .crud-servicios-lista-top h4 { color: #c89820 !important; font-weight: 700 !important; }
+        .crud-servicios-tabla-wrap { background: #faf6ef !important; }
+        .crud-servicios-tabla { background: #faf6ef !important; }
+        .crud-servicios-tabla thead th { background: #faf6ef !important; color: #e07020 !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: .05em !important; border-bottom: 1px solid #e8e0d0 !important; }
+        .crud-servicios-tabla tbody tr:hover td { background: rgba(251,191,36,.08) !important; }
+        .crud-servicios-tabla tbody td { color: #1a1a1a !important; border-bottom: 1px solid #e8e0d0 !important; }
+        .crud-servicios-tabla tbody tr:last-child td { border-bottom: none !important; }
+        .crud-servicios-filtros input,
+        .crud-servicios-filtros select { border: 1px solid #e8e0d0 !important; background: #fff !important; color: #1a1a1a !important; border-radius: 8px !important; }
+        .crud-servicios-filtros input:focus,
+        .crud-servicios-filtros select:focus { border-color: #e07020 !important; box-shadow: 0 0 0 2px rgba(224,112,32,.2) !important; }
     </style>
 </head>
 <body>
@@ -44,6 +68,26 @@
 
         <!-- Main Content -->
         <main class="!bg-[var(--color-background)] text-[var(--color-text)] p-[var(--spacing-lg)] flex-none min-h-screen">
+
+            <!-- Stats cards (populadas por actualizarResumenServiciosAdmin en app.js) -->
+            <div class="grid grid-cols-3 gap-4 mb-6" id="servicios-stats-row">
+                <div class="bg-[#faf6ef] rounded-xl p-5 border border-[#e8e0d0]">
+                    <p class="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1">TOTAL</p>
+                    <p class="text-3xl font-black text-[#e07020]" id="servicios-admin-total">—</p>
+                    <p class="text-xs text-[#6b7280] mt-1">servicios registrados</p>
+                </div>
+                <div class="bg-[#faf6ef] rounded-xl p-5 border border-[#e8e0d0]">
+                    <p class="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1">ACTIVOS</p>
+                    <p class="text-3xl font-black text-emerald-600" id="servicios-admin-activos">—</p>
+                    <p class="text-xs text-[#6b7280] mt-1">disponibles</p>
+                </div>
+                <div class="bg-[#faf6ef] rounded-xl p-5 border border-[#e8e0d0]">
+                    <p class="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1">INACTIVOS</p>
+                    <p class="text-3xl font-black text-[#6b7280]" id="servicios-admin-inactivos">—</p>
+                    <p class="text-xs text-[#6b7280] mt-1">desactivados</p>
+                </div>
+            </div>
+
             <!-- Sección de Administración de Servicios -->
             <section id="seccion-administrar-servicios" class="crud-servicios-section">
                 <div class="mod-toolbar">

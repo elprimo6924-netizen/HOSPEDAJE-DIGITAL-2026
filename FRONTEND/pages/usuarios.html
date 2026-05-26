@@ -1,84 +1,48 @@
 <!doctype html>
-
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Gestión de Usuarios - Hospedaje Digital</title>
-
     <link rel="stylesheet" href="../css/reset.css" />
     <link rel="stylesheet" href="../css/variables.css" />
     <link rel="stylesheet" href="../css/styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } };</script>
-
     <style>
       *, *::before, *::after { box-sizing: border-box; }
-      html, body { background-color: var(--color-background) !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
+      html, body { background-color: #0f1e1c !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
       body { font-family: var(--font-family); display: block !important; }
-      #main-wrapper { background-color: var(--color-background) !important; min-height: 100vh; display: flex; flex-direction: column; }
-      main  { background-color: var(--color-background) !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
+      #main-wrapper { background-color: #0f1e1c !important; min-height: 100vh; display: flex; flex-direction: column; }
+      main  { background-color: #0f1e1c !important; color: var(--color-text) !important; padding: var(--spacing-lg) !important; flex: none !important; }
       footer { background-color: var(--color-light-gray) !important; color: var(--color-text-light) !important; }
-      /* Estilo para el Switch de Estado */
 
-      .switch {
-        position: relative;
+      /* ── Design system overrides ── */
+      .mod-toolbar-title { color: #e07020 !important; font-weight: 900 !important; text-transform: uppercase !important; letter-spacing: .08em !important; }
+      .mod-icon { color: #e07020 !important; }
+      .mod-toolbar-subtitle { color: rgba(255,255,255,0.5) !important; }
+      .btn-mod-nuevo { background: #c89820 !important; color: #fff !important; border: none !important; border-radius: 8px !important; box-shadow: none !important; padding: .6rem 1.25rem !important; font-weight: 700 !important; }
+      .btn-mod-nuevo:hover { background: #a07810 !important; transform: translateY(-1px); }
 
-        display: inline-block;
+      /* ── Toggle switch ── */
+      .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .slider { position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+      .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+      input:checked + .slider { background-color: #22c55e; }
+      input:checked + .slider:before { transform: translateX(22px); }
+      .slider.opacity-50 { opacity: .5; cursor: not-allowed; }
 
-        width: 44px;
-
-        height: 22px;
+      /* ── Tabla usuarios ── */
+      #usuarios-tabla-panel select {
+        border: 1px solid #e8e0d0 !important;
+        background: #fff !important;
+        color: #1a1a1a !important;
+        border-radius: 7px !important;
+        padding: .3rem .65rem !important;
+        font-size: .82rem !important;
       }
-
-      .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-
-      .slider {
-        position: absolute;
-        cursor: pointer;
-
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-
-        background-color: #cbd5e1;
-        transition: 0.4s;
-
-        border-radius: 34px;
-      }
-
-      .slider:before {
-        position: absolute;
-        content: "";
-
-        height: 16px;
-        width: 16px;
-
-        left: 3px;
-        bottom: 3px;
-
-        background-color: white;
-        transition: 0.4s;
-
-        border-radius: 50%;
-      }
-
-      input:checked + .slider {
-        background-color: #22c55e;
-      }
-
-      input:checked + .slider:before {
-        transform: translateX(22px);
-      }
-
     </style>
   </head>
 
@@ -92,106 +56,93 @@
       </header>
 
       <main>
-        <div class="mod-toolbar">
+        <!-- Page header -->
+        <div class="flex items-center justify-between mb-6">
           <div class="mod-toolbar-left">
             <h2 class="mod-toolbar-title"><i class="fa-solid fa-users-gear mod-icon" aria-hidden="true"></i> Gestión de Usuarios</h2>
             <p class="mod-toolbar-subtitle">Administra el personal, sus roles y estados de acceso.</p>
           </div>
-          <button id="btn-crear-usuario" class="btn-mod-nuevo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Usuario</button>
+          <button id="btn-crear-usuario" class="btn-mod-nuevo">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Nuevo Usuario
+          </button>
         </div>
 
-        <!-- Buscador -->
-
-        <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
-          <div class="flex flex-col md:flex-row gap-3">
-            <div class="relative flex-1">
-              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-
-              <input type="text" id="busqueda-usuarios" placeholder="Buscar por nombre, email o documento..." autocomplete="off" class="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--color-secondary)] focus:outline-none text-slate-700" />
-            </div>
-
-            <div class="flex gap-2">
-              <button id="id-btn-buscar" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Buscar</button>
-
-              <button id="btn-limpiar" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-6 rounded-lg transition shadow-sm">Limpiar</button>
-            </div>
+        <!-- Stats cards -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="bg-[#faf6ef] rounded-xl p-5 border border-[#e8e0d0]">
+            <p class="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1">TOTAL</p>
+            <p class="text-3xl font-black text-[#e07020]" id="stat-usuarios-total">—</p>
+            <p class="text-xs text-[#6b7280] mt-1">usuarios registrados</p>
+          </div>
+          <div class="bg-[#faf6ef] rounded-xl p-5 border border-[#e8e0d0]">
+            <p class="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1">ACTIVOS</p>
+            <p class="text-3xl font-black text-emerald-600" id="stat-usuarios-activos">—</p>
+            <p class="text-xs text-[#6b7280] mt-1">con acceso activo</p>
+          </div>
+          <div class="bg-[#faf6ef] rounded-xl p-5 border border-[#e8e0d0]">
+            <p class="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-1">INACTIVOS</p>
+            <p class="text-3xl font-black text-[#6b7280]" id="stat-usuarios-inactivos">—</p>
+            <p class="text-xs text-[#6b7280] mt-1">sin acceso</p>
           </div>
         </div>
 
-        <!-- Tabla -->
+        <!-- Tabla panel -->
+        <div id="usuarios-tabla-panel" class="bg-[#faf6ef] rounded-2xl border border-[#e8e0d0] overflow-hidden">
 
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <!-- Toolbar búsqueda -->
+          <div class="flex items-center justify-between px-5 py-4 border-b border-[#e8e0d0]">
+            <div>
+              <h2 class="text-base font-bold text-[#c89820]">Listado de Usuarios</h2>
+              <p class="text-xs text-[#6b7280]">Busca por nombre, email o documento.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xs"></i>
+                <input
+                  type="text"
+                  id="busqueda-usuarios"
+                  placeholder="Buscar usuario..."
+                  autocomplete="off"
+                  class="h-9 pl-9 pr-4 text-sm border border-[#e8e0d0] rounded-lg bg-white text-[#1a1a1a]
+                         focus:outline-none focus:ring-2 focus:ring-[#e07020]/40 placeholder:text-[#9ca3af]"
+                />
+              </div>
+              <button id="id-btn-buscar"
+                class="h-9 px-4 text-sm font-semibold bg-[#e07020] hover:bg-[#c05e10] text-white rounded-lg transition-colors">
+                Buscar
+              </button>
+              <button id="btn-limpiar"
+                class="h-9 px-4 text-sm font-semibold bg-white hover:bg-amber-50 text-[#6b7280] border border-[#e8e0d0] rounded-lg transition-colors">
+                Limpiar
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabla -->
           <div class="overflow-x-auto">
             <table class="w-full text-left">
-              <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400">Nombre / Email</th>
-
-                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Rol</th>
-
-                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Estado</th>
-
-                  <th class="p-4 font-bold text-[11px] uppercase tracking-wider text-slate-400 text-center">Acciones</th>
+              <thead>
+                <tr class="border-b border-[#e8e0d0]">
+                  <th class="px-5 py-3 text-left text-xs font-bold text-[#e07020] uppercase tracking-wider">Nombre / Email</th>
+                  <th class="px-5 py-3 text-center text-xs font-bold text-[#e07020] uppercase tracking-wider">Rol</th>
+                  <th class="px-5 py-3 text-center text-xs font-bold text-[#e07020] uppercase tracking-wider">Estado</th>
+                  <th class="px-5 py-3 text-center text-xs font-bold text-[#e07020] uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
-
-              <tbody id="usuarios-tbody" class="divide-y divide-slate-100">
-                <!-- Ejemplo de fila con los componentes solicitados -->
-
-                <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="p-4">
-                    <div class="font-bold text-slate-800">example</div>
-
-                    <div class="text-xs text-slate-500">example@example.com</div>
-                  </td>
-
-                  <td class="p-4 text-center">
-                    <!-- 1. Lista desplegable de Rol -->
-
-                    <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-[var(--color-secondary)] outline-none text-slate-700">
-                      <option value="admin">example</option>
-
-                      <option value="recep">example</option>
-
-                      <option value="empleado">example</option>
-                    </select>
-                  </td>
-
-                  <td class="p-4 text-center">
-                    <!-- 2. Switch de Estado (Verde/Rojo) -->
-
-                    <label class="switch">
-                      <input type="checkbox" checked />
-
-                      <span class="slider"></span>
-                    </label>
-                  </td>
-
-                  <td class="p-4">
-                    <!-- 3. Iconos Lápiz y Papelera (Estilo Habitaciones) -->
-
-                    <div class="flex justify-center gap-2">
-                      <button class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors shadow-sm" title="Editar">
-                        <i class="fa-solid fa-pencil"></i>
-                      </button>
-
-                      <button class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors shadow-sm" title="Eliminar">
-                        <i class="fa-solid fa-trash-can"></i>
-                      </button>
-                    </div>
-                  </td>
+              <tbody id="usuarios-tbody">
+                <tr>
+                  <td colspan="4" class="px-5 py-8 text-center text-[#6b7280] text-sm">Cargando usuarios...</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium">
-            <span id="usuarios-info">Mostrando 1 a 5 de 5 usuarios</span>
-
+          <!-- Paginación -->
+          <div class="flex items-center justify-between px-5 py-3 border-t border-[#e8e0d0]">
+            <span id="usuarios-info" class="text-xs text-[#6b7280]">Cargando...</span>
             <div class="flex gap-1">
-              <button class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100">Anterior</button>
-
-              <button class="px-4 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-100">Siguiente</button>
+              <button class="px-3 py-1.5 text-xs border border-[#e8e0d0] rounded-lg bg-white hover:bg-amber-50 text-[#6b7280] transition-colors">Anterior</button>
+              <button class="px-3 py-1.5 text-xs border border-[#e8e0d0] rounded-lg bg-white hover:bg-amber-50 text-[#6b7280] transition-colors">Siguiente</button>
             </div>
           </div>
         </div>
@@ -201,16 +152,35 @@
     </div>
 
     <!-- Scripts -->
-
     <script src="../js/config.js"></script>
-
     <script src="../js/main.js"></script>
-
     <script src="../js/api.js"></script>
-
     <script src="../js/usuarios.js"></script>
-
     <script src="../js/usuarioFormModal.js"></script>
     <script src="../js/campana-notificaciones.js"></script>
+    <script>
+    /* Actualizar stats de usuarios observando cambios en el tbody */
+    (function () {
+      function actualizarStatsUsuarios() {
+        const checkboxes = document.querySelectorAll('#usuarios-tbody input[data-action="toggle"]');
+        const total = checkboxes.length;
+        if (!total) return;
+        const activos   = [...checkboxes].filter(cb => cb.checked && !cb.disabled).length;
+        const inactivos = total - activos;
+        const elTotal    = document.getElementById('stat-usuarios-total');
+        const elActivos  = document.getElementById('stat-usuarios-activos');
+        const elInactivos= document.getElementById('stat-usuarios-inactivos');
+        if (elTotal)    elTotal.textContent    = total;
+        if (elActivos)  elActivos.textContent  = activos;
+        if (elInactivos)elInactivos.textContent = inactivos;
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        const tbody = document.getElementById('usuarios-tbody');
+        if (!tbody) return;
+        const obs = new MutationObserver(actualizarStatsUsuarios);
+        obs.observe(tbody, { childList: true, subtree: true });
+      });
+    })();
+    </script>
   </body>
 </html>
