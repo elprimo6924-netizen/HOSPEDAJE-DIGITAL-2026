@@ -103,9 +103,7 @@ const newContent = `<!-- ══ CENTER FORM ════════════
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Método de pago</label>
                         <select id="metodo-pago" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-700 bg-white shadow-sm">
                             <option value="1">Efectivo</option>
-                            <option value="2">Tarjeta de Crédito</option>
-                            <option value="3">Transferencia</option>
-                            <option value="4">Cortesía</option>
+                            <option value="2">Tarjeta de credito o debito</option>
                         </select>
                     </div>
                     <div>

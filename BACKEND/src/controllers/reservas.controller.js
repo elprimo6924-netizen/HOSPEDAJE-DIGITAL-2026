@@ -8,6 +8,17 @@ const {
   logUnauthorizedAccess,
 } = require("../middlewares/authorization.middleware");
 
+let usuariosColsPromise = null;
+
+const getUsuariosCols = async () => {
+  if (!usuariosColsPromise) {
+    usuariosColsPromise = db
+      .query("SHOW COLUMNS FROM `usuarios`")
+      .then(([rows]) => new Set(rows.map((r) => r.Field)));
+  }
+  return usuariosColsPromise;
+};
+
 const getNumeroDocumentoByUserId = async (userId) => {
   if (!userId) return null;
   const [[row]] = await db.query(
@@ -56,20 +67,40 @@ const crear = async (req, res) => {
     const result = await ReservasService.create(payload);
     const idReserva = result.insertId;
 
+    const usuarioCols = await getUsuariosCols();
+    const userNombreParts = [];
+    if (usuarioCols.has("Nombre")) userNombreParts.push("u.Nombre");
+    if (usuarioCols.has("NombreUsuario")) userNombreParts.push("u.NombreUsuario");
+
+    const userNombreExpr = userNombreParts.length
+      ? `MAX(COALESCE(${userNombreParts.join(", ")}))`
+      : "NULL";
+    const userApellidoExpr = usuarioCols.has("Apellido") ? "MAX(u.Apellido)" : "NULL";
+    const userEmailExpr = usuarioCols.has("Email") ? "MAX(u.Email)" : "NULL";
+    const userTelefonoExpr = usuarioCols.has("Telefono") ? "MAX(u.Telefono)" : "NULL";
+    const userJoin = usuarioCols.has("NumeroDocumento")
+      ? "LEFT JOIN usuarios u ON u.NumeroDocumento = r.NroDocumentoCliente"
+      : "";
+
     // Notificaciones en segundo plano — no bloquean la respuesta
     db.query(
-      `SELECT c.Nombre, c.Apellido, c.Email, c.Telefono,
+      `SELECT
+              COALESCE(MAX(c.Nombre), ${userNombreExpr}, '') AS Nombre,
+              COALESCE(MAX(c.Apellido), ${userApellidoExpr}, '') AS Apellido,
+              COALESCE(MAX(c.Email), ${userEmailExpr}) AS Email,
+              COALESCE(MAX(c.Telefono), ${userTelefonoExpr}) AS Telefono,
               GROUP_CONCAT(DISTINCT COALESCE(h.NombreHabitacion,'') SEPARATOR ', ') AS habitacion,
               GROUP_CONCAT(DISTINCT p.NombrePaquete  ORDER BY p.NombrePaquete SEPARATOR '|') AS paquetes_str,
               GROUP_CONCAT(DISTINCT s.NombreServicio ORDER BY s.NombreServicio SEPARATOR '|') AS servicios_str
-       FROM reserva r
-       LEFT JOIN cliente c   ON r.NroDocumentoCliente = c.NroDocumento
-       LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
-       LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
-       LEFT JOIN habitacion h ON p.IDHabitacion = h.IDHabitacion
-       LEFT JOIN detallereservaservicio drs ON r.IdReserva = drs.IDReserva
-       LEFT JOIN servicio s  ON drs.IDServicio = s.IDServicio
-       WHERE r.IdReserva = ? LIMIT 1`,
+      FROM reserva r
+      LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
+      ${userJoin}
+      LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
+      LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
+      LEFT JOIN habitacion h ON p.IDHabitacion = h.IDHabitacion
+      LEFT JOIN detallereservaservicio drs ON r.IdReserva = drs.IDReserva
+      LEFT JOIN servicio s  ON drs.IDServicio = s.IDServicio
+      WHERE r.IdReserva = ? LIMIT 1`,
       [idReserva]
     ).then(([rows]) => {
       if (!rows.length) return;

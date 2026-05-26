@@ -309,7 +309,6 @@ const ModoReserva = {
 // BUSCADOR DE CLIENTES
 // ==========================================
 const BuscadorCliente = {
-    clientes: [],
     timeout: null,
 
     async init() {
@@ -325,36 +324,42 @@ const BuscadorCliente = {
             }
             this.timeout = setTimeout(() => this.buscar(val), 300);
         });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
     },
 
     async buscar(termino) {
-        if (this.clientes.length === 0) {
-            const data = await fetchJson('/clientes');
-            if (data) this.clientes = data;
+        try {
+            const data = await fetchJson(`/clientes/search?q=${encodeURIComponent(termino)}`);
+            this.renderDropdown(Array.isArray(data) ? data : [], termino);
+        } catch (e) {
+            console.warn('[BuscadorCliente] Error buscando:', e.message);
+            this.renderDropdown([], termino);
         }
-
-        const res = this.clientes.filter(c => 
-            String(c.NroDocumento || '').toLowerCase().includes(termino) ||
-            String(c.Nombre || '').toLowerCase().includes(termino) ||
-            String(c.Apellido || '').toLowerCase().includes(termino)
-        ).slice(0, 5);
-
-        this.renderDropdown(res, termino);
     },
 
     renderDropdown(resultados, termino) {
         const dropdown = document.getElementById('dropdown-clientes');
         if (resultados.length === 0) {
-            dropdown.innerHTML = `<div class="p-4 text-sm text-gray-500 text-center">No se encontraron clientes. <button type="button" class="text-green-700 font-semibold underline ml-1">Crear nuevo</button></div>`;
+            dropdown.innerHTML = `<div class="p-4 text-sm text-gray-500 text-center">No se encontraron clientes</div>`;
             dropdown.classList.remove('hidden');
             return;
         }
 
+        const esc = s => String(s || '').replace(/'/g, "\\'");
         let html = '';
         resultados.forEach(c => {
-            html += `<div class="px-4 py-3 hover:bg-green-50 cursor-pointer border-b border-gray-50 transition-colors" onclick="BuscadorCliente.seleccionar('${c.NroDocumento}', '${c.Nombre} ${c.Apellido}')">
+            const doc   = esc(c.documento);
+            const nom   = esc(c.Nombre);
+            const ape   = esc(c.Apellido);
+            const email = c.Email || '';
+            html += `<div class="px-4 py-3 hover:bg-green-50 cursor-pointer border-b border-gray-50 transition-colors" onclick="BuscadorCliente.seleccionar('${doc}', '${nom} ${ape}')">
                 <p class="font-medium text-gray-900">${c.Nombre} ${c.Apellido}</p>
-                <p class="text-xs text-gray-500">Documento: ${c.NroDocumento}</p>
+                <p class="text-xs text-gray-500">${c.TipoDocumento || 'CC'}: ${c.documento} · ${email}</p>
             </div>`;
         });
         dropdown.innerHTML = html;
@@ -397,15 +402,36 @@ const BuscadorCliente = {
 // SERVICIOS ADICIONALES
 // ==========================================
 const DIAS_SEMANA = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
-const HORA_BTN_BASE = "svc-hora-btn py-1 text-[11px] font-semibold border border-stone-200 rounded-lg text-stone-600 bg-white hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 transition-all duration-150";
-const HORA_BTN_ACTIVE = "svc-hora-btn py-1 text-[11px] font-semibold border-2 border-amber-500 rounded-lg text-white bg-amber-500 shadow-sm shadow-amber-200";
+const HORA_CHIP = "py-1 text-[11px] font-semibold border border-stone-200 rounded-lg text-stone-600 bg-white";
+
+const IMAGENES_SERVICIOS = {
+    "Spa y Masajes": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80",
+    "Restaurante": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+    "Piscina": "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=400&q=80",
+    "WiFi": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80",
+    "WiFi Premium": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80",
+    "Gimnasio": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80",
+    "Servicio a la Habitación": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+    "Servicio a la Habitacion": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+    "Room Service": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+    "Tour Guiado": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
+    "Lavandería": "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=400&q=80",
+    "Lavanderia": "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=400&q=80",
+    "Transporte": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&q=80",
+    "Bar y Cocktails": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+    "Bar y Cocteles": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+    "Bar & Cocktails": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+    "default": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80"
+};
+
+const getImagenServicio = (nombre = "") => IMAGENES_SERVICIOS[nombre] || IMAGENES_SERVICIOS.default;
 
 const SERVICIOS_META = [
     {
         key: "spa",
         match: ["spa", "masaje"],
         icono: "🧖",
-        descripcion: "Relajacion y bienestar completo",
+        descripcion: "Ritual termal guiado para renovar energia y equilibrio.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
         horarios: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00"],
     },
@@ -413,7 +439,7 @@ const SERVICIOS_META = [
         key: "restaurante",
         match: ["restaurante"],
         icono: "🍽️",
-        descripcion: "Desayuno, almuerzo y cena",
+        descripcion: "Cocina de autor con productos locales y maridajes.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
         horarios: ["07:00", "08:00", "12:00", "13:00", "19:00", "20:00", "21:00"],
     },
@@ -421,7 +447,7 @@ const SERVICIOS_META = [
         key: "piscina",
         match: ["piscina"],
         icono: "🏊",
-        descripcion: "Area acuatica climatizada",
+        descripcion: "Piscina climatizada con zona lounge y reposo.",
         dias: ["Lu", "Mi", "Vi", "Sa", "Do"],
         horarios: ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
     },
@@ -429,7 +455,7 @@ const SERVICIOS_META = [
         key: "wifi",
         match: ["wifi"],
         icono: "📶",
-        descripcion: "Internet de alta velocidad",
+        descripcion: "Conexion segura de alta velocidad en todo el hotel.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
         horarios: [],
     },
@@ -437,7 +463,7 @@ const SERVICIOS_META = [
         key: "gimnasio",
         match: ["gimnasio"],
         icono: "🏋️",
-        descripcion: "Equipos de ultima generacion",
+        descripcion: "Sala fitness equipada y asistencia profesional.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
         horarios: ["06:00", "07:00", "08:00", "16:00", "17:00", "18:00", "19:00", "20:00"],
     },
@@ -445,7 +471,7 @@ const SERVICIOS_META = [
         key: "habitacion",
         match: ["habitacion", "room"],
         icono: "🛎️",
-        descripcion: "Servicio a la habitacion 24h",
+        descripcion: "Atencion 24/7 con montaje personalizado en tu suite.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
         horarios: ["07:00", "08:00", "12:00", "13:00", "19:00", "20:00", "21:00", "22:00"],
     },
@@ -453,7 +479,7 @@ const SERVICIOS_META = [
         key: "tour",
         match: ["tour"],
         icono: "🗺️",
-        descripcion: "Recorridos por la ciudad",
+        descripcion: "Rutas curadas por expertos en cultura y naturaleza.",
         dias: ["Ma", "Ju", "Sa", "Do"],
         horarios: ["08:00", "10:00", "14:00", "16:00"],
     },
@@ -461,7 +487,7 @@ const SERVICIOS_META = [
         key: "lavanderia",
         match: ["lavanderia", "lavanderia"],
         icono: "👔",
-        descripcion: "Entrega en 24 horas",
+        descripcion: "Cuidado premium con entrega express en 24 horas.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi"],
         horarios: ["08:00", "09:00", "10:00", "11:00"],
     },
@@ -469,7 +495,7 @@ const SERVICIOS_META = [
         key: "transporte",
         match: ["transporte"],
         icono: "🚗",
-        descripcion: "Traslados al aeropuerto",
+        descripcion: "Traslados puntuales con chofer certificado.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
         horarios: ["05:00", "06:00", "07:00", "18:00", "19:00", "20:00", "21:00", "22:00"],
     },
@@ -477,7 +503,7 @@ const SERVICIOS_META = [
         key: "bar",
         match: ["bar", "cocktail"],
         icono: "🍹",
-        descripcion: "Cocteleria artesanal premium",
+        descripcion: "Mixologia de autor con destilados selectos.",
         dias: ["Mi", "Ju", "Vi", "Sa"],
         horarios: ["17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"],
     },
@@ -489,7 +515,7 @@ const getServicioMeta = (nombre = "") => {
     return meta || {
         key: "servicio",
         icono: "✨",
-        descripcion: "Servicio premium disponible",
+        descripcion: "Servicio premium con atencion dedicada.",
         dias: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
         horarios: [],
     };
@@ -518,26 +544,23 @@ const ServiciosAdicionales = {
 
             const horarios = Array.isArray(meta.horarios) ? meta.horarios : [];
             const horariosHtml = horarios.length
-                ? horarios.map((h) => `
-                    <button type="button" class="${HORA_BTN_BASE}" onclick="ServiciosAdicionales.selectHora(this, '${s.IDServicio}', '${h}')">${h}</button>
-                `).join('')
+                ? horarios.map((h) => `<span class="${HORA_CHIP}">${h}</span>`).join('')
                 : `<span class="text-xs text-stone-500">Disponible todo el dia</span>`;
-
-            const confirmHtml = horarios.length
-                ? `<div class="flex items-center gap-1.5 bg-amber-50 rounded-lg px-2.5 py-1.5 border border-amber-200">
-                        <span class="text-base">⏰</span>
-                        <span class="text-xs font-semibold text-amber-700 confirmacion-hora">Reservado: --:--</span>
-                   </div>`
-                : '';
 
             const div = document.createElement('div');
             div.className = "svc-item-wrapper relative flex flex-col gap-3 p-4 bg-white border-2 border-stone-200 rounded-2xl cursor-pointer hover:border-amber-400 hover:shadow-lg hover:shadow-amber-100/50 transition-all duration-250 group";
             div.innerHTML = `
+                <div class="w-full h-28 rounded-2xl overflow-hidden border border-stone-200 bg-stone-100">
+                    <img src="${getImagenServicio(s.NombreServicio)}" alt="${s.NombreServicio}" loading="lazy"
+                         class="w-full h-full object-cover"
+                         onerror="this.parentElement.style.background='#e2e8f0';this.remove()">
+                </div>
                 <div class="flex items-start gap-3">
                     <div class="relative mt-0.5 shrink-0">
                         <input type="checkbox" class="peer sr-only"
                                id="svc-${s.IDServicio}" data-id="${s.IDServicio}"
                                data-precio="${s.Costo}" data-nombre="${s.NombreServicio}"
+                               data-hora-fija="${horarios[0] || ''}"
                                onchange="ServiciosAdicionales.toggle(this)">
                         <label for="svc-${s.IDServicio}" class="w-5 h-5 flex items-center justify-center border-2 border-stone-300 rounded-md peer-checked:bg-amber-500 peer-checked:border-amber-500 cursor-pointer transition-all duration-200 hover:border-amber-400">
                             <svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -602,15 +625,13 @@ const ServiciosAdicionales = {
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Dias disponibles</span>
+                    <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Dias fijos</span>
                     <div class="flex gap-1 flex-wrap">${diasHtml}</div>
                 </div>
 
                 <div class="svc-hora-wrap hidden flex-col gap-2 border-t border-amber-200 pt-3">
-                    <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Selecciona tu horario</span>
+                    <span class="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Horario fijo</span>
                     <div class="grid grid-cols-4 gap-1">${horariosHtml}</div>
-                    ${confirmHtml}
-                    <input type="hidden" class="svc-hora" data-svc-id="${s.IDServicio}">
                 </div>
             `;
             c.appendChild(div);
@@ -621,7 +642,6 @@ const ServiciosAdicionales = {
         const id = chk.dataset.id;
         const wrapper  = chk.closest('.svc-item-wrapper');
         const horaWrap = wrapper?.querySelector('.svc-hora-wrap');
-        const horaInput = wrapper?.querySelector('.svc-hora');
         const cantidadWrap = wrapper?.querySelector('.svc-cantidad-wrap');
         const cantidadInput = wrapper?.querySelector(`#cantidad-input-${id}`);
 
@@ -629,16 +649,16 @@ const ServiciosAdicionales = {
             horaWrap?.classList.remove('hidden');
             cantidadWrap?.classList.remove('hidden');
             wrapper?.classList.add('border-amber-500', 'bg-gradient-to-br', 'from-amber-50', 'to-orange-50', 'shadow-lg', 'shadow-amber-200/50');
-            State.serviciosExtras.push({ id, nombre: chk.dataset.nombre, precio: Number(chk.dataset.precio), cantidad: 1, hora: '' });
+            State.serviciosExtras.push({
+                id,
+                nombre: chk.dataset.nombre,
+                precio: Number(chk.dataset.precio),
+                cantidad: 1,
+                hora: chk.dataset.horaFija || ''
+            });
             if (cantidadInput) {
                 cantidadInput.value = '1';
                 this.syncCantidad(id, 1);
-            }
-            if (horaInput) {
-                horaInput.addEventListener('change', () => {
-                    const svc = State.serviciosExtras.find(s => s.id === id);
-                    if (svc) svc.hora = horaInput.value;
-                });
             }
         } else {
             horaWrap?.classList.add('hidden');
@@ -696,26 +716,7 @@ const ServiciosAdicionales = {
         ResumenLateral.actualizar();
     },
 
-    selectHora(btn, servicioId, hora) {
-        const wrapper = btn.closest('.svc-item-wrapper');
-        if (!wrapper) return;
-        const panel = wrapper.querySelector('.svc-hora-wrap');
-        const input = wrapper.querySelector('.svc-hora');
-        const confirm = panel?.querySelector('.confirmacion-hora');
-
-        wrapper.querySelectorAll('.svc-hora-btn').forEach((b) => {
-            b.className = HORA_BTN_BASE;
-        });
-        btn.className = HORA_BTN_ACTIVE;
-
-        if (input) {
-            input.value = hora;
-            input.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        if (confirm) {
-            confirm.textContent = `Reservado: ${hora}`;
-        }
-    }
+    
 };
 
 // ==========================================

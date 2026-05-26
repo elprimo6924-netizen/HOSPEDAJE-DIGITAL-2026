@@ -68,9 +68,9 @@ function setCampanaVisto(datos) {
 }
 
 function formatearFecha(fechaStr) {
-    if (!fechaStr) return 'Fecha desconocida';
+    if (!fechaStr) return '';
     const d = new Date(fechaStr);
-    if (isNaN(d)) return fechaStr;
+    if (isNaN(d)) return '';
     const diffMs = Date.now() - d;
     const diffMin = Math.floor(diffMs / 60000);
     const diffH   = Math.floor(diffMin / 60);
@@ -169,6 +169,8 @@ function buildItemHTML(tipo, item) {
     };
     const cfg      = configs[tipo];
     const fecha    = item.createdAt || item.FechaReserva || item.fecha_registro || null;
+    const fechaTxt = formatearFecha(fecha);
+    const detalle  = fechaTxt ? `${cfg.label} · ${fechaTxt}` : cfg.label;
     const entidadId = item.IDUsuario || item.IDCliente || item.NroDocumento ||
                       item.IDReserva || item.IdReserva || '';
 
@@ -181,7 +183,7 @@ function buildItemHTML(tipo, item) {
         </div>
         <div class="flex-1 min-w-0">
             <p class="text-white/90 text-xs font-semibold m-0 truncate">${cfg.nombre}</p>
-            <p class="text-white/40 text-[11px] m-0 mt-0.5">${cfg.label} · ${formatearFecha(fecha)}</p>
+            <p class="text-white/40 text-[11px] m-0 mt-0.5">${detalle}</p>
         </div>
     </li>`;
 }
@@ -212,6 +214,8 @@ function buildItemReservaCliente(r) {
     const estado  = r.NombreEstadoReserva || r.estado || 'Pendiente';
     const cfg     = estados[estado] || estados['Pendiente'];
     const fecha   = r.FechaInicio || r.FechaReserva || null;
+    const fechaTxt = formatearFecha(fecha);
+    const detalle  = fechaTxt ? `${estado} · ${fechaTxt}` : estado;
     const paquete = r.Paquetes || r.Servicios || 'Reserva';
 
     const entidadId = r.IDReserva || r.IdReserva || '';
@@ -229,7 +233,7 @@ function buildItemReservaCliente(r) {
             </p>
             <p class="text-white/50 text-[11px] m-0 mt-0.5 truncate">${paquete}</p>
             <p class="text-white/35 text-[10px] m-0 mt-0.5">
-                ${estado} · ${formatearFecha(fecha)}
+                ${detalle}
             </p>
         </div>
     </li>`;
@@ -358,7 +362,7 @@ function inyectarCampanaEnHeader() {
     const wrapper = document.createElement('div');
     wrapper.id = 'campana-header';
     wrapper.style.cssText = 'position:relative;display:flex;align-items:center;margin-left:auto;flex-shrink:0';
-    wrapper.innerHTML = `
+        wrapper.innerHTML = `
       <button id="btn-campana"
         style="position:relative;display:flex;align-items:center;justify-content:center;
                width:2.6rem;height:2.6rem;border-radius:0.75rem;border:none;cursor:pointer;
@@ -376,28 +380,38 @@ function inyectarCampanaEnHeader() {
           0
         </span>
       </button>
-
-      <div id="panel-notificaciones"
-        class="hidden fixed w-80 bg-[#1e2a3a] border border-white/10 rounded-2xl
-               shadow-2xl shadow-black/40 overflow-hidden"
-        style="z-index:2010">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <span class="text-white font-semibold text-sm">Notificaciones</span>
-          <button id="btn-marcar-leidas"
-            class="text-white/50 hover:text-white text-xs transition-colors cursor-pointer border-0 bg-transparent">
-            Marcar todo como leído
-          </button>
-        </div>
-        <ul id="lista-notificaciones"
-          class="max-h-72 overflow-y-auto divide-y divide-white/5 p-0 m-0 list-none">
-          <li class="px-4 py-8 text-center text-white/40 text-sm">Sin notificaciones nuevas</li>
-        </ul>
-        <div class="px-4 py-2.5 border-t border-white/10 text-center">
-          <span id="campana-pie" class="text-white/40 text-xs">0 notificaciones</span>
-        </div>
-      </div>`;
+            `;
 
     nav.appendChild(wrapper);
+
+        if (!document.getElementById('panel-notificaciones')) {
+                const panel = document.createElement('div');
+                panel.id = 'panel-notificaciones';
+                panel.className = 'hidden fixed w-80 border border-white/10 rounded-2xl overflow-hidden';
+                panel.style.cssText = [
+                        'z-index:2010',
+                        'background:#1e2a3a',
+                        'box-shadow:0 24px 48px rgba(0,0,0,0.45)',
+                        'color:#e5e7eb',
+                        'width:320px'
+                ].join(';');
+                panel.innerHTML = `
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                        <span class="text-white font-semibold text-sm">Notificaciones</span>
+                        <button id="btn-marcar-leidas"
+                            class="text-white/50 hover:text-white text-xs transition-colors cursor-pointer border-0 bg-transparent">
+                            Marcar todo como leído
+                        </button>
+                    </div>
+                    <ul id="lista-notificaciones"
+                        class="max-h-72 overflow-y-auto divide-y divide-white/5 p-0 m-0 list-none">
+                        <li class="px-4 py-8 text-center text-white/40 text-sm">Sin notificaciones nuevas</li>
+                    </ul>
+                    <div class="px-4 py-2.5 border-t border-white/10 text-center">
+                        <span id="campana-pie" class="text-white/40 text-xs">0 notificaciones</span>
+                    </div>`;
+                document.body.appendChild(panel);
+        }
 }
 
 // ── INICIALIZACIÓN ────────────────────────────

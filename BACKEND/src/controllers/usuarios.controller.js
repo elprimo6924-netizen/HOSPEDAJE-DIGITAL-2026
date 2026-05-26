@@ -1,6 +1,32 @@
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 
+let usuariosColsPromise = null;
+
+const getUsuariosCols = async () => {
+    if (!usuariosColsPromise) {
+        usuariosColsPromise = db
+            .query("SHOW COLUMNS FROM `usuarios`")
+            .then(([rows]) => new Set(rows.map((r) => r.Field)));
+    }
+    return usuariosColsPromise;
+};
+
+const getFechaRegistroExpr = (cols) => {
+    const candidates = [
+        "FechaRegistro",
+        "FechaCreacion",
+        "FechaAlta",
+        "createdAt",
+        "created_at",
+        "CreatedAt",
+    ];
+    for (const col of candidates) {
+        if (cols.has(col)) return `u.${col}`;
+    }
+    return "NULL";
+};
+
 const mapUsuario = (usuario) => {
     if (!usuario) return null;
 
@@ -34,8 +60,12 @@ exports.list = async (req, res) => {
     try {
         const q = String(req.query.q || "").trim();
 
+        const cols = await getUsuariosCols();
+        const fechaRegistroExpr = getFechaRegistroExpr(cols);
+
         let sql = `
-            SELECT u.*, r.Nombre AS NombreRol, r.Estado AS EstadoRol, r.IsActive AS RolActivo
+            SELECT u.*, ${fechaRegistroExpr} AS fecha_registro,
+                   r.Nombre AS NombreRol, r.Estado AS EstadoRol, r.IsActive AS RolActivo
             FROM usuarios u
             LEFT JOIN roles r ON r.IDRol = u.IDRol
         `;
@@ -125,7 +155,7 @@ exports.create = async (req, res) => {
         // U1: Si el rol es Cliente (3) y tiene NumeroDocumento, sincronizar con tabla cliente
         if (rolFinal === 3 && NumeroDocumento) {
             await db.query(
-                `INSERT INTO cliente (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
+                `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
                  VALUES (?, ?, ?, ?, ?, ?, ?, 3)
                  ON DUPLICATE KEY UPDATE
                    Nombre = VALUES(Nombre),
@@ -245,8 +275,11 @@ exports.search = async (req, res) => {
         }
 
         const like = construirFiltroBusqueda(q);
+        const cols = await getUsuariosCols();
+        const fechaRegistroExpr = getFechaRegistroExpr(cols);
         const [rows] = await db.query(
-            `SELECT u.*, r.Nombre AS NombreRol, r.Estado AS EstadoRol, r.IsActive AS RolActivo
+            `SELECT u.*, ${fechaRegistroExpr} AS fecha_registro,
+                    r.Nombre AS NombreRol, r.Estado AS EstadoRol, r.IsActive AS RolActivo
              FROM usuarios u
              LEFT JOIN roles r ON r.IDRol = u.IDRol
              WHERE u.NombreUsuario LIKE ?

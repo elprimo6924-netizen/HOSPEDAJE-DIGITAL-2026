@@ -93,7 +93,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 : "/roles?page=1&limit=20";
 
             const response = await window.apiRequest(endpoint);
-            renderRows(response.data || response);
+            const roles = response.data || response;
+            const visibles = Array.isArray(roles)
+                ? roles.filter((rol) => Number(rol.IsActive) === 1 || rol.Estado === 'Activo')
+                : [];
+            renderRows(visibles);
         } catch (error) {
             tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-red-500">Error: ${error.message}</td></tr>`;
         }

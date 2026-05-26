@@ -9,10 +9,14 @@ const stopPortScript = path.join(backendRoot, 'scripts', 'stop-port.js');
 
 const children = [];
 
-function startProcess(name, scriptPath, cwd) {
+function startProcess(name, scriptPath, cwd, env = {}) {
   const child = spawn(process.execPath, [scriptPath], {
     cwd,
     stdio: 'inherit',
+    env: {
+      ...process.env,
+      ...env,
+    },
   });
 
   child.on('exit', (code, signal) => {
@@ -51,5 +55,7 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-startProcess('Backend', backendEntry, backendRoot);
+startProcess('Backend', backendEntry, backendRoot, {
+  DOTENV_CONFIG_PATH: path.join(backendRoot, '.env'),
+});
 startProcess('Frontend', frontendEntry, projectRoot);

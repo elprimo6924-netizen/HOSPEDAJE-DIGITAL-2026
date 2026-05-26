@@ -1,5 +1,26 @@
 const db = require("../config/db");
 
+let reservaColsPromise = null;
+let detalleServicioColsPromise = null;
+
+async function getReservaCols() {
+  if (!reservaColsPromise) {
+    reservaColsPromise = db
+      .query("SHOW COLUMNS FROM `reserva`")
+      .then(([rows]) => new Set(rows.map((r) => r.Field)));
+  }
+  return reservaColsPromise;
+}
+
+async function getDetalleServicioCols() {
+  if (!detalleServicioColsPromise) {
+    detalleServicioColsPromise = db
+      .query("SHOW COLUMNS FROM `detallereservaservicio`")
+      .then(([rows]) => new Set(rows.map((r) => r.Field)));
+  }
+  return detalleServicioColsPromise;
+}
+
 const ReservasService = {
 
   obtener: async (options = {}) => {
@@ -114,6 +135,7 @@ const ReservasService = {
   create: async (reserva) => {
     const {
       NroDocumentoCliente,
+      IDHabitacion,
       FechaInicio,
       FechaFinalizacion,
       SubTotal,
@@ -130,6 +152,24 @@ const ReservasService = {
 
     if (!NroDocumentoCliente) throw new Error("Falta NroDocumentoCliente.");
     if (!FechaInicio || !FechaFinalizacion) throw new Error("Faltan fechas.");
+
+    const cols = await getReservaCols();
+    const habitacionCol = cols.has("IDHabitacion")
+      ? "IDHabitacion"
+      : (cols.has("IdHabitacion") ? "IdHabitacion" : null);
+
+    let habitacionId = IDHabitacion ?? null;
+    if (!habitacionId && Array.isArray(paquetesIds) && paquetesIds.length > 0) {
+      const [[paq]] = await db.query(
+        "SELECT IDHabitacion FROM paquetes WHERE IDPaquete = ? LIMIT 1",
+        [paquetesIds[0]]
+      );
+      habitacionId = paq?.IDHabitacion ?? null;
+    }
+
+    if (habitacionCol && !habitacionId) {
+      throw new Error("Falta IDHabitacion.");
+    }
 
     // H3: Validar que las habitaciones de los paquetes seleccionados estén activas
     if (Array.isArray(paquetesIds) && paquetesIds.length > 0) {
@@ -162,23 +202,56 @@ const ReservasService = {
       }
     }
 
+    const insertCols = ["NroDocumentoCliente"];
+    const insertVals = ["?"];
+    const params = [NroDocumentoCliente];
+
+    if (habitacionCol) {
+      insertCols.push(habitacionCol);
+      insertVals.push("?");
+      params.push(habitacionId);
+    }
+
+    insertCols.push(
+      "FechaReserva",
+      "FechaInicio",
+      "FechaFinalizacion",
+      "Sub_Total",
+      "Descuento",
+      "IVA",
+      "Monto_Total",
+      "MetodoPago",
+      "IdEstadoReserva",
+      "id_usuario"
+    );
+    insertVals.push(
+      "NOW()",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?",
+      "?"
+    );
+
+    params.push(
+      FechaInicio,
+      FechaFinalizacion,
+      SubTotal     ?? 0,
+      Descuento    ?? 0,
+      IVA          ?? 0,
+      MontoTotal   ?? 0,
+      MetodoPago   ?? 1,
+      IdEstadoReserva ?? 1,
+      id_usuario   ?? 1
+    );
+
     const [result] = await db.query(
-      `INSERT INTO reserva
-         (NroDocumentoCliente, FechaReserva, FechaInicio, FechaFinalizacion,
-          Sub_Total, Descuento, IVA, Monto_Total, MetodoPago, IdEstadoReserva, id_usuario)
-       VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        NroDocumentoCliente,
-        FechaInicio,
-        FechaFinalizacion,
-        SubTotal     ?? 0,
-        Descuento    ?? 0,
-        IVA          ?? 0,
-        MontoTotal   ?? 0,
-        MetodoPago   ?? 1,
-        IdEstadoReserva ?? 1,
-        id_usuario   ?? 1,
-      ]
+      `INSERT INTO reserva (${insertCols.join(", ")}) VALUES (${insertVals.join(", ")})`,
+      params
     );
 
     const idReserva = result.insertId;
@@ -197,11 +270,26 @@ const ReservasService = {
       ? serviciosConHorarios
       : (Array.isArray(serviciosIds) ? serviciosIds.map(id => ({ id, hora: null })) : []);
 
+    const detalleCols = await getDetalleServicioCols();
+    const hasHoraServicio = detalleCols.has("HoraServicio");
+
     for (const { id: sid, hora } of svcList) {
+      const columns = ["IDReserva", "IDServicio", "Cantidad", "Precio", "Estado"];
+      const selectExpr = ["?", "?", "1", "Costo", "1"];
+      const params = [idReserva, sid];
+
+      if (hasHoraServicio) {
+        columns.push("HoraServicio");
+        selectExpr.push("?");
+        params.push(hora || null);
+      }
+
+      params.push(sid);
+
       await db.query(
-        `INSERT INTO detallereservaservicio (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
-         SELECT ?, ?, 1, Costo, 1, ? FROM servicio WHERE IDServicio = ?`,
-        [idReserva, sid, hora || null, sid]
+        `INSERT INTO detallereservaservicio (${columns.join(", ")})
+         SELECT ${selectExpr.join(", ")} FROM servicio WHERE IDServicio = ?`,
+        params
       );
     }
 
@@ -211,6 +299,7 @@ const ReservasService = {
   actualizar: async (id, data) => {
     const {
       NroDocumentoCliente,
+      IDHabitacion,
       FechaInicio,
       FechaFinalizacion,
       SubTotal,
@@ -224,24 +313,44 @@ const ReservasService = {
       serviciosConHorarios,
     } = data;
 
+    const cols = await getReservaCols();
+    const habitacionCol = cols.has("IDHabitacion")
+      ? "IDHabitacion"
+      : (cols.has("IdHabitacion") ? "IdHabitacion" : null);
+
+    const fields = [
+      "NroDocumentoCliente = ?",
+      "FechaInicio = ?",
+      "FechaFinalizacion = ?",
+      "Sub_Total = ?",
+      "Descuento = ?",
+      "IVA = ?",
+      "Monto_Total = ?",
+      "MetodoPago = ?",
+      "IdEstadoReserva = ?",
+    ];
+    const params = [
+      NroDocumentoCliente,
+      FechaInicio,
+      FechaFinalizacion,
+      SubTotal  ?? 0,
+      Descuento ?? 0,
+      IVA       ?? 0,
+      MontoTotal ?? 0,
+      MetodoPago ?? 1,
+      IdEstadoReserva ?? 1,
+    ];
+
+    if (habitacionCol) {
+      fields.splice(1, 0, `${habitacionCol} = ?`);
+      params.splice(1, 0, IDHabitacion);
+    }
+
+    params.push(id);
+
     const [result] = await db.query(
-      `UPDATE reserva
-       SET NroDocumentoCliente = ?, FechaInicio = ?, FechaFinalizacion = ?,
-           Sub_Total = ?, Descuento = ?, IVA = ?, Monto_Total = ?,
-           MetodoPago = ?, IdEstadoReserva = ?
-       WHERE IdReserva = ?`,
-      [
-        NroDocumentoCliente,
-        FechaInicio,
-        FechaFinalizacion,
-        SubTotal  ?? 0,
-        Descuento ?? 0,
-        IVA       ?? 0,
-        MontoTotal ?? 0,
-        MetodoPago ?? 1,
-        IdEstadoReserva ?? 1,
-        id,
-      ]
+      `UPDATE reserva SET ${fields.join(", ")} WHERE IdReserva = ?`,
+      params
     );
 
     if (Array.isArray(paquetesIds)) {
@@ -261,11 +370,26 @@ const ReservasService = {
       const svcList = Array.isArray(serviciosConHorarios) && serviciosConHorarios.length > 0
         ? serviciosConHorarios
         : (Array.isArray(serviciosIds) ? serviciosIds.map(sid => ({ id: sid, hora: null })) : []);
+      const detalleCols = await getDetalleServicioCols();
+      const hasHoraServicio = detalleCols.has("HoraServicio");
+
       for (const { id: sid, hora } of svcList) {
+        const columns = ["IDReserva", "IDServicio", "Cantidad", "Precio", "Estado"];
+        const selectExpr = ["?", "?", "1", "Costo", "1"];
+        const params = [id, sid];
+
+        if (hasHoraServicio) {
+          columns.push("HoraServicio");
+          selectExpr.push("?");
+          params.push(hora || null);
+        }
+
+        params.push(sid);
+
         await db.query(
-          `INSERT INTO detallereservaservicio (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
-           SELECT ?, ?, 1, Costo, 1, ? FROM servicio WHERE IDServicio = ?`,
-          [id, sid, hora || null, sid]
+          `INSERT INTO detallereservaservicio (${columns.join(", ")})
+           SELECT ${selectExpr.join(", ")} FROM servicio WHERE IDServicio = ?`,
+          params
         );
       }
     }

@@ -5,7 +5,7 @@ const { requireAdmin } = require("../middlewares/authorization.middleware");
 
 router.get("/", clientesController.getAll);
 router.get("/activos", requireAdmin, clientesController.getActivos);
-router.get("/search", requireAdmin, clientesController.search);
+router.get("/search", clientesController.search);
 router.get("/buscar", clientesController.buscarPorDocumento);
 router.get("/:id", clientesController.obtenerPorId);
 router.post("/", requireAdmin, clientesController.create);

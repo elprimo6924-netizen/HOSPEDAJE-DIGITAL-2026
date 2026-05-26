@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const db = require\\('./src/config/db'\\); db.query\\('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS IsActive TINYINT\\(1\\) DEFAULT 1, ADD COLUMN IF NOT EXISTS requiereCambioPassword TINYINT\\(1\\) DEFAULT 0'\\).then\\(\\(\\) => { console.log\\('OK: columnas agregadas'\\); process.exit\\(0\\); }\\).catch\\(e => { console.error\\('ERROR:', e.message\\); process.exit\\(1\\); }\\);\")",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"try { require\\('resend'\\); console.log\\('resend: OK'\\); } catch\\(e\\) { console.log\\('resend: NO INSTALADO -', e.message\\); }\")",
+      "Bash(findstr /v \"dotenv\\\\|injecting\\\\|tip:\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\({ override: true }\\); const app = require\\('./src/app'\\); const s = app.listen\\(3099, \\(\\) => { console.log\\('OK'\\); s.close\\(\\); }\\);\")",
+      "Bash(git commit -m ' *)",
+      "Bash(dir /s /b)",
+      "Bash(node -e \"require\\('nodemailer'\\); console.log\\('OK'\\)\")",
+      "Bash(node test-email.js)"
+    ]
+  }
+}

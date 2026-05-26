@@ -189,8 +189,22 @@ async function filterSidebarByPermissions() {
         const user = session.usuario;
         if (!user || !user.IDRol) return;
 
+        const idRol = Number(user.IDRol);
+
         // Administrador ve todo
-        if (Number(user.IDRol) === 1) return;
+        if (idRol === 1) return;
+
+        // Rol Cliente (2 o 3): no requiere permisos remotos
+        if (idRol === 2 || idRol === 3) {
+            const MODULOS_CLIENTE = new Set(['dashboard', 'paquetes', 'habitaciones', 'servicios', 'reservas', 'perfil']);
+            document.querySelectorAll('.sidebar-item[data-module]').forEach(item => {
+                const modulo = item.getAttribute('data-module');
+                if (modulo && !MODULOS_CLIENTE.has(modulo)) {
+                    item.style.display = 'none';
+                }
+            });
+            return;
+        }
 
         const apiUrl = window.API_URL || 'http://localhost:3000/api';
         const response = await fetch(`${apiUrl}/roles/${user.IDRol}`, {
@@ -215,17 +229,6 @@ async function filterSidebarByPermissions() {
 
         // Si no tiene permisos asignados, aplicar perfil por defecto según IDRol
         if (modulosPermitidos.size === 0) {
-            const idRol = Number(user.IDRol);
-            // IDRol=2 = Cliente: solo ve sus módulos de consumo
-            if (idRol === 2) {
-                const MODULOS_CLIENTE = new Set(['dashboard', 'paquetes', 'habitaciones', 'servicios', 'reservas', 'perfil']);
-                document.querySelectorAll('.sidebar-item[data-module]').forEach(item => {
-                    const modulo = item.getAttribute('data-module');
-                    if (modulo && !MODULOS_CLIENTE.has(modulo)) {
-                        item.style.display = 'none';
-                    }
-                });
-            }
             // Otros roles sin permisos: mostrar todo (comportamiento original)
             return;
         }
