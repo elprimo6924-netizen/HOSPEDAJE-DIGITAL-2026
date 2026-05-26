@@ -53,6 +53,17 @@ const usuariosRoutes = require('./routes/usuarios.routes');
 const rolesRoutes = require('./routes/roles.routes');
 const permisosRoutes = require('./routes/permisos.routes');
 
+// =============================
+// RUTAS PÚBLICAS (sin token)
+// =============================
+const paquetesController    = require('./controllers/paquetes.controller');
+const serviciosController   = require('./controllers/servicios.controller');
+const habitacionesController = require('./controllers/habitaciones.controller');
+
+app.get('/api/paquetes/activos',       paquetesController.listarActivos);
+app.get('/api/servicios/activos',      serviciosController.listarActivos);
+app.get('/api/habitaciones/disponibles', habitacionesController.disponibles);
+
 // Rutas de autenticación y acceso
 app.use("/api/auth", authRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
