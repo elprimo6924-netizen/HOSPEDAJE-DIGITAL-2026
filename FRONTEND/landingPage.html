@@ -489,6 +489,27 @@
             return 'fa-concierge-bell';
         }
 
+        const IMAGENES_SERVICIOS = {
+            "Spa y Masajes": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80",
+            "Restaurante": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+            "Piscina": "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=400&q=80",
+            "WiFi": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80",
+            "WiFi Premium": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80",
+            "Gimnasio": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80",
+            "Servicio a la Habitación": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+            "Room Service": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+            "Tour Guiado": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
+            "Lavandería": "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=400&q=80",
+            "Transporte": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&q=80",
+            "Bar y Cocktails": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+            "Bar & Cocktails": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+            "default": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80"
+        };
+
+        function getImagenServicio(nombre) {
+            return IMAGENES_SERVICIOS[nombre] || IMAGENES_SERVICIOS['default'];
+        }
+
         function renderServicios(container, servicios) {
             if (!Array.isArray(servicios) || servicios.length === 0) {
                 container.innerHTML = '<p class="col-span-full text-center text-gray-400 italic py-12">No hay servicios disponibles.</p>';
@@ -497,19 +518,18 @@
 
             container.innerHTML = servicios.slice(0, 8).map((svc) => {
                 const icono = getServicioIcono(svc.NombreServicio);
+                const unsplashFallback = getImagenServicio(svc.NombreServicio);
                 const imgResolved = (() => {
                     const raw = (svc.imagen_url || '').trim();
-                    if (!raw) return null;
+                    if (!raw) return unsplashFallback;
                     if (raw.startsWith('data:image/')) return raw;
                     if (/^https?:\/\//.test(raw)) return raw;
                     if (/^\/[^/]/.test(raw)) return IMG_BASE + raw;
                     const nombre = decodeURIComponent(raw).replace(/\\/g, '/').split('/').filter(Boolean).pop();
-                    return nombre ? IMG_BASE + '/img/' + encodeURIComponent(nombre) : null;
+                    return nombre ? IMG_BASE + '/img/' + encodeURIComponent(nombre) : unsplashFallback;
                 })();
 
-                const iconoHtml = imgResolved
-                    ? `<img src="${imgResolved}" class="w-full h-full object-cover" alt="${svc.NombreServicio || ''}" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-primary/10 flex items-center justify-center text-primary text-2xl\\'><i class=\\'fa-solid ${icono}\\'></i></div>'">`
-                    : `<div class="w-full h-full bg-primary/10 flex items-center justify-center text-primary text-2xl"><i class="fa-solid ${icono}"></i></div>`;
+                const iconoHtml = `<img src="${imgResolved}" class="w-full h-full object-cover" alt="${svc.NombreServicio || ''}" onerror="this.onerror=null;this.src='${unsplashFallback}'">`;
 
                 return `
                 <article class="group bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 flex flex-col items-center text-center">

@@ -2298,6 +2298,27 @@ const actualizarResumenServiciosAdmin = (servicios) => {
     if (inactivos) inactivos.textContent = serviciosInactivos;
 };
 
+const IMAGENES_SERVICIOS = {
+    "Spa y Masajes": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80",
+    "Restaurante": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+    "Piscina": "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?w=400&q=80",
+    "WiFi": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80",
+    "WiFi Premium": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80",
+    "Gimnasio": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80",
+    "Servicio a la Habitación": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+    "Room Service": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=400&q=80",
+    "Tour Guiado": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80",
+    "Lavandería": "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=400&q=80",
+    "Transporte": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&q=80",
+    "Bar y Cocktails": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+    "Bar & Cocktails": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80",
+    "default": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80"
+};
+
+function getImagenServicio(nombre) {
+    return IMAGENES_SERVICIOS[nombre] || IMAGENES_SERVICIOS['default'];
+}
+
 const renderizarServiciosAdmin = () => {
     const contenedor = document.getElementById('servicios-admin-tbody');
     if (!contenedor) return;
@@ -2325,15 +2346,16 @@ const renderizarServiciosAdmin = () => {
         const estado = normalizarEstadoServicio(servicio.Estado);
         const switchId = `switch-servicio-${idServicio}`;
 
-        const imgSrc = servicio.imagen_url ? escaparHtml(servicio.imagen_url) : '';
+        const imgSrc = servicio.imagen_url
+            ? escaparHtml(servicio.imagen_url)
+            : getImagenServicio(servicio.NombreServicio);
+        const imgFallback = escaparHtml(getImagenServicio(servicio.NombreServicio));
         return `
             <tr>
                 <td style="width:60px">
-                    ${imgSrc
-                        ? `<img src="${imgSrc}" alt="${escaparHtml(servicio.NombreServicio || '')}"
-                               style="width:52px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0"
-                               onerror="this.style.display='none'">`
-                        : `<span style="color:#cbd5e1;font-size:1.3rem"><i class="fa-solid fa-image"></i></span>`}
+                    <img src="${imgSrc}" alt="${escaparHtml(servicio.NombreServicio || '')}"
+                         style="width:52px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0"
+                         onerror="this.onerror=null;this.src='${imgFallback}'">
                 </td>
                 <td>
                     <div class="crud-servicios-nombre">${escaparHtml(servicio.NombreServicio || 'Sin nombre')}</div>
