@@ -65,7 +65,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     tbody.innerHTML = items
       .map((item) => {
         const isActive = Number(item.IsActive) === 1;
-        const nombreMostrar = resaltar(item.Nombre || item.NombreUsuario || "Sin Nombre", q);
+        const nombreBase    = [item.NombreUsuario || item.Nombre, item.Apellido].filter(Boolean).join(' ') || 'Sin nombre';
+        const nombreMostrar = resaltar(nombreBase, q);
         const emailMostrar  = resaltar(item.Email || "Sin Email", q);
         const idRolActual = item.IDRol || item.id_rol;
         const isProtected = isSuperAdmin(item);
@@ -110,13 +111,22 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </label>
                 </td>
                 <td class="p-4">
-                    <div class="flex justify-center gap-2">
-                        <button class="p-2 bg-blue-50 text-blue-600 rounded-lg ${isProtected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100'} transition-colors shadow-sm"
-                                data-action="edit" data-id="${item.IDUsuario}" title="${isProtected ? 'No editable - SuperAdministrador' : 'Editar'}" ${isProtected ? 'disabled' : ''}>
+                    <div class="flex justify-center gap-1.5">
+                        <button class="usr-btn usr-btn-ver"
+                                data-action="view" data-id="${item.IDUsuario}"
+                                title="Ver detalle" aria-label="Ver detalle del usuario">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="usr-btn usr-btn-edit"
+                                data-action="edit" data-id="${item.IDUsuario}"
+                                title="${isProtected ? 'No editable — SuperAdministrador' : 'Editar'}"
+                                ${isProtected ? 'disabled' : ''}>
                             <i class="fa-solid fa-pencil"></i>
                         </button>
-                        <button class="p-2 bg-red-50 text-red-600 rounded-lg ${isProtected ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-100'} transition-colors shadow-sm"
-                                data-action="delete" data-id="${item.IDUsuario}" title="${isProtected ? 'No eliminable - SuperAdministrador' : 'Eliminar'}" ${isProtected ? 'disabled' : ''}>
+                        <button class="usr-btn usr-btn-del"
+                                data-action="delete" data-id="${item.IDUsuario}"
+                                title="${isProtected ? 'No eliminable — SuperAdministrador' : 'Eliminar'}"
+                                ${isProtected ? 'disabled' : ''}>
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -132,10 +142,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!query.trim()) return allUsers;
     const q = query.trim().toLowerCase();
     return allUsers.filter((u) => {
-      const nombre = (u.Nombre || u.NombreUsuario || '').toLowerCase();
-      const email  = (u.Email || '').toLowerCase();
-      const doc    = String(u.NroDocumento || u.nro_documento || '').toLowerCase();
-      return nombre.includes(q) || email.includes(q) || doc.includes(q);
+      const nombre   = (u.NombreUsuario || u.Nombre || '').toLowerCase();
+      const apellido = (u.Apellido || '').toLowerCase();
+      const email    = (u.Email || '').toLowerCase();
+      const doc      = String(u.NumeroDocumento || u.NroDocumento || '').toLowerCase();
+      return nombre.includes(q) || apellido.includes(q) || email.includes(q) || doc.includes(q);
     });
   };
 
@@ -188,6 +199,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const { action, id } = button.dataset;
+
+    // Ver detalle — disponible para todos los usuarios sin restricción
+    if (action === "view") {
+      const item = allUsers.find(u => String(u.IDUsuario) === String(id));
+      if (item) mostrarDetalleUsuario(item);
+      return;
+    }
 
     // Bloquear acciones sobre el SuperAdministrador
     if (Number(id) === SUPER_ADMIN_ID) {
@@ -307,6 +325,74 @@ document.addEventListener("DOMContentLoaded", async () => {
       setTimeout(() => { window.location.href = "../login.html"; }, 1500);
     }
   });
+
+  // ── Modal detalle usuario ────────────────────────────────────────────────
+  const modalDet = document.getElementById('usr-modal-det');
+
+  const cerrarModalDet = () => modalDet?.classList.remove('open');
+
+  document.getElementById('usr-det-x')?.addEventListener('click', cerrarModalDet);
+  document.getElementById('usr-det-cerrar')?.addEventListener('click', cerrarModalDet);
+  modalDet?.addEventListener('click', (e) => { if (e.target === modalDet) cerrarModalDet(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModalDet(); });
+
+  const mostrarDetalleUsuario = (item) => {
+    const nombre   = (item.NombreUsuario || '').trim();
+    const apellido = (item.Apellido || '').trim();
+    const nombreCompleto = [nombre, apellido].filter(Boolean).join(' ') || 'Sin nombre';
+    const isActive = Number(item.IsActive) === 1;
+    const fmtVal   = (v) => v || '—';
+
+    document.getElementById('usr-det-nombre').textContent = nombreCompleto;
+    document.getElementById('usr-det-email').textContent  = item.Email || '—';
+
+    document.getElementById('usr-det-grid').innerHTML = `
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">Nombre</div>
+        <div class="usr-det-val">${fmtVal(item.NombreUsuario)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">Apellido</div>
+        <div class="usr-det-val">${fmtVal(item.Apellido)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">Tipo de documento</div>
+        <div class="usr-det-val">${fmtVal(item.TipoDocumento)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">N° Documento</div>
+        <div class="usr-det-val">${fmtVal(item.NumeroDocumento)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">Teléfono</div>
+        <div class="usr-det-val">${fmtVal(item.Telefono)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">País</div>
+        <div class="usr-det-val">${fmtVal(item.Pais)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">Rol</div>
+        <div class="usr-det-val">${fmtVal(item.NombreRol)}</div>
+      </div>
+      <div class="usr-det-item">
+        <div class="usr-det-lbl">Estado</div>
+        <div class="usr-det-val">
+          <span class="usr-det-pill ${isActive ? 'on' : 'off'}">
+            <i class="fa-solid fa-circle" style="font-size:.42rem;vertical-align:middle"></i>
+            ${isActive ? 'Activo' : 'Inactivo'}
+          </span>
+        </div>
+      </div>
+      ${item.Direccion ? `
+      <div class="usr-det-item s2">
+        <div class="usr-det-lbl">Dirección</div>
+        <div class="usr-det-val">${item.Direccion}</div>
+      </div>` : ''}
+    `;
+
+    modalDet.classList.add('open');
+  };
 
   // 4. Ejecución inicial: primero roles, luego usuarios
   await fetchRoles();

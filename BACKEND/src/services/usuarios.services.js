@@ -49,20 +49,21 @@ const getUsuarioById = async (id) => {
 };
 
 const createUsuario = async (data) => {
-    const { 
-        Contrasena, Nombre, Apellido, Email, 
+    const {
+        Contrasena, Apellido, Email,
         TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive
     } = data;
 
-    // IDRol viene del body, por defecto 2 (Cliente)
+    // Acepta tanto NombreUsuario (form admin) como Nombre (compatibilidad)
+    const NombreUsuario = data.NombreUsuario || data.Nombre || null;
+
     const rol = IDRol || 2;
-    // IsActive viene del body, por defecto 1 (Activo)
     const isActive = IsActive !== undefined ? IsActive : 1;
-    
+
     const [result] = await database.query(
-        `INSERT INTO usuarios (Contrasena, Nombre, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive) 
+        `INSERT INTO usuarios (NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [Contrasena, Nombre, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, rol, isActive]
+        [NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, rol, isActive]
     );
     return result;
 };
@@ -70,7 +71,7 @@ const createUsuario = async (data) => {
 
 const updateUsuario = async (id, data) => {
     // Construir dinámicamente la query solo con los campos proporcionados
-    const allowedFields = ['Nombre', 'Apellido', 'Email', 'TipoDocumento', 'NumeroDocumento', 'Telefono', 'Pais', 'Direccion', 'IDRol', 'IsActive'];
+    const allowedFields = ['NombreUsuario', 'Apellido', 'Email', 'TipoDocumento', 'NumeroDocumento', 'Telefono', 'Pais', 'Direccion', 'IDRol', 'IsActive'];
     const updateFields = [];
     const updateValues = [];
     
@@ -127,8 +128,8 @@ const searchUsuarios = async (searchTerm, page = 1, limit = 10) => {
 
         // Contar total de resultados
         const [countResult] = await database.query(
-            `SELECT COUNT(*) as total FROM usuarios 
-             WHERE Nombre LIKE ? OR Email LIKE ?`,
+            `SELECT COUNT(*) as total FROM usuarios
+             WHERE NombreUsuario LIKE ? OR Email LIKE ?`,
             [search, search]
         );
         const total = countResult[0].total;
@@ -138,7 +139,7 @@ const searchUsuarios = async (searchTerm, page = 1, limit = 10) => {
             SELECT u.*, r.Nombre as NombreRol
             FROM usuarios u
             LEFT JOIN roles r ON u.IDRol = r.IDRol
-            WHERE u.Nombre LIKE ? OR u.Email LIKE ?
+            WHERE u.NombreUsuario LIKE ? OR u.Email LIKE ?
             ORDER BY u.IDUsuario DESC
             LIMIT ? OFFSET ?
         `;

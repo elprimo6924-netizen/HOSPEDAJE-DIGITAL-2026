@@ -394,8 +394,8 @@
                         </div>
                         <!-- Lista de checkboxes -->
                         <div id="fpaq-servicios-list"
-                             style="max-height:160px;overflow-y:auto;border:1.5px solid #e2e8f0;
-                                    border-radius:8px;padding:.35rem"></div>
+                             style="max-height:280px;overflow-y:auto;border:1.5px solid #e2e8f0;
+                                    border-radius:10px;scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent"></div>
                     </div>
                     <div class="paq-form-section">
                         <span class="img-picker-label">Imagen del paquete</span>
@@ -679,57 +679,164 @@
         document.getElementById('modal-detalle-paq').classList.remove('hidden');
     }
 
-    /* ── Servicios multi-select cart (P2) ── */
-    let _svcsTodos = [];  // cache de servicios
+    /* ── Servicios multi-select cart ── */
+    let _svcsTodos = [];
+
+    const ICONO_SVC_MAP = [
+        ['tour',       'fa-map-location-dot'],
+        ['guiado',     'fa-map-location-dot'],
+        ['transporte', 'fa-van-shuttle'],
+        ['lavander',   'fa-soap'],
+        ['desayuno',   'fa-mug-hot'],
+        ['almuerzo',   'fa-utensils'],
+        ['cena',       'fa-utensils'],
+        ['spa',        'fa-spa'],
+        ['masaje',     'fa-hand-dots'],
+        ['piscina',    'fa-person-swimming'],
+        ['gym',        'fa-dumbbell'],
+        ['gimnas',     'fa-dumbbell'],
+        ['wifi',       'fa-wifi'],
+        ['parking',    'fa-square-parking'],
+        ['foto',       'fa-camera'],
+        ['bar',        'fa-martini-glass'],
+        ['bebida',     'fa-martini-glass'],
+    ];
+    const iconoSvc = nombre => {
+        const n = (nombre || '').toLowerCase();
+        const hit = ICONO_SVC_MAP.find(([k]) => n.includes(k));
+        return hit ? hit[1] : 'fa-concierge-bell';
+    };
+    const capitalizarSvc = str =>
+        str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+
+    function aplicarEstiloFila(label, selected) {
+        label.style.background      = selected ? 'rgba(255,247,237,.65)' : '';
+        label.style.borderLeftColor = selected ? '#e07020' : 'transparent';
+        const ico = label.querySelector('.svc-icono');
+        if (ico) ico.style.color = selected ? '#e07020' : '#cbd5e1';
+        const precio = label.querySelector('.svc-precio');
+        if (precio) {
+            precio.style.background = selected ? '#fef3c7' : '#f1f5f9';
+            precio.style.color      = selected ? '#b45309' : '#64748b';
+        }
+    }
 
     function renderCartSvc() {
         const cart     = document.getElementById('fpaq-servicios-cart');
         const emptyMsg = document.getElementById('fpaq-cart-empty');
         const checked  = [...document.querySelectorAll('#fpaq-servicios-list input[type=checkbox]:checked')];
-        // Remove old chips but keep the empty-msg span
-        cart.querySelectorAll('.svc-chip').forEach(c => c.remove());
+
+        cart.querySelectorAll('.svc-chip, .svc-total').forEach(el => el.remove());
+
         if (checked.length === 0) {
             if (emptyMsg) emptyMsg.style.display = 'inline';
         } else {
             if (emptyMsg) emptyMsg.style.display = 'none';
+
+            let total = 0;
             checked.forEach(chk => {
+                total += Number(chk.dataset.costo || 0);
                 const chip = document.createElement('span');
                 chip.className = 'svc-chip';
-                chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:#eff6ff;' +
-                    'color:#1d4ed8;border:1px solid #bfdbfe;border-radius:6px;padding:3px 9px;' +
-                    'font-size:.76rem;font-weight:600;cursor:pointer;';
-                chip.innerHTML = `${chk.dataset.nombre} <i class="fa-solid fa-xmark" style="font-size:.65rem"></i>`;
-                chip.title = 'Clic para quitar';
-                chip.addEventListener('click', () => {
+                chip.style.cssText =
+                    'display:inline-flex;align-items:center;gap:5px;' +
+                    'background:#fff7ed;color:#92400e;border:1px solid #fcd34d;' +
+                    'border-radius:6px;padding:3px 10px;font-size:.76rem;font-weight:600;';
+                chip.innerHTML =
+                    `${capitalizarSvc(chk.dataset.nombre)}` +
+                    `<button type="button" style="background:none;border:none;padding:0;margin-left:1px;` +
+                    `cursor:pointer;color:#d97706;font-size:.65rem;line-height:1;` +
+                    `display:inline-flex;align-items:center" title="Quitar">` +
+                    `<i class="fa-solid fa-xmark"></i></button>`;
+                chip.querySelector('button').addEventListener('click', () => {
                     chk.checked = false;
-                    renderCartSvc();
+                    chk.dispatchEvent(new Event('change'));
                 });
                 cart.insertBefore(chip, emptyMsg);
             });
+
+            if (total > 0) {
+                const totalEl = document.createElement('span');
+                totalEl.className = 'svc-total';
+                totalEl.style.cssText =
+                    'margin-left:auto;font-size:.76rem;font-weight:700;' +
+                    'color:#e07020;white-space:nowrap;padding-left:.5rem;align-self:center;';
+                totalEl.textContent = 'Total: ' + rfFmtPaq(total);
+                cart.appendChild(totalEl);
+            }
         }
     }
 
     function buildSvcList(svcs, selectedIds = []) {
-        const list = document.getElementById('fpaq-servicios-list');
+        const list    = document.getElementById('fpaq-servicios-list');
         list.innerHTML = '';
-        (Array.isArray(svcs) ? svcs : []).filter(s => s.Estado == 1).forEach(s => {
-            const div = document.createElement('div');
-            div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;' +
-                'padding:.45rem .7rem;border-radius:7px;cursor:pointer;transition:background .15s';
-            div.onmouseenter = () => { div.style.background = '#f8fafc'; };
-            div.onmouseleave = () => { div.style.background = 'transparent'; };
-            const checked = selectedIds.includes(Number(s.IDServicio));
-            div.innerHTML = `
-                <label style="display:flex;align-items:center;gap:.55rem;cursor:pointer;font-size:.83rem;color:#334155;flex:1">
-                    <input type="checkbox" class="accent-green-700" style="width:15px;height:15px;cursor:pointer"
-                           data-id="${s.IDServicio}" data-nombre="${s.NombreServicio}" ${checked ? 'checked' : ''}>
-                    ${s.NombreServicio}
-                </label>
-                <span style="font-size:.76rem;color:#64748b;font-weight:600">+${rfFmtPaq(s.Costo)}</span>
+        const activos = (Array.isArray(svcs) ? svcs : []).filter(s => s.Estado == 1);
+
+        if (!activos.length) {
+            list.innerHTML =
+                '<p style="text-align:center;color:#94a3b8;font-size:.78rem;padding:1.5rem 1rem">No hay servicios activos.</p>';
+            renderCartSvc();
+            return;
+        }
+
+        activos.forEach((s, i) => {
+            const id      = s.IDServicio;
+            const nombre  = capitalizarSvc(s.NombreServicio);
+            const costo   = Number(s.Costo || 0);
+            const icono   = iconoSvc(s.NombreServicio);
+            const checked = selectedIds.includes(Number(id));
+            const isLast  = i === activos.length - 1;
+
+            const label = document.createElement('label');
+            label.htmlFor = `fsvc-${id}`;
+            label.style.cssText =
+                'display:flex;align-items:center;justify-content:space-between;' +
+                'padding:.75rem 1rem;gap:.75rem;min-height:44px;cursor:pointer;' +
+                'transition:background .15s,border-color .15s;user-select:none;' +
+                'border-left:2px solid transparent;' +
+                (isLast ? '' : 'border-bottom:1px solid #f1f5f9;');
+
+            label.innerHTML = `
+                <span style="display:flex;align-items:center;gap:.75rem;flex:1;min-width:0">
+                    <input type="checkbox" id="fsvc-${id}"
+                           style="width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:#e07020"
+                           data-id="${id}" data-nombre="${s.NombreServicio}" data-costo="${costo}"
+                           ${checked ? 'checked' : ''}>
+                    <span class="svc-icono"
+                          style="width:16px;text-align:center;flex-shrink:0;font-size:.85rem;
+                                 transition:color .15s;color:${checked ? '#e07020' : '#cbd5e1'}">
+                        <i class="fa-solid ${icono}"></i>
+                    </span>
+                    <span style="font-size:.86rem;font-weight:500;color:#334155;
+                                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3">
+                        ${nombre}
+                    </span>
+                </span>
+                <span class="svc-precio"
+                      style="font-size:.74rem;font-weight:600;white-space:nowrap;flex-shrink:0;
+                             border-radius:999px;padding:.2rem .65rem;transition:all .15s;
+                             background:${checked ? '#fef3c7' : '#f1f5f9'};
+                             color:${checked ? '#b45309' : '#64748b'}">
+                    +${rfFmtPaq(costo)}
+                </span>
             `;
-            div.querySelector('input').addEventListener('change', renderCartSvc);
-            list.appendChild(div);
+
+            const checkbox = label.querySelector('input[type=checkbox]');
+            checkbox.addEventListener('change', () => {
+                aplicarEstiloFila(label, checkbox.checked);
+                renderCartSvc();
+            });
+            label.addEventListener('mouseenter', () => {
+                if (!checkbox.checked) label.style.background = '#f8fafc';
+            });
+            label.addEventListener('mouseleave', () => {
+                if (!checkbox.checked) label.style.background = '';
+            });
+
+            if (checked) aplicarEstiloFila(label, true);
+            list.appendChild(label);
         });
+
         renderCartSvc();
     }
 

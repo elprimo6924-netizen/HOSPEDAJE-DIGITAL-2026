@@ -43,6 +43,41 @@
         padding: .3rem .65rem !important;
         font-size: .82rem !important;
       }
+
+      /* ── Botones de acción estandarizados ── */
+      .usr-btn { display:inline-flex; align-items:center; justify-content:center; width:2.1rem; height:2.1rem; border-radius:8px; border:none; cursor:pointer; transition:filter .15s,transform .15s; font-size:.8rem; flex-shrink:0; }
+      .usr-btn:hover:not(:disabled) { filter:brightness(.88); transform:translateY(-1px); }
+      .usr-btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; filter:none !important; }
+      .usr-btn-ver  { background:#dcfce7; color:#166534; }
+      .usr-btn-edit { background:#dbeafe; color:#1d4ed8; }
+      .usr-btn-del  { background:#fee2e2; color:#b91c1c; }
+
+      /* ── Modal detalle usuario ── */
+      @keyframes usr-bg { from{opacity:0} to{opacity:1} }
+      @keyframes usr-up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+      #usr-modal-det { position:fixed; inset:0; background:rgba(15,23,42,.55); display:none; align-items:center; justify-content:center; z-index:9999; padding:16px; box-sizing:border-box; }
+      #usr-modal-det.open { display:flex; animation:usr-bg .2s ease; }
+      #usr-det-box { background:#fff; border-radius:16px; width:100%; max-width:560px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(15,23,42,.22); overflow:hidden; animation:usr-up .25s ease; }
+      #usr-det-hdr { padding:20px 24px 16px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+      .usr-det-ava { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#e07020,#ea580c); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; flex-shrink:0; }
+      .usr-det-titl { flex:1; min-width:0; }
+      .usr-det-titl h3 { font-size:1.05rem; font-weight:800; color:#0f172a; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .usr-det-titl p  { font-size:.78rem; color:#64748b; margin:3px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      #usr-det-x { background:none; border:none; cursor:pointer; color:#94a3b8; font-size:1.4rem; line-height:1; padding:4px 6px; border-radius:6px; transition:color .15s,background .15s; flex-shrink:0; }
+      #usr-det-x:hover { color:#0f172a; background:#f1f5f9; }
+      #usr-det-body { overflow-y:auto; flex:1; padding:20px 24px; }
+      .usr-det-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+      .usr-det-item { background:#f8fafc; border-radius:10px; padding:10px 14px; border:1px solid #f1f5f9; }
+      .usr-det-item.s2 { grid-column:1/-1; }
+      .usr-det-lbl { font-size:.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.07em; margin-bottom:4px; }
+      .usr-det-val { font-size:.875rem; font-weight:600; color:#0f172a; word-break:break-word; }
+      .usr-det-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:.74rem; font-weight:700; }
+      .usr-det-pill.on  { background:#dcfce7; color:#166534; }
+      .usr-det-pill.off { background:#fee2e2; color:#b91c1c; }
+      #usr-det-ftr { padding:14px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; flex-shrink:0; }
+      .usr-det-close-btn { padding:9px 22px; border-radius:9px; background:#f8fafc; color:#475569; font-weight:600; font-size:.85rem; border:1.5px solid #e2e8f0; cursor:pointer; transition:background .15s; }
+      .usr-det-close-btn:hover { background:#f1f5f9; }
+      @media (max-width:480px) { .usr-det-grid { grid-template-columns:1fr; } .usr-det-item.s2 { grid-column:1; } }
     </style>
   </head>
 
@@ -149,6 +184,26 @@
       </main>
 
       <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
+    </div>
+
+    <!-- Modal detalle usuario -->
+    <div id="usr-modal-det" role="dialog" aria-modal="true" aria-labelledby="usr-det-nombre">
+      <div id="usr-det-box">
+        <div id="usr-det-hdr">
+          <span class="usr-det-ava"><i class="fa-solid fa-user-tie"></i></span>
+          <div class="usr-det-titl">
+            <h3 id="usr-det-nombre"></h3>
+            <p  id="usr-det-email"></p>
+          </div>
+          <button id="usr-det-x" aria-label="Cerrar">&times;</button>
+        </div>
+        <div id="usr-det-body">
+          <div class="usr-det-grid" id="usr-det-grid"></div>
+        </div>
+        <div id="usr-det-ftr">
+          <button class="usr-det-close-btn" id="usr-det-cerrar">Cerrar</button>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->

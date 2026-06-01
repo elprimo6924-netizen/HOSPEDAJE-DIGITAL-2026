@@ -52,6 +52,39 @@
         .crud-servicios-filtros select { border: 1px solid #e8e0d0 !important; background: #fff !important; color: #1a1a1a !important; border-radius: 8px !important; }
         .crud-servicios-filtros input:focus,
         .crud-servicios-filtros select:focus { border-color: #e07020 !important; box-shadow: 0 0 0 2px rgba(224,112,32,.2) !important; }
+
+        /* ── Modal rediseñado ── */
+        .svc-label  { display:block; font-size:.78rem; font-weight:600; color:#374151; margin-bottom:.35rem; }
+        .svc-req    { color:#ef4444; margin-left:.1rem; }
+        .svc-input  {
+            width:100%; padding:.65rem .9rem;
+            border:1.5px solid #e2e8f0; border-radius:9px;
+            background:#fafafa; color:#0f172a;
+            font:inherit; font-size:.9rem;
+            outline:none; transition:border-color .2s,box-shadow .2s,background .2s;
+        }
+        .svc-input:focus { border-color:#e07020 !important; box-shadow:0 0 0 3px rgba(224,112,32,.1) !important; background:#fff !important; }
+        .svc-err { display:none; color:#ef4444; font-size:.72rem; margin-top:.25rem; line-height:1.4; }
+        .svc-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .svc-col-full { grid-column:1 / -1; }
+        .svc-file-btn {
+            display:inline-flex; align-items:center; gap:.4rem;
+            margin-top:.65rem; padding:.4rem .95rem;
+            background:#e07020; color:#fff; border-radius:8px;
+            font-size:.78rem; font-weight:700; cursor:pointer; transition:background .2s;
+        }
+        .svc-file-btn:hover { background:#c76010; }
+        .svc-field-error { border-color:#fca5a5 !important; background:#fff5f5 !important; }
+        #svc-dropzone:hover, #svc-dropzone.svc-dragover { border-color:#e07020 !important; background:#fff7ed !important; }
+        #btn-servicio-admin-guardar:hover:not(:disabled) { background:#c76010 !important; }
+        #btn-servicio-admin-guardar:disabled { opacity:.65 !important; cursor:not-allowed !important; }
+        #btn-servicio-admin-limpiar:hover { background:#e2e8f0 !important; }
+        #btn-cerrar-modal-servicio:hover { background:#e2e8f0 !important; color:#0f172a !important; }
+        #svc-remove-img:hover { background:rgba(220,38,38,.85) !important; }
+        @media (max-width:560px) {
+            .svc-grid { grid-template-columns:1fr; }
+            .svc-col-full { grid-column:1; }
+        }
     </style>
 </head>
 <body>
@@ -144,65 +177,191 @@
             </section>
 
             <div id="modal-servicio-admin" class="crud-modal hidden" role="dialog" aria-modal="true" aria-labelledby="servicio-admin-form-title">
-                <div class="crud-modal-content">
-                    <button type="button" class="crud-modal-close" id="btn-cerrar-modal-servicio" aria-label="Cerrar formulario">&times;</button>
-                    <h4 id="servicio-admin-form-title">Crear servicio</h4>
-                    <p class="crud-servicios-note">Los campos están alineados con la estructura real de la base de datos.</p>
-                    <div id="mensaje-servicio-admin-modal" class="crud-servicios-mensaje" aria-live="polite"></div>
+                <div class="crud-modal-content"
+                     style="overflow:hidden;padding:0;display:flex;flex-direction:column;
+                            width:min(640px,96vw);max-height:92vh">
 
-                    <form id="form-servicio-admin" class="crud-servicios-form">
+                    <!-- ── Header fijo ── -->
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;
+                                gap:1rem;padding:1.25rem 1.5rem;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+                        <div>
+                            <h4 id="servicio-admin-form-title"
+                                style="font-size:1.1rem;font-weight:800;color:#e07020;margin:0 0 .2rem;line-height:1.2">
+                                Crear servicio
+                            </h4>
+                            <p style="font-size:.78rem;color:#64748b;margin:0;line-height:1.4">
+                                Completa la información del servicio que ofrecerás a tus huéspedes.
+                            </p>
+                        </div>
+                        <button type="button" id="btn-cerrar-modal-servicio" aria-label="Cerrar formulario"
+                                style="width:36px;height:36px;border-radius:50%;border:none;background:#f1f5f9;
+                                       color:#64748b;font-size:1rem;cursor:pointer;flex-shrink:0;
+                                       display:flex;align-items:center;justify-content:center;transition:all .15s">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- ── Formulario: cuerpo scrollable + footer fijo ── -->
+                    <form id="form-servicio-admin" novalidate
+                          style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
                         <input type="hidden" id="servicio-admin-id">
 
-                        <label>
-                            <span>Nombre del servicio <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="text" id="servicio-admin-nombre" required maxlength="100" placeholder="Ej. Masaje relajante">
-                        </label>
+                        <!-- Cuerpo con scroll -->
+                        <div style="overflow-y:auto;flex:1;padding:1.5rem;
+                                    scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent">
 
-                        <label>
-                            <span>Descripción <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <textarea id="servicio-admin-descripcion" required maxlength="500" placeholder="Describe el servicio en pocas palabras"></textarea>
-                        </label>
+                            <div id="mensaje-servicio-admin-modal" class="crud-servicios-mensaje" aria-live="polite"></div>
 
-                        <label>
-                            <span>Duración (minutos) <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="number" id="servicio-admin-duracion" required min="0" placeholder="Ej. 60">
-                        </label>
+                            <div class="svc-grid" style="margin-top:.1rem">
 
-                        <label>
-                            <span>Cantidad máxima de personas <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="number" id="servicio-admin-cantidad-maxima" required min="1" placeholder="Ej. 4">
-                        </label>
+                                <!-- Nombre — ancho completo -->
+                                <div class="svc-col-full">
+                                    <label for="servicio-admin-nombre" class="svc-label">
+                                        Nombre del servicio <span class="svc-req" aria-hidden="true">*</span>
+                                    </label>
+                                    <input type="text" id="servicio-admin-nombre" required maxlength="100"
+                                           placeholder="Ej. Masaje relajante" class="svc-input"
+                                           autocomplete="off">
+                                    <div class="svc-err" id="err-svc-nombre"></div>
+                                </div>
 
-                        <label>
-                            <span>Costo <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="number" id="servicio-admin-costo" required min="0" step="0.01" placeholder="Ej. 150000">
-                        </label>
+                                <!-- Descripción — ancho completo -->
+                                <div class="svc-col-full">
+                                    <label for="servicio-admin-descripcion" class="svc-label">
+                                        Descripción <span class="svc-req" aria-hidden="true">*</span>
+                                    </label>
+                                    <textarea id="servicio-admin-descripcion" required maxlength="500" rows="3"
+                                              placeholder="Describe el servicio en pocas palabras"
+                                              class="svc-input" style="resize:vertical;min-height:88px"></textarea>
+                                    <div class="svc-err" id="err-svc-descripcion"></div>
+                                </div>
 
-                        <label>
-                            <span>Imagen (URL)</span>
-                            <input type="url" id="servicio-admin-imagen-url" maxlength="500"
-                                   placeholder="https://ejemplo.com/imagen.jpg">
-                        </label>
-                        <div id="servicio-admin-imagen-preview" style="display:none;margin-top:-.5rem;margin-bottom:.5rem">
-                            <img id="servicio-admin-preview-img" alt="Vista previa"
-                                 style="max-height:120px;border-radius:8px;border:1px solid #e2e8f0;object-fit:cover;">
+                                <!-- Duración -->
+                                <div>
+                                    <label for="servicio-admin-duracion" class="svc-label">
+                                        Duración (minutos) <span class="svc-req" aria-hidden="true">*</span>
+                                    </label>
+                                    <input type="number" id="servicio-admin-duracion" required min="1"
+                                           placeholder="Ej. 60" class="svc-input">
+                                    <div class="svc-err" id="err-svc-duracion"></div>
+                                </div>
+
+                                <!-- Cantidad máxima -->
+                                <div>
+                                    <label for="servicio-admin-cantidad-maxima" class="svc-label">
+                                        Máx. personas <span class="svc-req" aria-hidden="true">*</span>
+                                    </label>
+                                    <input type="number" id="servicio-admin-cantidad-maxima" required min="1"
+                                           placeholder="Ej. 4" class="svc-input">
+                                    <div class="svc-err" id="err-svc-cantidad"></div>
+                                </div>
+
+                                <!-- Costo -->
+                                <div>
+                                    <label for="servicio-admin-costo" class="svc-label">
+                                        Costo ($) <span class="svc-req" aria-hidden="true">*</span>
+                                    </label>
+                                    <input type="number" id="servicio-admin-costo" required min="0" step="1000"
+                                           placeholder="Ej. 150000" class="svc-input">
+                                    <div class="svc-err" id="err-svc-costo"></div>
+                                </div>
+
+                                <!-- Estado -->
+                                <div>
+                                    <label for="servicio-admin-estado" class="svc-label">
+                                        Estado <span class="svc-req" aria-hidden="true">*</span>
+                                    </label>
+                                    <select id="servicio-admin-estado" required class="svc-input" style="cursor:pointer">
+                                        <option value="1">Activo</option>
+                                        <option value="0">Inactivo</option>
+                                    </select>
+                                </div>
+
+                                <!-- Imagen — ancho completo -->
+                                <div class="svc-col-full">
+                                    <label class="svc-label">Imagen del servicio</label>
+
+                                    <!-- Zona drag & drop (vista previa local) -->
+                                    <div id="svc-dropzone"
+                                         style="border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;
+                                                padding:1.4rem 1.25rem;text-align:center;cursor:pointer;
+                                                transition:border-color .2s,background .2s">
+
+                                        <!-- Prompt visible cuando no hay imagen -->
+                                        <div id="svc-drop-prompt">
+                                            <i class="fa-solid fa-cloud-arrow-up"
+                                               style="font-size:2rem;color:#e07020;margin-bottom:.5rem;display:block"></i>
+                                            <p style="font-size:.86rem;font-weight:600;color:#374151;margin:.2rem 0">
+                                                Arrastra tu imagen aquí
+                                            </p>
+                                            <span style="font-size:.74rem;color:#94a3b8">
+                                                Vista previa local · PNG, JPG o WEBP · máx. 2 MB
+                                            </span>
+                                            <label class="svc-file-btn" onclick="event.stopPropagation()">
+                                                <i class="fa-solid fa-folder-open"></i> Seleccionar archivo
+                                                <input type="file" id="servicio-admin-file-input"
+                                                       accept="image/png,image/jpeg,image/webp" hidden>
+                                            </label>
+                                        </div>
+
+                                        <!-- Preview — preserva los IDs que usa app.js -->
+                                        <div id="servicio-admin-imagen-preview" style="display:none;position:relative">
+                                            <img id="servicio-admin-preview-img" alt="Vista previa"
+                                                 style="max-height:160px;border-radius:10px;object-fit:cover;
+                                                        border:1.5px solid #e2e8f0;display:block;margin:0 auto">
+                                            <button type="button" id="svc-remove-img"
+                                                    aria-label="Quitar imagen"
+                                                    style="position:absolute;top:.4rem;right:.4rem;
+                                                           width:28px;height:28px;border-radius:50%;
+                                                           background:rgba(0,0,0,.55);border:none;color:#fff;
+                                                           font-size:.8rem;cursor:pointer;
+                                                           display:flex;align-items:center;justify-content:center;
+                                                           transition:background .15s">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- URL para guardar en BD -->
+                                    <div style="margin-top:.65rem">
+                                        <label for="servicio-admin-imagen-url" class="svc-label"
+                                               style="margin-bottom:.3rem;color:#64748b">
+                                            URL de imagen (se guardará en la base de datos)
+                                        </label>
+                                        <input type="text" id="servicio-admin-imagen-url" maxlength="500"
+                                               placeholder="https://ejemplo.com/imagen.jpg"
+                                               class="svc-input" style="font-size:.84rem">
+                                        <p style="font-size:.7rem;color:#94a3b8;margin:.3rem 0 0;line-height:1.4">
+                                            La vista previa de arriba es local. Ingresa una URL pública para guardar la imagen.
+                                        </p>
+                                    </div>
+
+                                    <div class="svc-err" id="err-svc-imagen"></div>
+                                </div>
+
+                            </div><!-- /svc-grid -->
+                        </div><!-- /cuerpo scrollable -->
+
+                        <!-- ── Footer fijo ── -->
+                        <div style="display:flex;justify-content:flex-end;gap:.65rem;
+                                    padding:1rem 1.5rem;border-top:1px solid #f1f5f9;flex-shrink:0">
+                            <button type="button" id="btn-servicio-admin-limpiar"
+                                    style="padding:.65rem 1.2rem;background:#f1f5f9;color:#475569;
+                                           border:1px solid #e2e8f0;border-radius:9px;font-size:.86rem;
+                                           font-weight:600;cursor:pointer;min-height:40px;transition:background .15s">
+                                Cancelar
+                            </button>
+                            <button type="submit" id="btn-servicio-admin-guardar"
+                                    style="padding:.65rem 1.4rem;background:#e07020;color:#fff;border:none;
+                                           border-radius:9px;font-size:.86rem;font-weight:700;cursor:pointer;
+                                           min-height:40px;transition:background .2s">
+                                Crear servicio
+                            </button>
                         </div>
 
-                        <label>
-                            <span>Estado <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <select id="servicio-admin-estado" required>
-                                <option value="1">Activo</option>
-                                <option value="0">Inactivo</option>
-                            </select>
-                        </label>
-
-                        <div class="crud-servicios-form-actions">
-                            <button type="submit" class="btn-accion-crud btn-accion-principal" id="btn-servicio-admin-guardar">Guardar servicio</button>
-                            <button type="button" class="btn-accion-crud btn-accion-secundaria" id="btn-servicio-admin-limpiar">Limpiar formulario</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    </form><!-- /form-servicio-admin -->
+                </div><!-- /crud-modal-content -->
+            </div><!-- /modal-servicio-admin -->
 
             <div id="modal-detalle-admin" class="crud-modal hidden" role="dialog" aria-modal="true" aria-labelledby="detalle-admin-titulo">
                 <div class="crud-modal-content crud-detalle-modal-content">
@@ -228,6 +387,197 @@
     <script src="../js/app.js"></script>
     <script src="../js/eventos.js"></script>
     <script src="../js/campana-notificaciones.js"></script>
+
+    <!-- ── UI del modal de servicios: drag-drop, validación inline, loading state ── -->
+    <script>
+    (function initSvcModalUI() {
+        document.addEventListener('DOMContentLoaded', () => {
+
+            /* ══ Botón Cancelar → cerrar modal ══ */
+            const btnCancelar = document.getElementById('btn-servicio-admin-limpiar');
+            if (btnCancelar) {
+                btnCancelar.addEventListener('click', () => {
+                    if (typeof cerrarModalServicioAdmin === 'function') cerrarModalServicioAdmin();
+                });
+            }
+
+            /* ══ Refs comunes de imagen ══ */
+            const dropzone   = document.getElementById('svc-dropzone');
+            const fileInput  = document.getElementById('servicio-admin-file-input');
+            const dropPrompt = document.getElementById('svc-drop-prompt');
+            const preview    = document.getElementById('servicio-admin-imagen-preview');
+            const previewImg = document.getElementById('servicio-admin-preview-img');
+            const removeBtn  = document.getElementById('svc-remove-img');
+            const urlInput   = document.getElementById('servicio-admin-imagen-url');
+            let   localObjUrl = null;
+
+            /* ── Mostrar / ocultar preview ── */
+            function showPreview(src) {
+                if (!src || !preview || !previewImg) return;
+                previewImg.src = src;
+                preview.style.display  = 'block';
+                if (dropPrompt) dropPrompt.style.display = 'none';
+            }
+
+            function clearImageState() {
+                if (localObjUrl) { URL.revokeObjectURL(localObjUrl); localObjUrl = null; }
+                if (previewImg)  previewImg.src = '';
+                if (preview)     preview.style.display  = 'none';
+                if (dropPrompt)  dropPrompt.style.display = 'block';
+                if (fileInput)   fileInput.value = '';
+                clearErr('err-svc-imagen');
+            }
+
+            /* ── Procesar archivo ── */
+            function handleFile(file) {
+                if (!file) return;
+                const valid = ['image/png', 'image/jpeg', 'image/webp'];
+                if (!valid.includes(file.type)) {
+                    showErr('err-svc-imagen', 'Formato no válido. Usa PNG, JPG o WEBP.');
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    showErr('err-svc-imagen', 'La imagen supera el tamaño máximo de 2 MB.');
+                    return;
+                }
+                clearErr('err-svc-imagen');
+                if (localObjUrl) URL.revokeObjectURL(localObjUrl);
+                localObjUrl = URL.createObjectURL(file);
+                showPreview(localObjUrl);
+            }
+
+            /* ── Dropzone events ── */
+            if (dropzone) {
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('svc-dragover');
+                });
+                dropzone.addEventListener('dragleave', () => dropzone.classList.remove('svc-dragover'));
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('svc-dragover');
+                    handleFile(e.dataTransfer.files[0]);
+                });
+                dropzone.addEventListener('click', (e) => {
+                    if (!e.target.closest('label') && !e.target.closest('button')) fileInput?.click();
+                });
+            }
+            if (fileInput) fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+            if (removeBtn) removeBtn.addEventListener('click', (e) => { e.stopPropagation(); clearImageState(); });
+
+            /* URL → live preview (la URL es la que se envía a BD) */
+            if (urlInput) {
+                urlInput.addEventListener('input', () => {
+                    const url = urlInput.value.trim();
+                    if (url) {
+                        if (localObjUrl) { URL.revokeObjectURL(localObjUrl); localObjUrl = null; if (fileInput) fileInput.value = ''; }
+                        showPreview(url);
+                    } else {
+                        clearImageState();
+                    }
+                });
+            }
+
+            /* Sincronizar prompt cuando app.js muestra/oculta el preview (modo editar) */
+            if (preview && dropPrompt) {
+                new MutationObserver(() => {
+                    const visible = preview.style.display !== 'none' && preview.style.display !== '';
+                    dropPrompt.style.display = visible ? 'none' : 'block';
+                }).observe(preview, { attributes: true, attributeFilter: ['style'] });
+            }
+
+            /* ══ Helpers errores inline ══ */
+            const ERR_MAP = {
+                'servicio-admin-nombre':          'err-svc-nombre',
+                'servicio-admin-descripcion':     'err-svc-descripcion',
+                'servicio-admin-duracion':        'err-svc-duracion',
+                'servicio-admin-cantidad-maxima': 'err-svc-cantidad',
+                'servicio-admin-costo':           'err-svc-costo',
+            };
+            function showErr(id, msg) { const el = document.getElementById(id); if (el) { el.textContent = msg; el.style.display = 'block'; } }
+            function clearErr(id)     { const el = document.getElementById(id); if (el) { el.textContent = '';  el.style.display = 'none';  } }
+            function clearAllErrs()   { Object.values(ERR_MAP).forEach(clearErr); clearErr('err-svc-imagen'); }
+            function clearAllMarks()  { Object.keys(ERR_MAP).forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('svc-field-error'); }); }
+
+            /* Limpiar error del campo al escribir */
+            Object.entries(ERR_MAP).forEach(([inputId, errId]) => {
+                const el = document.getElementById(inputId);
+                if (el) el.addEventListener('input', () => { el.classList.remove('svc-field-error'); clearErr(errId); });
+            });
+
+            /* ══ Validación inline pre-submit ══ */
+            function svcValidar() {
+                clearAllErrs();
+                clearAllMarks();
+                let firstErr = null;
+                const rules = [
+                    { id: 'servicio-admin-nombre',          err: 'err-svc-nombre',      msg: 'El nombre del servicio es obligatorio.',             bad: v => !v.trim() },
+                    { id: 'servicio-admin-descripcion',     err: 'err-svc-descripcion', msg: 'La descripción es obligatoria.',                     bad: v => !v.trim() },
+                    { id: 'servicio-admin-duracion',        err: 'err-svc-duracion',    msg: 'Ingresa una duración en minutos (número positivo).', bad: v => !v.trim() || Number(v) < 1 },
+                    { id: 'servicio-admin-cantidad-maxima', err: 'err-svc-cantidad',    msg: 'Ingresa la cantidad máxima de personas (mín. 1).',    bad: v => !v.trim() || Number(v) < 1 },
+                    { id: 'servicio-admin-costo',           err: 'err-svc-costo',       msg: 'Ingresa un costo válido (número ≥ 0).',              bad: v => v.trim() === '' || Number(v) < 0 },
+                ];
+                rules.forEach(({ id, err, msg, bad }) => {
+                    const el = document.getElementById(id);
+                    if (el && bad(el.value)) {
+                        showErr(err, msg);
+                        el.classList.add('svc-field-error');
+                        if (!firstErr) firstErr = el;
+                    }
+                });
+                if (firstErr) firstErr.focus();
+                return !!firstErr;
+            }
+
+            /* ══ Submit: validación + loading state ══ */
+            const form = document.getElementById('form-servicio-admin');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    /* 1. Validación inline — si falla, bloquea app.js */
+                    if (svcValidar()) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        return;
+                    }
+
+                    /* 2. Loading state */
+                    const btn = document.getElementById('btn-servicio-admin-guardar');
+                    if (!btn || btn.disabled) return;
+                    const prevText = btn.textContent.trim();
+                    btn.disabled  = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:.4rem"></i> Guardando...';
+
+                    /* Re-habilitar si app.js muestra un mensaje de error */
+                    const msgEl = document.getElementById('mensaje-servicio-admin-modal');
+                    if (msgEl) {
+                        const obs = new MutationObserver(() => {
+                            if (!btn.disabled) { obs.disconnect(); return; }
+                            const txt = (msgEl.textContent || '').toLowerCase();
+                            const isErr = msgEl.classList.contains('error') ||
+                                          txt.includes('error') || txt.includes('no se pudo') ||
+                                          txt.includes('ya existe') || txt.includes('completa');
+                            if (isErr) { btn.disabled = false; btn.textContent = prevText; obs.disconnect(); }
+                        });
+                        obs.observe(msgEl, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+                    }
+
+                    /* Fallback de seguridad: re-habilitar tras 8 s */
+                    setTimeout(() => { if (btn.disabled) { btn.disabled = false; btn.textContent = prevText; } }, 8000);
+
+                }, { capture: true }); // capture: true → se ejecuta ANTES del handler de app.js
+            }
+
+            /* Limpiar errores e imagen al abrir el modal en modo "nuevo" */
+            const btnNuevo = document.getElementById('btn-nuevo-servicio-admin');
+            if (btnNuevo) {
+                btnNuevo.addEventListener('click', () => {
+                    setTimeout(() => { clearAllErrs(); clearAllMarks(); clearImageState(); }, 30);
+                });
+            }
+        });
+    })();
+    </script>
+
     <script>
     function getIdRolActual() {
         try {
