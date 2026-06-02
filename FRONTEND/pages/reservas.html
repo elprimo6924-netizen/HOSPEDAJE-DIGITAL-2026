@@ -331,7 +331,7 @@
                                 <button class="btn-mini btn-mini-ver"     onclick="verDetalle(${r.IDReserva})"         title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
                                 ${esAdmin ? `
                                 <button class="btn-mini btn-mini-editar"  onclick="editarReserva(${r.IDReserva})"      title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-                                ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva})" title="Cancelar"><i class="fa-solid fa-ban"></i></button>` : ''}
+                                ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva}, '${r.FechaInicio}')" title="Cancelar reserva"><i class="fa-solid fa-ban"></i></button>` : ''}
                                 <button class="btn-mini btn-mini-eliminar" onclick="eliminarReservaUI(${r.IDReserva})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                                 ` : ''}
                             </div>
@@ -580,11 +580,68 @@
             });
         }
 
-        function cancelarReservaUI(id) {
+        /* Valida que la fecha de inicio esté a ≥ 3 días de hoy */
+        function validarPlazo3Dias(fechaInicioStr) {
+            if (!fechaInicioStr) return { ok: false, dias: null };
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const inicio = new Date(fechaInicioStr);
+            inicio.setHours(0, 0, 0, 0);
+            const dias = Math.ceil((inicio - hoy) / 86400000);
+            return { ok: dias >= 3, dias };
+        }
+
+        function cancelarReservaUI(id, fechaInicio) {
             if (!esAdmin) {
                 mostrarMensaje('No autorizado.', 'error');
                 return;
             }
+
+            // Validar política de 3 días antes de mostrar el modal de motivo
+            const { ok, dias } = validarPlazo3Dias(fechaInicio);
+            if (!ok) {
+                const fechaFmt = fechaInicio
+                    ? new Date(fechaInicio).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })
+                    : 'desconocida';
+                const msg = dias !== null && dias >= 0
+                    ? `No se puede anular la reserva #${id}. La fecha de inicio es el ${fechaFmt} (en ${dias} día${dias !== 1 ? 's' : ''}). La cancelación debe realizarse mínimo 3 días antes.`
+                    : `No se puede anular la reserva #${id}. La fecha de inicio (${fechaFmt}) ya pasó.`;
+
+                // Modal de bloqueo
+                document.getElementById('modal-bloqueo-plazo')?.remove();
+                const bloq = document.createElement('div');
+                bloq.id = 'modal-bloqueo-plazo';
+                bloq.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(5px);padding:16px;';
+                bloq.innerHTML = `
+                    <div style="background:#fff;border-radius:18px;padding:30px;max-width:440px;width:100%;
+                                box-shadow:0 30px 80px rgba(0,0,0,0.3);animation:mcUp .22s ease;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                            <div style="width:46px;height:46px;border-radius:12px;background:#fef2f2;
+                                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-circle-xmark" style="color:#dc2626;font-size:1.4rem;"></i>
+                            </div>
+                            <h2 style="margin:0;font-size:1rem;font-weight:800;color:#0f172a;">Cancelación no permitida</h2>
+                        </div>
+                        <p style="margin:0 0 20px;font-size:0.875rem;color:#475569;line-height:1.65;">${msg}</p>
+                        <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:20px;">
+                            <p style="margin:0;font-size:0.82rem;color:#7f1d1d;font-weight:600;">
+                                <i class="fa-solid fa-clock" style="margin-right:6px;"></i>
+                                Política: cancelación mínimo <strong>3 días antes</strong> de la fecha de inicio.
+                            </p>
+                        </div>
+                        <div style="display:flex;justify-content:flex-end;">
+                            <button id="bloq-cerrar"
+                                style="padding:10px 24px;border-radius:10px;border:none;background:#0f172a;
+                                       color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;">
+                                Entendido
+                            </button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(bloq);
+                document.getElementById('bloq-cerrar').onclick = () => bloq.remove();
+                return;
+            }
+
             mostrarModalMotivoCancelacion(id).then(async (motivo) => {
                 if (!motivo) return;
                 try {

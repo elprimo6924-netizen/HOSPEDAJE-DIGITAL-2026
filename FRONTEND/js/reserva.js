@@ -846,17 +846,26 @@ function mostrarAvisoNoDevolucion() {
                     </div>
                 </div>
 
-                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:16px 18px;margin-bottom:18px;">
-                    <p style="margin:0;color:#7f1d1d;font-size:0.9rem;font-weight:700;line-height:1.65;">
+                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:14px 18px;margin-bottom:12px;">
+                    <p style="margin:0;color:#7f1d1d;font-size:0.875rem;font-weight:700;line-height:1.65;">
                         <i class="fa-solid fa-ban" style="margin-right:7px;"></i>
                         En caso de cancelación de la reserva,
                         <span style="text-decoration:underline;text-decoration-color:#dc2626;">NO se realizará devolución del dinero</span>.
                     </p>
                 </div>
 
+                <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 18px;margin-bottom:18px;">
+                    <p style="margin:0;color:#78350f;font-size:0.875rem;font-weight:700;line-height:1.65;">
+                        <i class="fa-solid fa-clock" style="margin-right:7px;"></i>
+                        Para cancelar tu reserva, debes notificarlo
+                        <span style="text-decoration:underline;text-decoration-color:#b45309;">mínimo 3 días antes</span>
+                        de la fecha de inicio.
+                    </p>
+                </div>
+
                 <p style="margin:0 0 22px;color:#475569;font-size:0.855rem;line-height:1.65;">
                     Solo el <strong>administrador</strong> puede anular reservas una vez confirmadas.
-                    Al continuar, declaras que leíste y aceptas esta política.
+                    Al continuar, declaras que leíste y aceptas estas condiciones.
                 </p>
 
                 <div style="display:flex;gap:10px;justify-content:flex-end;">
