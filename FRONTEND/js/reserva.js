@@ -1133,13 +1133,14 @@ const ReservaForm = {
 
         document.getElementById('btn-confirmar-reserva')?.addEventListener('click', async (e) => {
             e.preventDefault();
+            const btn = e.currentTarget; // capturar ANTES de cualquier await
+
             if (!FormValidator.validar()) return;
 
             // Mostrar aviso de política de cancelación antes de procesar
             const aceptado = await mostrarAvisoNoDevolucion();
             if (!aceptado) return;
 
-            const btn = e.currentTarget;
             btn.disabled = true;
             btn.textContent = 'Procesando...';
 
