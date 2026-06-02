@@ -822,17 +822,80 @@ const FormValidator = {
     }
 };
 
+// Modal de política de cancelación — sin devolución de dinero
+function mostrarAvisoNoDevolucion() {
+    return new Promise((resolve) => {
+        document.getElementById('modal-politica-cancelacion')?.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'modal-politica-cancelacion';
+        modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(5px);padding:16px;';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:18px;padding:32px;max-width:460px;width:100%;
+                        box-shadow:0 30px 80px rgba(0,0,0,0.35);animation:ndUp .25s ease;">
+                <style>@keyframes ndUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}</style>
+
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+                    <div style="width:52px;height:52px;border-radius:14px;background:#fef2f2;
+                                display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;font-size:1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin:0;font-size:1.05rem;font-weight:800;color:#0f172a;">Política de Cancelación</h2>
+                        <p style="margin:4px 0 0;font-size:0.78rem;color:#64748b;">Lee antes de confirmar tu reserva</p>
+                    </div>
+                </div>
+
+                <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+                    <p style="margin:0;color:#7f1d1d;font-size:0.9rem;font-weight:700;line-height:1.65;">
+                        <i class="fa-solid fa-ban" style="margin-right:7px;"></i>
+                        En caso de cancelación de la reserva,
+                        <span style="text-decoration:underline;text-decoration-color:#dc2626;">NO se realizará devolución del dinero</span>.
+                    </p>
+                </div>
+
+                <p style="margin:0 0 22px;color:#475569;font-size:0.855rem;line-height:1.65;">
+                    Solo el <strong>administrador</strong> puede anular reservas una vez confirmadas.
+                    Al continuar, declaras que leíste y aceptas esta política.
+                </p>
+
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button id="nd-volver"
+                        style="padding:10px 22px;border-radius:10px;border:1.5px solid #e2e8f0;
+                               background:#f8fafc;color:#475569;font-weight:600;font-size:0.85rem;cursor:pointer;">
+                        Volver
+                    </button>
+                    <button id="nd-aceptar"
+                        style="padding:10px 24px;border-radius:10px;border:none;
+                               background:#ff8a3d;color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;
+                               box-shadow:0 4px 14px rgba(255,138,61,0.4);">
+                        <i class="fa-solid fa-check" style="margin-right:7px;"></i>Entendido, confirmar
+                    </button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('nd-aceptar').onclick = () => { modal.remove(); resolve(true);  };
+        document.getElementById('nd-volver').onclick  = () => { modal.remove(); resolve(false); };
+    });
+}
+
 const ReservaForm = {
     init() {
         CalendarioPicker.init();
         ModoReserva.init();
         BuscadorCliente.init();
-        
+
         document.getElementById('descuento')?.addEventListener('input', () => ResumenLateral.actualizar());
-        
+
         document.getElementById('btn-confirmar-reserva')?.addEventListener('click', async (e) => {
             e.preventDefault();
             if (!FormValidator.validar()) return;
+
+            // Mostrar aviso de política de cancelación antes de procesar
+            const aceptado = await mostrarAvisoNoDevolucion();
+            if (!aceptado) return;
 
             const btn = e.currentTarget;
             btn.disabled = true;

@@ -2031,6 +2031,15 @@ form button[type="submit"]:hover {
 /* El sidebar usa Tailwind. Solo se mantiene el margen del contenido principal. */
 
 
+/* Ocultar scrollbar del sidebar */
+#sidebar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+#sidebar::-webkit-scrollbar {
+    display: none;
+}
+
 /* Ajuste del contenido principal cuando el sidebar está abierto */
 .main-wrapper {
     display: flex;
