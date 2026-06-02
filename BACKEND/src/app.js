@@ -24,12 +24,46 @@ const app = express();
     }
 })();
 
+// Migración automática: comprobante de pago
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+
+        // Estado 5 — Pendiente Verificación Pago
+        await db.query(
+            "INSERT IGNORE INTO estadosreserva (IdEstadoReserva, NombreEstadoReserva) VALUES (5, 'Pendiente Verificación Pago')"
+        );
+
+        // Columnas Comprobante* en reserva
+        const colExists = async (col) => {
+            const [[row]] = await db.query(
+                'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+                [dbName, 'reserva', col]
+            );
+            return row.c > 0;
+        };
+        if (!(await colExists('ComprobantePago')))
+            await db.query('ALTER TABLE reserva ADD COLUMN ComprobantePago VARCHAR(255) NULL');
+        if (!(await colExists('ComprobanteFecha')))
+            await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteFecha DATETIME NULL');
+        if (!(await colExists('ComprobanteEstado')))
+            await db.query("ALTER TABLE reserva ADD COLUMN ComprobanteEstado VARCHAR(20) NULL DEFAULT 'pendiente'");
+        if (!(await colExists('ComprobanteNota')))
+            await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteNota VARCHAR(255) NULL');
+
+        console.log('[MIGRATION] Migración comprobante de pago aplicada correctamente.');
+    } catch (err) {
+        console.error("[MIGRATION] Error aplicando migración de comprobante:", err.message);
+    }
+})();
+
 // =============================
 // MIDDLEWARES
 // =============================
 app.use(cors());
 app.use(express.json());
-app.use("/img", express.static(path.join(__dirname, "public", "img")));
+app.use("/img",     express.static(path.join(__dirname, "public", "img")));
+app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 
 // =============================
 // RUTAS

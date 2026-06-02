@@ -51,8 +51,11 @@ ALTER TABLE servicio ADD COLUMN IF NOT EXISTS imagen_url VARCHAR(500) NULL;
 -- Crear tabla de estados de reserva
 CREATE TABLE IF NOT EXISTS estadosreserva (
     IdEstadoReserva INT AUTO_INCREMENT PRIMARY KEY,
-    NombreEstadoReserva VARCHAR(15)
+    NombreEstadoReserva VARCHAR(50)
 );
+INSERT IGNORE INTO estadosreserva (IdEstadoReserva, NombreEstadoReserva) VALUES
+(1,'Pendiente'),(2,'Confirmada'),(3,'Cancelada'),(4,'Completada'),
+(5,'Pendiente Verificación Pago');
 
 -- Crear tabla de métodos de pago
 CREATE TABLE IF NOT EXISTS metodopago (
@@ -93,6 +96,10 @@ CREATE TABLE IF NOT EXISTS reserva (
     MetodoPago INT,
     IdEstadoReserva INT,
     id_usuario INT,
+    ComprobantePago   VARCHAR(255) NULL,
+    ComprobanteFecha  DATETIME     NULL,
+    ComprobanteEstado VARCHAR(20)  NULL DEFAULT 'pendiente',
+    ComprobanteNota   VARCHAR(255) NULL,
     FOREIGN KEY (NroDocumentoCliente) REFERENCES cliente(NroDocumento),
     FOREIGN KEY (MetodoPago) REFERENCES metodopago(IdMetodoPago),
     FOREIGN KEY (IdEstadoReserva) REFERENCES estadosreserva(IdEstadoReserva),

@@ -5,3 +5,7 @@ node_modules/
 
 .wwebjs_auth/
 BACKEND/.wwebjs_auth/
+
+# Archivos subidos por usuarios
+BACKEND/src/public/uploads/comprobantes/*
+!BACKEND/src/public/uploads/comprobantes/.gitkeep

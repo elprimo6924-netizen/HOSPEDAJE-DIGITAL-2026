@@ -60,6 +60,8 @@ const crear = async (req, res) => {
 
       payload.NroDocumentoCliente = numeroDocumento;
       payload.id_usuario = userId;
+      // Clientes siempre inician en "Pendiente Verificación Pago"
+      payload.IdEstadoReserva = 5;
     } else {
       payload.id_usuario = payload.id_usuario ?? userId;
     }
@@ -234,6 +236,100 @@ const obtenerPorId = async (req, res) => {
   }
 };
 
+const path = require("path");
+const fs   = require("fs");
+
+const subirComprobante = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No se recibió ningún archivo." });
+    }
+    const { id } = req.params;
+
+    // Borrar archivo anterior si existe
+    try {
+      const [[prev]] = await db.query(
+        "SELECT ComprobantePago FROM reserva WHERE IdReserva = ? LIMIT 1", [id]
+      );
+      if (prev?.ComprobantePago) {
+        const oldPath = path.join(__dirname, "../public", prev.ComprobantePago);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+    } catch (_) { /* no crítico */ }
+
+    const comprobanteUrl = `/uploads/comprobantes/${req.file.filename}`;
+    const ok = await ReservasService.guardarComprobante(id, comprobanteUrl);
+    if (!ok) {
+      fs.unlink(req.file.path, () => {});
+      return res.status(404).json({ error: "Reserva no encontrada." });
+    }
+    return res.status(200).json({ ok: true, comprobanteUrl, estado: "pendiente" });
+  } catch (error) {
+    if (req.file?.path) fs.unlink(req.file.path, () => {});
+    console.error("[Reservas] Error subirComprobante:", error);
+    return res.status(500).json({ error: "Error al guardar comprobante.", detalle: error.message });
+  }
+};
+
+const verificarComprobante = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { accion, nota } = req.body;
+    if (!["aprobar", "rechazar"].includes(accion)) {
+      return res.status(400).json({ error: "Acción inválida. Use 'aprobar' o 'rechazar'." });
+    }
+    const nuevoEstado = await ReservasService.verificarComprobante(id, accion, nota);
+    if (!nuevoEstado) return res.status(404).json({ error: "Reserva no encontrada." });
+
+    // Notificación al aprobar (background, no bloquea la respuesta)
+    if (accion === "aprobar") {
+      db.query(
+        `SELECT COALESCE(c.Email, u.Email) AS Email, COALESCE(c.Nombre, u.NombreUsuario) AS Nombre,
+                r.IdReserva AS reservaId, r.FechaInicio, r.Monto_Total AS MontoTotal
+         FROM reserva r
+         LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
+         LEFT JOIN usuarios u ON r.id_usuario = u.IDUsuario
+         WHERE r.IdReserva = ? LIMIT 1`,
+        [id]
+      ).then(([rows]) => {
+        if (!rows.length) return;
+        const c = rows[0];
+        if (c.Email) {
+          Promise.allSettled([
+            EmailService.enviarConfirmacionReserva({
+              clienteNombre: c.Nombre || "Cliente",
+              clienteEmail:  c.Email,
+              reservaId:     c.reservaId,
+              fechaInicio:   c.FechaInicio,
+              montoTotal:    c.MontoTotal,
+            }),
+          ]).catch(() => {});
+        }
+      }).catch(() => {});
+    }
+
+    return res.status(200).json({ ok: true, nuevoEstado });
+  } catch (error) {
+    console.error("[Reservas] Error verificarComprobante:", error);
+    return res.status(500).json({ error: error.message, detalle: error.message });
+  }
+};
+
+const agregarServicios = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { serviciosIds } = req.body;
+    if (!Array.isArray(serviciosIds) || serviciosIds.length === 0) {
+      return res.status(400).json({ error: "Selecciona al menos un servicio" });
+    }
+    await ReservasService.agregarServicios(id, serviciosIds);
+    return res.status(200).json({ mensaje: "Servicios agregados correctamente" });
+  } catch (error) {
+    console.error("[Reservas] Error al agregar servicios:", error);
+    return res.status(500).json({ error: "Error al agregar servicios", detalle: error.message });
+  }
+};
+
 module.exports = {
   crear,
   obtener,
@@ -242,4 +338,7 @@ module.exports = {
   cancelar,
   actualizar,
   eliminar,
+  agregarServicios,
+  subirComprobante,
+  verificarComprobante,
 };

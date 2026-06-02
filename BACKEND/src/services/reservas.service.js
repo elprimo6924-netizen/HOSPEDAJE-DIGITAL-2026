@@ -61,6 +61,10 @@ const ReservasService = {
         r.MetodoPago,
         r.IdEstadoReserva,
         r.id_usuario,
+        r.ComprobantePago,
+        r.ComprobanteEstado,
+        r.ComprobanteFecha,
+        r.ComprobanteNota,
         c.Nombre,
         c.Apellido,
         c.NroDocumento,
@@ -89,6 +93,7 @@ const ReservasService = {
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
               r.Sub_Total AS SubTotal, r.Descuento, r.IVA, r.Monto_Total AS MontoTotal,
               r.MetodoPago, r.IdEstadoReserva,
+              r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota,
               c.Nombre, c.Apellido, e.NombreEstadoReserva
        FROM reserva r
        LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
@@ -395,6 +400,70 @@ const ReservasService = {
     }
 
     return result.affectedRows > 0;
+  },
+
+  guardarComprobante: async (reservaId, comprobanteUrl) => {
+    // Si el comprobante era rechazado, volver a estado 5 (pendiente verificación)
+    const [result] = await db.query(
+      `UPDATE reserva
+       SET ComprobantePago    = ?,
+           ComprobanteFecha   = NOW(),
+           ComprobanteEstado  = 'pendiente',
+           ComprobanteNota    = NULL,
+           IdEstadoReserva    = IF(ComprobanteEstado = 'rechazado', 5, IdEstadoReserva)
+       WHERE IdReserva = ?`,
+      [comprobanteUrl, reservaId]
+    );
+    return result.affectedRows > 0;
+  },
+
+  verificarComprobante: async (reservaId, accion, nota) => {
+    if (accion === 'aprobar') {
+      const [result] = await db.query(
+        `UPDATE reserva
+         SET ComprobanteEstado = 'aprobado',
+             IdEstadoReserva   = 2,
+             ComprobanteNota   = NULL
+         WHERE IdReserva = ?`,
+        [reservaId]
+      );
+      return result.affectedRows > 0 ? 'aprobado' : null;
+    }
+    if (accion === 'rechazar') {
+      const [result] = await db.query(
+        `UPDATE reserva
+         SET ComprobanteEstado = 'rechazado',
+             ComprobanteNota   = ?,
+             IdEstadoReserva   = 5
+         WHERE IdReserva = ?`,
+        [nota || null, reservaId]
+      );
+      return result.affectedRows > 0 ? 'rechazado' : null;
+    }
+    throw new Error("Acción inválida. Use 'aprobar' o 'rechazar'.");
+  },
+
+  agregarServicios: async (reservaId, serviciosIds) => {
+    const detalleCols = await getDetalleServicioCols();
+    const hasHoraServicio = detalleCols.has("HoraServicio");
+
+    for (const sid of serviciosIds) {
+      if (hasHoraServicio) {
+        await db.query(
+          `INSERT IGNORE INTO detallereservaservicio
+           (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
+           SELECT ?, ?, 1, Costo, 1, NULL FROM servicio WHERE IDServicio = ?`,
+          [reservaId, sid, sid]
+        );
+      } else {
+        await db.query(
+          `INSERT IGNORE INTO detallereservaservicio
+           (IDReserva, IDServicio, Cantidad, Precio, Estado)
+           SELECT ?, ?, 1, Costo, 1 FROM servicio WHERE IDServicio = ?`,
+          [reservaId, sid, sid]
+        );
+      }
+    }
   },
 };
 

@@ -890,6 +890,239 @@ function mostrarAvisoNoDevolucion() {
     });
 }
 
+// ── Modal de subida de comprobante de pago ─────────────────────────────────
+function mostrarModalComprobante(reservaId) {
+    document.getElementById('modal-comprobante-pago')?.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-comprobante-pago';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Subir comprobante de pago');
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);padding:16px;';
+
+    modal.innerHTML = `
+        <div id="mc-box" style="background:#fff;border-radius:20px;padding:0;max-width:500px;width:100%;
+                    box-shadow:0 32px 80px rgba(0,0,0,0.35);animation:cpUp .25s ease;
+                    max-height:95vh;display:flex;flex-direction:column;overflow:hidden;">
+            <style>@keyframes cpUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}</style>
+
+            <!-- Header -->
+            <div style="padding:22px 24px 16px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#d97706);
+                                display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-receipt" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin:0;font-size:1.05rem;font-weight:800;color:#0f172a;">Sube tu comprobante de pago</h2>
+                        <p style="margin:3px 0 0;font-size:0.78rem;color:#64748b;">
+                            Reserva <strong>#${reservaId}</strong> — Estado: <span style="color:#d97706;font-weight:700;">Pendiente Verificación</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div style="overflow-y:auto;flex:1;padding:20px 24px;">
+                <p style="margin:0 0 16px;font-size:0.855rem;color:#475569;line-height:1.65;">
+                    Tu reserva quedó registrada. Para confirmarla, sube el comprobante de tu pago
+                    (transferencia, depósito, etc.). Un administrador lo revisará y aprobará.
+                </p>
+
+                <!-- Zona drag & drop -->
+                <div id="cp-drop-zone"
+                    style="border:2px dashed #d1d5db;border-radius:14px;padding:28px 20px;text-align:center;
+                           cursor:pointer;transition:border-color .2s,background .2s;background:#f8fafc;margin-bottom:14px;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;color:#94a3b8;margin-bottom:8px;display:block;"></i>
+                    <p style="margin:0 0 4px;font-size:0.875rem;font-weight:600;color:#475569;">
+                        Arrastra tu archivo aquí
+                    </p>
+                    <p style="margin:0;font-size:0.78rem;color:#94a3b8;">JPG, PNG o PDF — máx. 5 MB</p>
+                    <input type="file" id="cp-file-input" accept=".jpg,.jpeg,.png,.pdf"
+                           style="display:none;">
+                </div>
+
+                <!-- Preview -->
+                <div id="cp-preview" style="display:none;margin-bottom:14px;"></div>
+
+                <!-- Mensaje de validación -->
+                <div id="cp-error" style="display:none;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;
+                     border-radius:8px;font-size:0.82rem;color:#7f1d1d;font-weight:600;margin-bottom:14px;"></div>
+                <div id="cp-success" style="display:none;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;
+                     border-radius:8px;font-size:0.82rem;color:#166534;font-weight:600;margin-bottom:14px;"></div>
+            </div>
+
+            <!-- Footer -->
+            <div style="padding:14px 24px 20px;border-top:1px solid #f1f5f9;display:flex;gap:10px;justify-content:space-between;flex-shrink:0;">
+                <button id="cp-skip"
+                    style="padding:10px 18px;border-radius:10px;border:1.5px solid #e2e8f0;
+                           background:#f8fafc;color:#64748b;font-weight:600;font-size:0.84rem;cursor:pointer;flex-shrink:0;">
+                    <i class="fa-solid fa-clock" style="margin-right:6px;"></i>Subir más tarde
+                </button>
+                <button id="cp-send" disabled
+                    style="padding:10px 22px;border-radius:10px;border:none;
+                           background:#f59e0b;color:#fff;font-weight:700;font-size:0.84rem;cursor:pointer;
+                           opacity:.5;transition:opacity .2s,transform .15s;">
+                    <i class="fa-solid fa-paper-plane" style="margin-right:7px;"></i>Enviar comprobante
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+
+    let selectedFile = null;
+
+    const dropZone   = document.getElementById('cp-drop-zone');
+    const fileInput  = document.getElementById('cp-file-input');
+    const preview    = document.getElementById('cp-preview');
+    const errEl      = document.getElementById('cp-error');
+    const successEl  = document.getElementById('cp-success');
+    const sendBtn    = document.getElementById('cp-send');
+    const skipBtn    = document.getElementById('cp-skip');
+
+    const ALLOWED = ['image/jpeg', 'image/png', 'application/pdf'];
+    const MAX_MB  = 5;
+
+    const showErr = (msg) => {
+        errEl.textContent  = msg;
+        errEl.style.display = 'block';
+        successEl.style.display = 'none';
+    };
+    const clearMsg = () => {
+        errEl.style.display  = 'none';
+        successEl.style.display = 'none';
+    };
+
+    const renderPreview = (file) => {
+        clearMsg();
+        if (!ALLOWED.includes(file.type)) {
+            showErr('Tipo no permitido. Solo JPG, PNG o PDF.');
+            selectedFile = null;
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '.5';
+            preview.style.display = 'none';
+            return;
+        }
+        if (file.size > MAX_MB * 1024 * 1024) {
+            showErr(`El archivo supera ${MAX_MB} MB. Elige uno más pequeño.`);
+            selectedFile = null;
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '.5';
+            preview.style.display = 'none';
+            return;
+        }
+        selectedFile = file;
+        sendBtn.disabled = false;
+        sendBtn.style.opacity = '1';
+
+        const sizeMB = (file.size / 1048576).toFixed(2);
+        if (file.type === 'application/pdf') {
+            preview.innerHTML = `
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+                            background:#f1f5f9;border-radius:10px;border:1px solid #e2e8f0;">
+                    <i class="fa-solid fa-file-pdf" style="color:#dc2626;font-size:1.8rem;flex-shrink:0;"></i>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:600;color:#0f172a;word-break:break-all;">${file.name}</div>
+                        <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">${sizeMB} MB</div>
+                    </div>
+                </div>`;
+        } else {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                preview.innerHTML = `
+                    <div style="text-align:center;">
+                        <img src="${ev.target.result}" alt="Preview"
+                             style="max-height:180px;max-width:100%;border-radius:10px;border:1px solid #e2e8f0;object-fit:contain;">
+                        <p style="margin:6px 0 0;font-size:0.75rem;color:#64748b;">${file.name} · ${sizeMB} MB</p>
+                    </div>`;
+            };
+            reader.readAsDataURL(file);
+        }
+        preview.style.display = 'block';
+        dropZone.style.borderColor = '#f59e0b';
+        dropZone.style.background  = '#fffbeb';
+    };
+
+    // Click en zona drag&drop abre el input
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) renderPreview(fileInput.files[0]);
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#f59e0b';
+        dropZone.style.background  = '#fffbeb';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        if (!selectedFile) {
+            dropZone.style.borderColor = '#d1d5db';
+            dropZone.style.background  = '#f8fafc';
+        }
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file) renderPreview(file);
+    });
+
+    // ESC cierra
+    const escHandler = (e) => { if (e.key === 'Escape') skipBtn.click(); };
+    document.addEventListener('keydown', escHandler);
+
+    // Subir más tarde
+    skipBtn.onclick = () => {
+        document.removeEventListener('keydown', escHandler);
+        modal.remove();
+        UI.showToast('Reserva guardada. Recuerda subir el comprobante pronto.', 'info');
+        setTimeout(() => window.location.href = 'pages/reservas.html', 1600);
+    };
+
+    // Enviar comprobante
+    sendBtn.onclick = async () => {
+        if (!selectedFile) return;
+        sendBtn.disabled  = true;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:7px;"></i>Enviando...';
+
+        const formData = new FormData();
+        formData.append('comprobante', selectedFile);
+        const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : 'http://localhost:3000/api';
+
+        try {
+            const res = await fetch(`${apiUrl}/reservas/${reservaId}/comprobante`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                body: formData,
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Error al subir el archivo.');
+
+            successEl.innerHTML = '<i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>¡Comprobante enviado! El administrador lo revisará pronto.';
+            successEl.style.display = 'block';
+            errEl.style.display = 'none';
+            sendBtn.style.display = 'none';
+            skipBtn.innerHTML = '<i class="fa-solid fa-list" style="margin-right:6px;"></i>Ver mis reservas';
+            skipBtn.style.background = '#16a34a';
+            skipBtn.style.color = '#fff';
+            skipBtn.style.border = 'none';
+            document.removeEventListener('keydown', escHandler);
+            setTimeout(() => {
+                modal.remove();
+                window.location.href = 'pages/reservas.html';
+            }, 2200);
+        } catch (err) {
+            showErr(err.message || 'No se pudo subir el comprobante. Intenta de nuevo.');
+            sendBtn.disabled  = false;
+            sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:7px;"></i>Enviar comprobante';
+        }
+    };
+
+    // Focus al abrir
+    setTimeout(() => document.getElementById('cp-skip')?.focus(), 100);
+}
+
 const ReservaForm = {
     init() {
         CalendarioPicker.init();
@@ -937,17 +1170,28 @@ const ReservaForm = {
 
             try {
                 const result = await requestJson('/reservas', { method: 'POST', body: payload });
-                const idEl = document.getElementById('rf-success-id');
-                if (idEl && result?.reservaId) idEl.textContent = `#${result.reservaId}`;
-                const overlay = document.getElementById('rf-success-overlay');
-                if (overlay) {
-                    overlay.classList.add('show');
-                    document.getElementById('rf-success-btn-ir')?.addEventListener('click', () => {
-                        window.location.href = 'pages/reservas.html';
-                    });
+                const reservaId = result?.reservaId;
+
+                // Determinar si es cliente (mostrar modal comprobante) o admin (overlay clásico)
+                const _sess  = window.getStoredSession ? window.getStoredSession() : null;
+                const _role  = Number(_sess?.usuario?.IDRol ?? _sess?.user?.rol ?? 0);
+                const _isCliente = _role === 2 || _role === 3;
+
+                if (_isCliente && reservaId) {
+                    mostrarModalComprobante(reservaId);
                 } else {
-                    UI.showToast("Reserva confirmada con éxito", "success");
-                    setTimeout(() => window.location.href = 'pages/reservas.html', 1500);
+                    const idEl = document.getElementById('rf-success-id');
+                    if (idEl && reservaId) idEl.textContent = `#${reservaId}`;
+                    const overlay = document.getElementById('rf-success-overlay');
+                    if (overlay) {
+                        overlay.classList.add('show');
+                        document.getElementById('rf-success-btn-ir')?.addEventListener('click', () => {
+                            window.location.href = 'pages/reservas.html';
+                        });
+                    } else {
+                        UI.showToast("Reserva guardada correctamente.", "success");
+                        setTimeout(() => window.location.href = 'pages/reservas.html', 1500);
+                    }
                 }
             } catch (error) {
                 UI.showToast(error.message || "Error al guardar la reserva", "error");

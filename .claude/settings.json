@@ -23,7 +23,15 @@
       "Bash(git push *)",
       "Read(//d/ПРОГРАММИРОВАНИЕ SOFTWARE/ficha_3312967_hotel-main/mi-proyecto-frontend/js/**)",
       "Bash(node src/scripts/fixDuplicateServicios.js)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(New-Item -ItemType Directory -Force \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\BACKEND\\\\src\\\\public\\\\uploads\\\\comprobantes\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType File -Force \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\BACKEND\\\\src\\\\public\\\\uploads\\\\comprobantes\\\\.gitkeep\")",
+      "Bash(Write-Host \"OK\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\BACKEND\\\\src\\\\public\\\\uploads\\\\comprobantes\")",
+      "PowerShell(New-Item -ItemType File -Force \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\BACKEND\\\\src\\\\public\\\\uploads\\\\comprobantes\\\\.gitkeep\")",
+      "Bash(node -e \"require\\('./src/app.js'\\); console.log\\('App OK'\\);\")",
+      "Bash(node -e \"require\\('./src/routes/reservas.routes.js'\\); console.log\\('Routes OK'\\);\")"
     ]
   }
 }

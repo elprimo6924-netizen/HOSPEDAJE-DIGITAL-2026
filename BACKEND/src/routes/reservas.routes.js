@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const reservasController = require("../controllers/reservas.controller");
+const reservasController          = require("../controllers/reservas.controller");
+const uploadComprobante           = require("../middlewares/uploadComprobante.middleware");
 const {
 	requireAdmin,
 	requireReservaOwnerOrAdmin,
@@ -17,6 +18,13 @@ router.put("/:id/cancelar", requireReservaOwnerOrAdmin, reservasController.cance
 
 // (Opcional) por si luego usas editar
 router.put("/:id", requireAdmin, reservasController.actualizar);
+
+// Comprobante de pago
+router.post("/:id/comprobante",           requireReservaOwnerOrAdmin, uploadComprobante, reservasController.subirComprobante);
+router.put("/:id/comprobante/verificar",  requireAdmin,               reservasController.verificarComprobante);
+
+// Agregar servicios adicionales a una reserva existente
+router.post("/:id/servicios", requireAdmin, reservasController.agregarServicios);
 
 // Eliminar reserva (borra el registro de la BD)
 router.delete("/:id", requireAdmin, reservasController.eliminar);

@@ -94,7 +94,15 @@ INSERT IGNORE INTO estadosreserva (IdEstadoReserva, NombreEstadoReserva) VALUES
 (1, 'Pendiente'),
 (2, 'Confirmada'),
 (3, 'Cancelada'),
-(4, 'Completada');
+(4, 'Completada'),
+(5, 'Pendiente Verificación Pago');
+
+-- Columnas comprobante en reserva (idempotente con ADD COLUMN IF NOT EXISTS MySQL 8+)
+ALTER TABLE reserva
+    ADD COLUMN IF NOT EXISTS ComprobantePago   VARCHAR(255) NULL,
+    ADD COLUMN IF NOT EXISTS ComprobanteFecha  DATETIME     NULL,
+    ADD COLUMN IF NOT EXISTS ComprobanteEstado VARCHAR(20)  NULL DEFAULT 'pendiente',
+    ADD COLUMN IF NOT EXISTS ComprobanteNota   VARCHAR(255) NULL;
 
 -- ── MÉTODOS DE PAGO ───────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS metodopago (
