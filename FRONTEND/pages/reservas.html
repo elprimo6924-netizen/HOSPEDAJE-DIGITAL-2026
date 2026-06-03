@@ -479,17 +479,61 @@
                   }).join('')
                 : (r.Servicios ? r.Servicios.split(', ').map(s => chip(s, '#eff6ff', '#1d4ed8', '#bfdbfe')).join('') : '<span style="color:#94a3b8">—</span>');
 
+            // ── Banner estado de pago ────────────────────────────────────────
+            const estadoPagoBanner = (() => {
+                const ce = r.ComprobanteEstado;
+                const tienePago = !!r.ComprobantePago;
+
+                if (ce === 'aprobado') return {
+                    bg:'#f0fdf4', border:'#86efac', icon:'fa-circle-check', color:'#166534',
+                    titulo:'Pago verificado', texto:'El comprobante fue aprobado. Reserva confirmada.',
+                };
+                if (ce === 'rechazado') return {
+                    bg:'#fef2f2', border:'#fca5a5', icon:'fa-circle-xmark', color:'#b91c1c',
+                    titulo:'Pago rechazado',
+                    texto: r.ComprobanteNota
+                        ? `Motivo: ${r.ComprobanteNota}. El cliente debe subir un nuevo comprobante.`
+                        : 'El comprobante fue rechazado. El cliente debe subir uno nuevo.',
+                };
+                if (tienePago && ce === 'pendiente') return {
+                    bg:'#fffbeb', border:'#fde68a', icon:'fa-clock', color:'#92400e',
+                    titulo:'Comprobante pendiente de revisión',
+                    texto:'El cliente subió el comprobante. Pendiente de aprobación del administrador.',
+                };
+                // Sin comprobante
+                const estadoId = r.IdEstadoReserva;
+                if (estadoId === 5 || String(r.NombreEstadoReserva||'').toLowerCase().includes('pago')) return {
+                    bg:'#fff7ed', border:'#fed7aa', icon:'fa-hourglass-half', color:'#c2410c',
+                    titulo:'Pendiente de pago',
+                    texto:'El cliente aún no ha subido el comprobante de pago.',
+                };
+                if (estadoId === 2 || String(r.NombreEstadoReserva||'').toLowerCase().includes('confirm')) return {
+                    bg:'#f0fdf4', border:'#86efac', icon:'fa-circle-check', color:'#166534',
+                    titulo:'Reserva confirmada',
+                    texto:'La reserva está activa y confirmada.',
+                };
+                if (estadoId === 3 || String(r.NombreEstadoReserva||'').toLowerCase().includes('cancel')) return {
+                    bg:'#fef2f2', border:'#fca5a5', icon:'fa-ban', color:'#b91c1c',
+                    titulo:'Reserva cancelada', texto:'Esta reserva ha sido cancelada.',
+                };
+                return {
+                    bg:'#f8fafc', border:'#e2e8f0', icon:'fa-circle-info', color:'#475569',
+                    titulo: r.NombreEstadoReserva || `Estado ${r.IdEstadoReserva}`,
+                    texto:'',
+                };
+            })();
+
             const campos = [
                 ['ID Reserva',    `#${r.IDReserva}`],
-                ['Cliente',       esAdmin ? `${r.Nombre||''} ${r.Apellido||''}` : 'Tu reserva'],
+                ['Cliente',       esAdmin ? `${r.Nombre||''} ${r.Apellido||''}`.trim()||'—' : 'Tu reserva'],
                 ...(esAdmin ? [['Documento', r.NroDocumentoCliente||'-']] : []),
                 ['Fecha inicio',  formatFecha(r.FechaInicio)],
                 ['Fecha fin',     formatFecha(r.FechaFinalizacion)],
-                ['Subtotal',      formatMonto(r.SubTotal)],
+                ['Base gravable', formatMonto(r.SubTotal)],
                 ['Descuento',     formatMonto(r.Descuento)],
-                ['IVA',           formatMonto(r.IVA)],
-                ['Total',         formatMonto(r.MontoTotal)],
-                ['Estado',        r.NombreEstadoReserva||'-'],
+                ['IVA incluido',  formatMonto(r.IVA)],
+                ['Total',         `<strong style="font-size:1.05rem;color:#0f172a;">${formatMonto(r.MontoTotal)}</strong>`],
+                ['Estado reserva',badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)],
                 ['Paquetes',      paqHtml],
                 ['Servicios',     svcHtml],
             ];
@@ -532,7 +576,23 @@
                     </div>`;
             }
 
-            contenido.innerHTML = campos.map(([l,v]) =>
+            // Banner de estado de pago (encabezado prominente)
+            const bannerHtml = `
+                <div style="grid-column:1/-1;display:flex;align-items:center;gap:12px;
+                            background:${estadoPagoBanner.bg};border:1.5px solid ${estadoPagoBanner.border};
+                            border-radius:12px;padding:14px 16px;margin-bottom:4px;">
+                    <div style="width:38px;height:38px;border-radius:10px;
+                                background:${estadoPagoBanner.color}20;
+                                display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid ${estadoPagoBanner.icon}" style="color:${estadoPagoBanner.color};font-size:1.1rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.88rem;font-weight:800;color:${estadoPagoBanner.color};">${estadoPagoBanner.titulo}</div>
+                        ${estadoPagoBanner.texto ? `<div style="font-size:.78rem;color:${estadoPagoBanner.color};opacity:.85;margin-top:2px;">${estadoPagoBanner.texto}</div>` : ''}
+                    </div>
+                </div>`;
+
+            contenido.innerHTML = bannerHtml + campos.map(([l,v]) =>
                 `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('') + comprobanteHtml;
 
             // Footer: botones aprobar/rechazar + agregar servicio
