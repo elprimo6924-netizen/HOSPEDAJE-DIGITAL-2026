@@ -803,11 +803,6 @@ function configurarClientesAdmin() {
     }
 
     if (modalCliente && !modalCliente.dataset.clientesAdminInicializado) {
-        modalCliente.addEventListener('click', (event) => {
-            if (event.target === modalCliente) {
-                cerrarModalClienteAdmin();
-            }
-        });
         modalCliente.dataset.clientesAdminInicializado = 'true';
     }
 
@@ -2025,11 +2020,6 @@ function configurarCRUDHabitaciones() {
     }
 
     if (modalHabitacion && !modalHabitacion.dataset.crudHabitacionesInicializado) {
-        modalHabitacion.addEventListener('click', (event) => {
-            if (event.target === modalHabitacion) {
-                cerrarModalHabitacionAdmin();
-            }
-        });
         modalHabitacion.dataset.crudHabitacionesInicializado = 'true';
     }
 
@@ -2536,26 +2526,29 @@ async function guardarServicioAdmin(evento) {
     }
 
     if (imagenUrl) {
-        if (imagenUrl.length > 500) {
+        const esDataUrl = imagenUrl.startsWith('data:image/');
+        if (!esDataUrl && imagenUrl.length > 500) {
             mostrarMensajeServicioAdmin('La URL de imagen supera 500 caracteres. Usa un enlace mas corto y directo.', 'error');
             return;
         }
 
-        const extensionImagen = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
-        const tieneExtensionValida = extensionImagen.test(imagenUrl);
+        if (!esDataUrl) {
+            const extensionImagen = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
+            const tieneExtensionValida = extensionImagen.test(imagenUrl);
 
-        if (!tieneExtensionValida) {
-            try {
-                const respuesta = await fetch(imagenUrl, { method: 'HEAD' });
-                const contentType = respuesta.headers.get('content-type') || '';
+            if (!tieneExtensionValida) {
+                try {
+                    const respuesta = await fetch(imagenUrl, { method: 'HEAD' });
+                    const contentType = respuesta.headers.get('content-type') || '';
 
-                if (!respuesta.ok || !contentType.startsWith('image/')) {
-                    mostrarMensajeServicioAdmin('La URL no apunta a una imagen valida (Content-Type image/*).', 'error');
-                    return;
+                    if (!respuesta.ok || !contentType.startsWith('image/')) {
+                        mostrarMensajeServicioAdmin('La URL no apunta a una imagen valida (Content-Type image/*).', 'error');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error validando URL de imagen:', error);
+                    mostrarMensajeServicioAdmin('No se pudo validar la URL por CORS o red. Se guardara igualmente.', 'info');
                 }
-            } catch (error) {
-                console.error('Error validando URL de imagen:', error);
-                mostrarMensajeServicioAdmin('No se pudo validar la URL por CORS o red. Se guardara igualmente.', 'info');
             }
         }
     }

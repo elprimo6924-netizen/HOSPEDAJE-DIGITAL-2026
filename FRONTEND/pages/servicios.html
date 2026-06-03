@@ -281,59 +281,40 @@
                                 <div class="svc-col-full">
                                     <label class="svc-label">Imagen del servicio</label>
 
-                                    <!-- Zona drag & drop (vista previa local) -->
                                     <div id="svc-dropzone"
                                          style="border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;
                                                 padding:1.4rem 1.25rem;text-align:center;cursor:pointer;
                                                 transition:border-color .2s,background .2s">
-
-                                        <!-- Prompt visible cuando no hay imagen -->
-                                        <div id="svc-drop-prompt">
-                                            <i class="fa-solid fa-cloud-arrow-up"
-                                               style="font-size:2rem;color:#e07020;margin-bottom:.5rem;display:block"></i>
-                                            <p style="font-size:.86rem;font-weight:600;color:#374151;margin:.2rem 0">
-                                                Arrastra tu imagen aquí
-                                            </p>
-                                            <span style="font-size:.74rem;color:#94a3b8">
-                                                Vista previa local · PNG, JPG o WEBP · máx. 2 MB
-                                            </span>
-                                            <label class="svc-file-btn" onclick="event.stopPropagation()">
-                                                <i class="fa-solid fa-folder-open"></i> Seleccionar archivo
-                                                <input type="file" id="servicio-admin-file-input"
-                                                       accept="image/png,image/jpeg,image/webp" hidden>
-                                            </label>
-                                        </div>
-
-                                        <!-- Preview — preserva los IDs que usa app.js -->
-                                        <div id="servicio-admin-imagen-preview" style="display:none;position:relative">
-                                            <img id="servicio-admin-preview-img" alt="Vista previa"
-                                                 style="max-height:160px;border-radius:10px;object-fit:cover;
-                                                        border:1.5px solid #e2e8f0;display:block;margin:0 auto">
-                                            <button type="button" id="svc-remove-img"
-                                                    aria-label="Quitar imagen"
-                                                    style="position:absolute;top:.4rem;right:.4rem;
-                                                           width:28px;height:28px;border-radius:50%;
-                                                           background:rgba(0,0,0,.55);border:none;color:#fff;
-                                                           font-size:.8rem;cursor:pointer;
-                                                           display:flex;align-items:center;justify-content:center;
-                                                           transition:background .15s">
-                                                <i class="fa-solid fa-xmark"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- URL para guardar en BD -->
-                                    <div style="margin-top:.65rem">
-                                        <label for="servicio-admin-imagen-url" class="svc-label"
-                                               style="margin-bottom:.3rem;color:#64748b">
-                                            URL de imagen (se guardará en la base de datos)
-                                        </label>
-                                        <input type="text" id="servicio-admin-imagen-url" maxlength="500"
+                                        <i class="fa-solid fa-cloud-arrow-up"
+                                           style="font-size:2rem;color:#e07020;margin-bottom:.5rem;display:block"></i>
+                                        <p style="font-size:.86rem;font-weight:600;color:#374151;margin:.2rem 0">
+                                            Pega una URL o arrastra una imagen
+                                        </p>
+                                        <input type="text" id="servicio-admin-imagen-url"
                                                placeholder="https://ejemplo.com/imagen.jpg"
                                                class="svc-input" style="font-size:.84rem">
-                                        <p style="font-size:.7rem;color:#94a3b8;margin:.3rem 0 0;line-height:1.4">
-                                            La vista previa de arriba es local. Ingresa una URL pública para guardar la imagen.
-                                        </p>
+                                        <span style="font-size:.74rem;color:#94a3b8;display:block;margin-top:.5rem">
+                                            Haz clic en el recuadro para subir un archivo (PNG, JPG o WEBP · máx. 2 MB)
+                                        </span>
+                                        <input type="file" id="servicio-admin-file-input"
+                                               accept="image/png,image/jpeg,image/webp" hidden>
+                                    </div>
+
+                                    <!-- Preview — preserva los IDs que usa app.js -->
+                                    <div id="servicio-admin-imagen-preview" style="display:none;position:relative;margin-top:.65rem">
+                                        <img id="servicio-admin-preview-img" alt="Vista previa"
+                                             style="max-height:160px;border-radius:10px;object-fit:cover;
+                                                    border:1.5px solid #e2e8f0;display:block;margin:0 auto">
+                                        <button type="button" id="svc-remove-img"
+                                                aria-label="Quitar imagen"
+                                                style="position:absolute;top:.4rem;right:.4rem;
+                                                       width:28px;height:28px;border-radius:50%;
+                                                       background:rgba(0,0,0,.55);border:none;color:#fff;
+                                                       font-size:.8rem;cursor:pointer;
+                                                       display:flex;align-items:center;justify-content:center;
+                                                       transition:background .15s">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </div>
 
                                     <div class="svc-err" id="err-svc-imagen"></div>
@@ -404,27 +385,23 @@
             /* ══ Refs comunes de imagen ══ */
             const dropzone   = document.getElementById('svc-dropzone');
             const fileInput  = document.getElementById('servicio-admin-file-input');
-            const dropPrompt = document.getElementById('svc-drop-prompt');
             const preview    = document.getElementById('servicio-admin-imagen-preview');
             const previewImg = document.getElementById('servicio-admin-preview-img');
             const removeBtn  = document.getElementById('svc-remove-img');
             const urlInput   = document.getElementById('servicio-admin-imagen-url');
-            let   localObjUrl = null;
 
             /* ── Mostrar / ocultar preview ── */
             function showPreview(src) {
                 if (!src || !preview || !previewImg) return;
                 previewImg.src = src;
                 preview.style.display  = 'block';
-                if (dropPrompt) dropPrompt.style.display = 'none';
             }
 
             function clearImageState() {
-                if (localObjUrl) { URL.revokeObjectURL(localObjUrl); localObjUrl = null; }
                 if (previewImg)  previewImg.src = '';
                 if (preview)     preview.style.display  = 'none';
-                if (dropPrompt)  dropPrompt.style.display = 'block';
                 if (fileInput)   fileInput.value = '';
+                if (urlInput)    urlInput.value = '';
                 clearErr('err-svc-imagen');
             }
 
@@ -441,9 +418,13 @@
                     return;
                 }
                 clearErr('err-svc-imagen');
-                if (localObjUrl) URL.revokeObjectURL(localObjUrl);
-                localObjUrl = URL.createObjectURL(file);
-                showPreview(localObjUrl);
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const dataUrl = e.target.result;
+                    if (urlInput) urlInput.value = dataUrl;
+                    showPreview(dataUrl);
+                };
+                reader.readAsDataURL(file);
             }
 
             /* ── Dropzone events ── */
@@ -459,7 +440,7 @@
                     handleFile(e.dataTransfer.files[0]);
                 });
                 dropzone.addEventListener('click', (e) => {
-                    if (!e.target.closest('label') && !e.target.closest('button')) fileInput?.click();
+                    if (!e.target.closest('input') && !e.target.closest('button')) fileInput?.click();
                 });
             }
             if (fileInput) fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
@@ -470,19 +451,20 @@
                 urlInput.addEventListener('input', () => {
                     const url = urlInput.value.trim();
                     if (url) {
-                        if (localObjUrl) { URL.revokeObjectURL(localObjUrl); localObjUrl = null; if (fileInput) fileInput.value = ''; }
+                        if (fileInput) fileInput.value = '';
                         showPreview(url);
                     } else {
-                        clearImageState();
+                        if (preview) preview.style.display = 'none';
+                        if (previewImg) previewImg.src = '';
                     }
                 });
             }
 
             /* Sincronizar prompt cuando app.js muestra/oculta el preview (modo editar) */
-            if (preview && dropPrompt) {
+            if (preview) {
                 new MutationObserver(() => {
                     const visible = preview.style.display !== 'none' && preview.style.display !== '';
-                    dropPrompt.style.display = visible ? 'none' : 'block';
+                    if (!visible && previewImg) previewImg.src = '';
                 }).observe(preview, { attributes: true, attributeFilter: ['style'] });
             }
 

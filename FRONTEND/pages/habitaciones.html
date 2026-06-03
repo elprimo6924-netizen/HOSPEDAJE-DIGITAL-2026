@@ -181,9 +181,25 @@
                         </label>
 
                         <label>
-                            Imágenes por URL
-                            <textarea id="habitacion-admin-imagen" placeholder="Pega una o varias URL separadas por salto de línea o coma"></textarea>
-                            <small class="crud-habitaciones-help">Pega una o varias URLs para armar la galería del detalle.</small>
+                            Imágenes de la habitación
+                            <div id="habitacion-admin-dropzone"
+                                 style="border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;
+                                        padding:1.1rem 1rem;text-align:center;cursor:pointer;
+                                        transition:border-color .2s,background .2s">
+                                <i class="fa-solid fa-cloud-arrow-up"
+                                   style="font-size:1.8rem;color:#e07020;margin-bottom:.4rem;display:block"></i>
+                                <p style="font-size:.84rem;font-weight:600;color:#374151;margin:.2rem 0">
+                                    Pega una o varias URL o arrastra una imagen
+                                </p>
+                                <textarea id="habitacion-admin-imagen"
+                                          placeholder="https://ejemplo.com/imagen.jpg"
+                                          style="width:100%;margin-top:.5rem;min-height:90px"></textarea>
+                                <span style="font-size:.74rem;color:#94a3b8;display:block;margin-top:.4rem">
+                                    Haz clic en el recuadro para subir un archivo
+                                </span>
+                                <input type="file" id="habitacion-admin-file-input" accept="image/*" hidden>
+                            </div>
+                            <small class="crud-habitaciones-help">Puedes pegar varias URLs separadas por salto de línea o coma.</small>
                         </label>
 
                         <div id="habitacion-admin-preview-wrap" class="crud-habitaciones-preview hidden">
@@ -352,6 +368,53 @@
         } catch (error) {
             console.error('Error en habitaciones.html:', error);
         }
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropzone = document.getElementById('habitacion-admin-dropzone');
+        const fileInput = document.getElementById('habitacion-admin-file-input');
+        const textarea = document.getElementById('habitacion-admin-imagen');
+
+        if (!dropzone || !fileInput || !textarea) return;
+
+        const appendValue = (val) => {
+            const current = textarea.value.trim();
+            if (!current) {
+                textarea.value = val;
+            } else {
+                textarea.value = current + '\n' + val;
+            }
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+
+        const readFile = (file) => {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = e => appendValue(e.target.result);
+            reader.readAsDataURL(file);
+        };
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = '#e07020';
+            dropzone.style.background = '#fff7ed';
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.style.borderColor = '#cbd5e1';
+            dropzone.style.background = '#f8fafc';
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = '#cbd5e1';
+            dropzone.style.background = '#f8fafc';
+            readFile(e.dataTransfer.files[0]);
+        });
+        dropzone.addEventListener('click', (e) => {
+            if (e.target === textarea) return;
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', () => readFile(fileInput.files[0]));
     });
     </script>
 </body>

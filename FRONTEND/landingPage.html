@@ -480,11 +480,6 @@
         openRegisterModalButton?.addEventListener('click', openRegisterModal);
         document.getElementById('register-modal-close')?.addEventListener('click', closeRegisterModal);
 
-        // Cerrar al hacer clic en el backdrop (click sobre el propio dialog fuera del contenido)
-        registerModal?.addEventListener('click', (e) => {
-            if (e.target === registerModal) closeRegisterModal();
-        });
-
         // ESC lo maneja el browser nativamente; limpiamos el formulario
         registerModal?.addEventListener('cancel', (e) => {
             e.preventDefault();

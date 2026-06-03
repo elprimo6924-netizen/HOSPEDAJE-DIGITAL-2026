@@ -400,28 +400,13 @@
                     <div class="paq-form-section">
                         <span class="img-picker-label">Imagen del paquete</span>
                         <input type="hidden" id="fpaq-imagen">
-                        <div class="img-picker-tabs">
-                            <button type="button" class="img-tab active" data-tab="url">
-                                <i class="fa-solid fa-link"></i> Por URL
-                            </button>
-                            <button type="button" class="img-tab" data-tab="file">
-                                <i class="fa-solid fa-upload"></i> Subir archivo
-                            </button>
-                        </div>
-                        <div class="img-tab-content active" id="img-tab-url">
+                        <div class="img-dropzone" id="fpaq-dropzone">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <p>Pega una URL o arrastra una imagen</p>
                             <input type="url" id="fpaq-imagen-url" class="img-url-input"
                                    placeholder="https://ejemplo.com/imagen.jpg">
-                        </div>
-                        <div class="img-tab-content" id="img-tab-file">
-                            <div class="img-dropzone" id="fpaq-dropzone">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <p>Arrastra aquí tu imagen</p>
-                                <span>o haz clic para seleccionar</span>
-                                <label class="btn-select-file" onclick="event.stopPropagation()">
-                                    <i class="fa-solid fa-folder-open"></i> Seleccionar archivo
-                                    <input type="file" id="fpaq-file-input" accept="image/*" hidden>
-                                </label>
-                            </div>
+                            <span class="img-unified-hint">Haz clic en el recuadro para subir un archivo</span>
+                            <input type="file" id="fpaq-file-input" accept="image/*" hidden>
                         </div>
                         <div class="img-preview-wrap" id="fpaq-preview-wrap" style="display:none">
                             <img id="fpaq-preview-img" src="" alt="Vista previa">
@@ -903,30 +888,12 @@
         const previewWrap = document.getElementById('fpaq-preview-wrap');
         const previewImg  = document.getElementById('fpaq-preview-img');
         const removeBtn   = document.getElementById('btn-remove-img');
-        const tabs        = document.querySelectorAll('.img-tab');
-        const tabContents = document.querySelectorAll('.img-tab-content');
 
         function setPreview(src) {
             if (src) { previewImg.src = src; previewWrap.style.display = 'flex'; }
             else      { previewImg.src = ''; previewWrap.style.display = 'none'; }
         }
         function setValue(val) { hidden.value = val || ''; setPreview(val || ''); }
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(`img-tab-${tab.dataset.tab}`).classList.add('active');
-                if (tab.dataset.tab === 'url') {
-                    fileInput.value = '';
-                    setValue(urlInput.value.trim());
-                } else {
-                    urlInput.value = '';
-                    setValue('');
-                }
-            });
-        });
 
         let urlTimer;
         urlInput.addEventListener('input', () => {
@@ -943,7 +910,9 @@
             if (file && file.type.startsWith('image/')) readFile(file);
         });
         dropzone.addEventListener('click', e => {
-            if (!e.target.closest('.btn-select-file')) fileInput.click();
+            if (e.target === dropzone || e.target.classList.contains('img-unified-hint')) {
+                fileInput.click();
+            }
         });
         fileInput.addEventListener('change', () => {
             if (fileInput.files[0]) readFile(fileInput.files[0]);
@@ -951,11 +920,7 @@
         function readFile(file) {
             const reader = new FileReader();
             reader.onload = e => {
-                // Switch to file tab to show the result
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                document.querySelector('.img-tab[data-tab="file"]').classList.add('active');
-                document.getElementById('img-tab-file').classList.add('active');
+                urlInput.value = '';
                 setValue(e.target.result);
             };
             reader.readAsDataURL(file);
@@ -965,10 +930,6 @@
 
         return {
             set(val) {
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                document.querySelector('.img-tab[data-tab="url"]').classList.add('active');
-                document.getElementById('img-tab-url').classList.add('active');
                 urlInput.value = val || '';
                 fileInput.value = '';
                 setValue(val || '');
