@@ -333,7 +333,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById('usr-det-x')?.addEventListener('click', cerrarModalDet);
   document.getElementById('usr-det-cerrar')?.addEventListener('click', cerrarModalDet);
-  modalDet?.addEventListener('click', (e) => { if (e.target === modalDet) cerrarModalDet(); });
+  // NO cerrar al click fuera — solo con el botón X
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModalDet(); });
 
   const mostrarDetalleUsuario = (item) => {

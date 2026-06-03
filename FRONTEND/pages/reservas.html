@@ -1026,10 +1026,7 @@
                 document.getElementById('btn-nueva-reserva').addEventListener('click', nuevaReserva);
                 document.getElementById('btn-cerrar-modal-reserva').addEventListener('click', () =>
                     document.getElementById('modal-reserva-detalle').classList.add('hidden'));
-                document.getElementById('modal-reserva-detalle').addEventListener('click', e => {
-                    if (e.target === e.currentTarget)
-                        document.getElementById('modal-reserva-detalle').classList.add('hidden');
-                });
+                // NO cerrar al click fuera — solo con el botón X
 
                 cargarReservas();
             } catch (e) { console.error('Error en reservas.html:', e); }

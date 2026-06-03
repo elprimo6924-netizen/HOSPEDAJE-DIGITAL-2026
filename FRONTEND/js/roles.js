@@ -307,7 +307,7 @@ async function mostrarDetalleRol(rolId) {
 
     overlay.querySelector('#_rd_close').addEventListener('click', close);
     overlay.querySelector('#_rd_cerrar_btn').addEventListener('click', close);
-    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    // NO cerrar al click fuera — solo con el botón X
     document.addEventListener('keydown', function onEsc(e) {
         if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
     });

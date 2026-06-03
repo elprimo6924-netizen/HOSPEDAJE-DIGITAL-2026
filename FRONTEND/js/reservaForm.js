@@ -360,10 +360,7 @@ function mostrarAlertaExito(reservaId) {
   if (btn) {
     btn.onclick = () => { window.location.href = 'pages/reservas.html'; };
   }
-  /* Cierra al hacer clic fuera de la tarjeta */
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) window.location.href = 'pages/reservas.html';
-  }, { once: true });
+  // NO cerrar al click fuera — solo con el botón de la tarjeta
 }
 
 /* ── Confirmación (Promise) ── */

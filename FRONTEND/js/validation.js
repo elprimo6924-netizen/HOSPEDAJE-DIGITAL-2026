@@ -574,9 +574,7 @@ function confirmarAccion({ titulo, mensaje, textoConfirmar = 'Eliminar', onConfi
         overlay.remove();
         onConfirmar();
     });
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.remove();
-    });
+    // NO cerrar al click fuera — solo con el botón X
 }
 
 // ✏️ MODIFICADO: Nueva función — deshabilitar/habilitar botón según validez

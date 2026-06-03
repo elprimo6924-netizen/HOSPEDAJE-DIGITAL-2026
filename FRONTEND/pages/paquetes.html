@@ -1113,8 +1113,7 @@
             document.getElementById('btn-cerrar-detalle').addEventListener('click', cerrarDetalle);
             document.getElementById('btn-cerrar-form').addEventListener('click', cerrarForm);
             document.getElementById('btn-form-cancelar').addEventListener('click', cerrarForm);
-            document.getElementById('modal-detalle-paq').addEventListener('click', e => { if (e.target === e.currentTarget) cerrarDetalle(); });
-            document.getElementById('modal-form-paq').addEventListener('click',    e => { if (e.target === e.currentTarget) cerrarForm(); });
+            // NO cerrar al click fuera — solo con el botón X
 
             document.getElementById('form-paquete').addEventListener('submit', async e => {
                 e.preventDefault();
