@@ -47,6 +47,12 @@ const ReservasService = {
       whereClause = `WHERE (${filters.join(" OR ")})`;
     }
 
+    // Incluir columnas Comprobante* solo si ya existen (migración puede no haber corrido aún)
+    const rCols = await getReservaCols();
+    const compFields = rCols.has('ComprobantePago')
+      ? `,\n        r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota`
+      : '';
+
     const [rows] = await db.query(`
       SELECT
         r.IdReserva          AS IDReserva,
@@ -60,11 +66,8 @@ const ReservasService = {
         r.Monto_Total        AS MontoTotal,
         r.MetodoPago,
         r.IdEstadoReserva,
-        r.id_usuario,
-        r.ComprobantePago,
-        r.ComprobanteEstado,
-        r.ComprobanteFecha,
-        r.ComprobanteNota,
+        r.id_usuario
+        ${compFields},
         c.Nombre,
         c.Apellido,
         c.NroDocumento,
@@ -88,12 +91,16 @@ const ReservasService = {
   },
 
   obtenerPorId: async (id) => {
+    const rCols2 = await getReservaCols();
+    const compFields2 = rCols2.has('ComprobantePago')
+      ? ', r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota'
+      : '';
     const [[reserva]] = await db.query(
       `SELECT r.IdReserva AS IDReserva, r.NroDocumentoCliente,
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
               r.Sub_Total AS SubTotal, r.Descuento, r.IVA, r.Monto_Total AS MontoTotal,
-              r.MetodoPago, r.IdEstadoReserva,
-              r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota,
+              r.MetodoPago, r.IdEstadoReserva
+              ${compFields2},
               c.Nombre, c.Apellido, e.NombreEstadoReserva
        FROM reserva r
        LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
@@ -465,6 +472,12 @@ const ReservasService = {
       }
     }
   },
+};
+
+// Invalidar cache de columnas tras migraciones en caliente
+ReservasService._resetColsCache = () => {
+  reservaColsPromise          = null;
+  detalleServicioColsPromise  = null;
 };
 
 module.exports = ReservasService;

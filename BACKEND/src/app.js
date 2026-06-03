@@ -29,6 +29,11 @@ const app = express();
     try {
         const dbName = process.env.DB_NAME || 'hospedaje';
 
+        // Ampliar NombreEstadoReserva si sigue siendo VARCHAR(15) — necesita ≥26 chars
+        await db.query(
+            "ALTER TABLE estadosreserva MODIFY COLUMN NombreEstadoReserva VARCHAR(50)"
+        ).catch(() => {}); // ignorar si la tabla no existe aún
+
         // Estado 5 — Pendiente Verificación Pago
         await db.query(
             "INSERT IGNORE INTO estadosreserva (IdEstadoReserva, NombreEstadoReserva) VALUES (5, 'Pendiente Verificación Pago')"
@@ -42,16 +47,31 @@ const app = express();
             );
             return row.c > 0;
         };
-        if (!(await colExists('ComprobantePago')))
+        let migracionHizo = false;
+        if (!(await colExists('ComprobantePago'))) {
             await db.query('ALTER TABLE reserva ADD COLUMN ComprobantePago VARCHAR(255) NULL');
-        if (!(await colExists('ComprobanteFecha')))
+            migracionHizo = true;
+        }
+        if (!(await colExists('ComprobanteFecha'))) {
             await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteFecha DATETIME NULL');
-        if (!(await colExists('ComprobanteEstado')))
+            migracionHizo = true;
+        }
+        if (!(await colExists('ComprobanteEstado'))) {
             await db.query("ALTER TABLE reserva ADD COLUMN ComprobanteEstado VARCHAR(20) NULL DEFAULT 'pendiente'");
-        if (!(await colExists('ComprobanteNota')))
+            migracionHizo = true;
+        }
+        if (!(await colExists('ComprobanteNota'))) {
             await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteNota VARCHAR(255) NULL');
+            migracionHizo = true;
+        }
 
-        console.log('[MIGRATION] Migración comprobante de pago aplicada correctamente.');
+        // Invalidar cache del service para que lea las nuevas columnas
+        if (migracionHizo) {
+            const svc = require('./services/reservas.service.js');
+            if (typeof svc._resetColsCache === 'function') svc._resetColsCache();
+        }
+
+        console.log('[MIGRATION] Migración comprobante de pago OK.');
     } catch (err) {
         console.error("[MIGRATION] Error aplicando migración de comprobante:", err.message);
     }

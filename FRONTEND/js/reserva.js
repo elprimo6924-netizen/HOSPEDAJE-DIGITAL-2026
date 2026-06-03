@@ -1175,8 +1175,11 @@ const ReservaForm = {
 
                 // Determinar si es cliente (mostrar modal comprobante) o admin (overlay clásico)
                 const _sess  = window.getStoredSession ? window.getStoredSession() : null;
-                const _role  = Number(_sess?.usuario?.IDRol ?? _sess?.user?.rol ?? 0);
-                const _isCliente = _role === 2 || _role === 3;
+                let _role    = Number(_sess?.usuario?.IDRol ?? _sess?.user?.rol ?? 0);
+                if (!_role) {
+                    try { _role = Number(JSON.parse(localStorage.getItem('user') || '{}').IDRol || 0); } catch(_) {}
+                }
+                const _isCliente = _role === 2 || _role === 3 || _role === 0; // 0 = sin sesión admin → mostrar modal
 
                 if (_isCliente && reservaId) {
                     mostrarModalComprobante(reservaId);
