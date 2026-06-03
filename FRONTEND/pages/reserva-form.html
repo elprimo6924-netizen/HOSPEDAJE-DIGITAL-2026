@@ -475,7 +475,7 @@
                 </div>
                 
                 <div class="summary-item">
-                    <strong>Impuestos (10%)</strong>
+                    <strong>IVA (19%) incluido</strong>
                     <span id="summary-tax">$0</span>
                 </div>
                 
@@ -604,9 +604,11 @@
                 const ci = new Date(checkIn);
                 const co = new Date(checkOut);
                 const nights = Math.ceil((co - ci) / (1000 * 60 * 60 * 24));
-                const subtotal = bookingData.price * nights;
-                const tax = Math.round(subtotal * 0.10);
-                const total = subtotal + tax;
+                // IVA INCLUIDO: precio ya contiene 19%
+                const total    = bookingData.price * nights;
+                const base     = total / 1.19;
+                const tax      = total - base;
+                const subtotal = base;
                 
                 document.getElementById('summary-nights').textContent = nights;
                 document.getElementById('summary-subtotal').textContent = `$${subtotal}`;

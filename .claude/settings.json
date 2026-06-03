@@ -31,7 +31,9 @@
       "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\BACKEND\\\\src\\\\public\\\\uploads\\\\comprobantes\")",
       "PowerShell(New-Item -ItemType File -Force \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\BACKEND\\\\src\\\\public\\\\uploads\\\\comprobantes\\\\.gitkeep\")",
       "Bash(node -e \"require\\('./src/app.js'\\); console.log\\('App OK'\\);\")",
-      "Bash(node -e \"require\\('./src/routes/reservas.routes.js'\\); console.log\\('Routes OK'\\);\")"
+      "Bash(node -e \"require\\('./src/routes/reservas.routes.js'\\); console.log\\('Routes OK'\\);\")",
+      "Bash(git commit *)",
+      "Bash(node -e \"const svc = require\\('./src/services/reservas.service.js'\\); console.log\\('svc._resetColsCache:', typeof svc._resetColsCache\\);\")"
     ]
   }
 }

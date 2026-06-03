@@ -239,6 +239,58 @@ const obtenerPorId = async (req, res) => {
 const path = require("path");
 const fs   = require("fs");
 
+const cotizar = async (req, res) => {
+  try {
+    const {
+      IDHabitacion, paquetesIds: paqRaw, serviciosIds: svcRaw,
+      FechaInicio, FechaFinalizacion, Descuento,
+    } = req.query;
+
+    if (!FechaInicio || !FechaFinalizacion) {
+      return res.status(400).json({ error: "FechaInicio y FechaFinalizacion son obligatorios." });
+    }
+
+    const noches = Math.max(1, Math.ceil(
+      (new Date(FechaFinalizacion) - new Date(FechaInicio)) / 86400000
+    ));
+    const paqIds = paqRaw ? String(paqRaw).split(',').map(Number).filter(Boolean) : [];
+    const svcIds = svcRaw ? String(svcRaw).split(',').map(Number).filter(Boolean) : [];
+
+    let precioBase = 0;
+    if (IDHabitacion && !paqIds.length) {
+      const [[h]] = await db.query("SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [IDHabitacion]);
+      precioBase = Number(h?.Costo || 0) * noches;
+    }
+    for (const pid of paqIds) {
+      const [[p]] = await db.query("SELECT Precio FROM paquetes WHERE IDPaquete = ? LIMIT 1", [pid]);
+      precioBase += Number(p?.Precio || 0);
+    }
+    let precioSvc = 0;
+    for (const sid of svcIds) {
+      const [[s]] = await db.query("SELECT Costo FROM servicio WHERE IDServicio = ? LIMIT 1", [sid]);
+      precioSvc += Number(s?.Costo || 0);
+    }
+
+    const descSaneado  = Math.max(0, Math.min(Number(Descuento || 0), precioBase + precioSvc));
+    const totalConIva  = Math.max(0, precioBase + precioSvc - descSaneado);
+    const baseGravable = totalConIva / 1.19;
+    const ivaDesglose  = totalConIva - baseGravable;
+
+    return res.status(200).json({
+      noches,
+      precioBase,
+      precioServicios: precioSvc,
+      descuento: descSaneado,
+      baseGravable: Math.round(baseGravable * 100) / 100,
+      ivaDesglose:  Math.round(ivaDesglose  * 100) / 100,
+      totalConIva,
+    });
+  } catch (error) {
+    console.error("[Reservas] cotizar:", error);
+    return res.status(500).json({ error: "Error al cotizar.", detalle: error.message });
+  }
+};
+
 const subirComprobante = async (req, res) => {
   try {
     if (!req.file) {
@@ -341,4 +393,5 @@ module.exports = {
   agregarServicios,
   subirComprobante,
   verificarComprobante,
+  cotizar,
 };

@@ -206,14 +206,15 @@ function recalcularPrecio() {
   const costoSvc = [...document.querySelectorAll('#reserva-admin-servicios-grid .servicio-toggle-btn.seleccionado')]
                      .reduce((s, e) => s + Number(e.dataset.costo || 0), 0);
 
-  const desc  = parseFloat(rfEl('reserva-admin-descuento')?.value) || 0;
-  const sub   = costoHab + costoPaq + costoSvc;
-  const iva   = sub * 0.19;
-  const total = Math.max(0, sub - desc + iva);
+  const desc       = parseFloat(rfEl('reserva-admin-descuento')?.value) || 0;
+  // IVA INCLUIDO: precios del catálogo ya contienen el 19%
+  const totalConIva  = Math.max(0, costoHab + costoPaq + costoSvc - desc);
+  const baseGravable = totalConIva / 1.19;
+  const ivaDesglose  = totalConIva - baseGravable;
 
-  if (rfEl('reserva-admin-subtotal')) rfEl('reserva-admin-subtotal').value = sub.toFixed(2);
-  if (rfEl('reserva-admin-iva'))      rfEl('reserva-admin-iva').value      = iva.toFixed(2);
-  if (rfEl('reserva-admin-total'))    rfEl('reserva-admin-total').value    = total.toFixed(2);
+  if (rfEl('reserva-admin-subtotal')) rfEl('reserva-admin-subtotal').value = baseGravable.toFixed(2);
+  if (rfEl('reserva-admin-iva'))      rfEl('reserva-admin-iva').value      = ivaDesglose.toFixed(2);
+  if (rfEl('reserva-admin-total'))    rfEl('reserva-admin-total').value    = totalConIva.toFixed(2);
 
   if (typeof actualizarSidebar === 'function') actualizarSidebar();
 }

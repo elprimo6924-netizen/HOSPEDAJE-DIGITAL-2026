@@ -1859,11 +1859,11 @@
                 </div>
                 <div class="border-t-2 border-amber-300 my-3"></div>
                 <div class="flex justify-between items-center py-1.5 text-sm text-stone-600">
-                    <span>Subtotal</span>
+                    <span>Base gravable</span>
                     <span id="resumen-subtotal">$0</span>
                 </div>
                 <div class="flex justify-between items-center py-1.5 text-sm text-stone-600">
-                    <span>IVA (19%)</span>
+                    <span>IVA (19%) incluido</span>
                     <span id="resumen-iva">$0</span>
                 </div>
             </div>
@@ -1946,14 +1946,16 @@
                 .reduce((s, e) => s + Number(e.dataset.precio || 0), 0);
             const svc = Array.from(document.querySelectorAll('#reserva-admin-servicios-grid .servicio-toggle-btn.seleccionado'))
                 .reduce((s, e) => s + Number(e.dataset.costo || 0), 0);
-            const desc = parseFloat(el('reserva-admin-descuento')?.value) || 0;
-            const iva = parseFloat(el('reserva-admin-iva')?.value) || 0;
-            const total = Math.max(0, hab + paq + svc - desc + iva);
+            const desc       = parseFloat(el('reserva-admin-descuento')?.value) || 0;
+            // IVA INCLUIDO: no se suma el IVA por encima, se extrae del total
+            const totalConIva  = Math.max(0, hab + paq + svc - desc);
+            const ivaDesglose  = totalConIva - totalConIva / 1.19;
+            const total        = totalConIva;
 
             if (el('sb-costo-hab')) el('sb-costo-hab').textContent = fmt(hab);
             if (el('sb-costo-paq')) el('sb-costo-paq').textContent = fmt(paq);
             if (el('sb-costo-svc')) el('sb-costo-svc').textContent = fmt(svc);
-            if (el('sb-iva')) el('sb-iva').textContent = fmt(iva);
+            if (el('sb-iva')) el('sb-iva').textContent = fmt(ivaDesglose);
             if (el('sb-total')) el('sb-total').textContent = fmt(total);
 
             if (el('reserva-admin-subtotal')) el('reserva-admin-subtotal').value = hab + paq + svc;

@@ -214,6 +214,48 @@ const ReservasService = {
       }
     }
 
+    // ── B5: Recalcular precios desde BD — el cliente no es fuente de verdad ──
+    const noches = Math.max(1, Math.ceil(
+      (new Date(FechaFinalizacion) - new Date(FechaInicio)) / 86400000
+    ));
+
+    let precioBase = 0;
+
+    // Precio habitación directa
+    if (habitacionId && (!Array.isArray(paquetesIds) || !paquetesIds.length)) {
+      const [[hab]] = await db.query(
+        "SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [habitacionId]
+      );
+      precioBase = Number(hab?.Costo || 0) * noches;
+    }
+
+    // Precio paquetes (tarifa plana)
+    for (const pid of (paquetesIds || [])) {
+      const [[paq]] = await db.query(
+        "SELECT Precio FROM paquetes WHERE IDPaquete = ? LIMIT 1", [pid]
+      );
+      precioBase += Number(paq?.Precio || 0);
+    }
+
+    // Precio servicios
+    const svcList2 = Array.isArray(serviciosConHorarios) && serviciosConHorarios.length
+      ? serviciosConHorarios.map(s => s.id ?? s)
+      : (serviciosIds || []);
+    let precioSvc = 0;
+    for (const sid of svcList2) {
+      const [[svc]] = await db.query(
+        "SELECT Costo FROM servicio WHERE IDServicio = ? LIMIT 1", [sid]
+      );
+      precioSvc += Number(svc?.Costo || 0);
+    }
+
+    // IVA INCLUIDO (19%)
+    const descSaneado   = Math.max(0, Math.min(Number(Descuento || 0), precioBase + precioSvc));
+    const totalConIva   = Math.max(0, precioBase + precioSvc - descSaneado);
+    const baseGravable  = totalConIva / 1.19;
+    const ivaDesglose   = totalConIva - baseGravable;
+    // ── Fin recálculo ────────────────────────────────────────────────────────
+
     const insertCols = ["NroDocumentoCliente"];
     const insertVals = ["?"];
     const params = [NroDocumentoCliente];
@@ -252,10 +294,10 @@ const ReservasService = {
     params.push(
       FechaInicio,
       FechaFinalizacion,
-      SubTotal     ?? 0,
-      Descuento    ?? 0,
-      IVA          ?? 0,
-      MontoTotal   ?? 0,
+      baseGravable,       // Sub_Total = base sin IVA
+      descSaneado,        // Descuento saneado
+      ivaDesglose,        // IVA extraído (incluido en precio)
+      totalConIva,        // Monto_Total = lo que paga el cliente
       MetodoPago   ?? 1,
       IdEstadoReserva ?? 1,
       id_usuario   ?? 1

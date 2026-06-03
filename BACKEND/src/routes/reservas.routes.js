@@ -8,7 +8,8 @@ const {
 	requireReservaOwnerOrAdmin,
 } = require("../middlewares/authorization.middleware");
 
-router.get("/", reservasController.obtener);
+router.get("/",         reservasController.obtener);
+router.get("/cotizar",  reservasController.cotizar);
 router.get("/mis-reservas", reservasController.obtenerMisReservas);
 router.get("/:id", requireReservaOwnerOrAdmin, reservasController.obtenerPorId);
 router.post("/", reservasController.crear);

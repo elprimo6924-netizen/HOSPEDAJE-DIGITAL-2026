@@ -781,23 +781,22 @@ const ResumenLateral = {
         // Servicios extras
         const costoServicios = State.serviciosExtras.reduce((acc, s) => acc + (s.precio * (s.cantidad || 1)), 0);
 
-        // Subtotal y Descuento
-        const subtotalBruto = precioBase + costoServicios;
+        // IVA INCLUIDO: los precios del catálogo ya contienen el 19%
         const descInput = document.getElementById('descuento');
         const descuento = Number(descInput ? descInput.value : 0);
         State.descuento = descuento;
 
-        const subtotal = subtotalBruto - descuento;
-        const iva = Math.max(0, subtotal * 0.19);
-        const total = Math.max(0, subtotal + iva);
+        const totalConIva  = Math.max(0, precioBase + costoServicios - descuento);
+        const baseGravable = totalConIva / 1.19;
+        const ivaDesglose  = totalConIva - baseGravable;
 
         // Update DOM
         document.getElementById('resumen-habitacion').textContent = fmt(precioBase);
         document.getElementById('resumen-servicios').textContent = fmt(costoServicios);
         document.getElementById('resumen-descuento').textContent = `-${fmt(descuento)}`;
-        document.getElementById('resumen-subtotal').textContent = fmt(subtotal);
-        document.getElementById('resumen-iva').textContent = fmt(iva);
-        document.getElementById('resumen-total').textContent = fmt(total);
+        document.getElementById('resumen-subtotal').textContent = fmt(baseGravable);
+        document.getElementById('resumen-iva').textContent = fmt(ivaDesglose);
+        document.getElementById('resumen-total').textContent = fmt(totalConIva);
     }
 };
 
@@ -1144,14 +1143,15 @@ const ReservaForm = {
             btn.disabled = true;
             btn.textContent = 'Procesando...';
 
-            const noches = Math.round((State.fechaFin - State.fechaInicio) / 86400000);
+            const noches = Math.max(1, Math.round((State.fechaFin - State.fechaInicio) / 86400000));
             const costoBase = State.modo === 'habitacion'
-                ? State.itemSeleccionado.precio * Math.max(1, noches)
+                ? State.itemSeleccionado.precio * noches
                 : State.itemSeleccionado.precio;
-            const costoSvc  = State.serviciosExtras.reduce((a, s) => a + (s.precio * (s.cantidad || 1)), 0);
-            const subtotal  = costoBase + costoSvc - State.descuento;
-            const iva       = Math.max(0, subtotal * 0.19);
-            const total     = Math.max(0, subtotal + iva);
+            const costoSvc     = State.serviciosExtras.reduce((a, s) => a + (s.precio * (s.cantidad || 1)), 0);
+            // IVA INCLUIDO: el backend recalculará estos valores; los enviamos como referencia
+            const totalConIva  = Math.max(0, costoBase + costoSvc - State.descuento);
+            const baseGravable = totalConIva / 1.19;
+            const ivaDesglose  = totalConIva - baseGravable;
 
             const payload = {
                 NroDocumentoCliente: State.cliente.documento,
@@ -1160,9 +1160,9 @@ const ReservaForm = {
                 MetodoPago: Number(document.getElementById('metodo-pago').value),
                 IdEstadoReserva: Number(document.getElementById('estado-reserva').value),
                 Descuento: State.descuento,
-                SubTotal: subtotal,
-                IVA: iva,
-                MontoTotal: total,
+                SubTotal: baseGravable,
+                IVA: ivaDesglose,
+                MontoTotal: totalConIva,
                 IDHabitacion: State.modo === 'habitacion' ? State.itemSeleccionado.id : null,
                 paquetesIds: State.modo === 'paquete' ? [Number(State.itemSeleccionado.id)] : [],
                 serviciosIds: State.serviciosExtras.map(s => Number(s.id)),

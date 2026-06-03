@@ -437,9 +437,10 @@ class BookingWidget {
             const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
 
             this.state.nights = nights;
-            this.state.subtotal = this.propertyData.price * nights;
-            this.state.tax = Math.round(this.state.subtotal * 0.10); // 10% tax
-            this.state.total = this.state.subtotal + this.state.tax;
+            // IVA INCLUIDO: precio del catálogo ya contiene el 19%
+            this.state.total    = this.propertyData.price * nights;
+            this.state.subtotal = Math.round(this.state.total / 1.19);
+            this.state.tax      = this.state.total - this.state.subtotal;
 
             this.container.querySelector('#nights-count').textContent = nights;
             this.container.querySelector('#subtotal').textContent = `$${this.state.subtotal}`;
