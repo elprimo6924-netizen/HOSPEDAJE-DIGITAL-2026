@@ -1899,12 +1899,12 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/reservaForm.js"></script>
-    <script src="js/reserva.js"></script>
+    <script src="js/config.js?v=2"></script>
+    <script src="js/main.js?v=2"></script>
+    <script src="js/api.js?v=2"></script>
+    <script src="js/notifications.js?v=2"></script>
+    <script src="js/reservaForm.js?v=2"></script>
+    <script src="js/reserva.js?v=2"></script>
 
     <script>
         function actualizarSidebar() {
@@ -1958,8 +1958,9 @@
             if (el('sb-iva')) el('sb-iva').textContent = fmt(ivaDesglose);
             if (el('sb-total')) el('sb-total').textContent = fmt(total);
 
-            if (el('reserva-admin-subtotal')) el('reserva-admin-subtotal').value = hab + paq + svc;
-            if (el('reserva-admin-total')) el('reserva-admin-total').value = total;
+            if (el('reserva-admin-subtotal')) el('reserva-admin-subtotal').value = (totalConIva / 1.19).toFixed(2);
+            if (el('reserva-admin-iva'))      el('reserva-admin-iva').value      = ivaDesglose.toFixed(2);
+            if (el('reserva-admin-total'))    el('reserva-admin-total').value    = totalConIva.toFixed(2);
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
