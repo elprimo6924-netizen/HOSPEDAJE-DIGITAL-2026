@@ -152,6 +152,13 @@ app.get('/health', (req, res) => {
 });
 
 // =============================
+// LANDING PAGE POR DEFECTO
+// =============================
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../FRONTEND', 'landingPage.html'));
+});
+
+// =============================
 // TODAS LAS DEMÁS RUTAS → FRONTEND
 // =============================
 app.use((req, res) => {
