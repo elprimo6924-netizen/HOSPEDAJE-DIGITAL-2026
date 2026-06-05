@@ -116,6 +116,50 @@
             background: #c9d1dc !important;
             color: #1a2230 !important;
         }
+
+        /* ── Corrección de visibilidad de etiquetas en el formulario ── */
+        .crud-clientes-form label {
+            display: grid !important;
+            gap: 0.4rem !important;
+        }
+        .crud-clientes-form label > span {
+            font-size: .72rem !important;
+            font-weight: 700 !important;
+            color: #5a4a1e !important;
+            text-transform: uppercase !important;
+            letter-spacing: .07em !important;
+        }
+        .crud-clientes-form label > span .campo-obligatorio {
+            color: #b42318 !important;
+        }
+
+        /* Grid 2 columnas para secciones del formulario */
+        .cf-grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        @media (max-width: 520px) { .cf-grid2 { grid-template-columns: 1fr; } }
+
+        /* Separador de sección dentro del form */
+        .cf-section-sep {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .68rem;
+            font-weight: 800;
+            color: #9a7a30;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin: 4px 0 2px;
+        }
+        .cf-section-sep::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #eadfca;
+        }
+        .cf-section-sep i { color: var(--lux-gold); }
     </style>
 </head>
 <body>
@@ -196,50 +240,66 @@
                     <form id="form-cliente-admin" class="crud-clientes-form">
                         <input type="hidden" id="cliente-admin-id">
 
-                        <label>
-                            <span>Nro. Documento <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="text" id="cliente-admin-documento" required maxlength="20" placeholder="Ej. 1234567890">
-                        </label>
+                        <!-- Sección: Identificación -->
+                        <div class="cf-section-sep"><i class="fa-solid fa-id-card"></i> Identificación</div>
+                        <div class="cf-grid2">
+                            <label>
+                                <span>Tipo de Documento <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                                <select id="cliente-admin-tipo-documento" required>
+                                    <option value="">— Selecciona —</option>
+                                    <option value="CC">Cédula de Ciudadanía</option>
+                                    <option value="CE">Cédula de Extranjería</option>
+                                    <option value="PA">Pasaporte</option>
+                                    <option value="NIT">NIT</option>
+                                    <option value="TI">Tarjeta de Identidad</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Nro. Documento <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                                <input type="text" id="cliente-admin-documento" required maxlength="20" placeholder="Ej. 1234567890">
+                            </label>
+                        </div>
 
-                        <label>
-                            <span>Nombre <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <input type="text" id="cliente-admin-nombre" required maxlength="100" placeholder="Ej. Carlos">
-                        </label>
-
-                        <label>
-                            <span>Apellido</span>
-                            <input type="text" id="cliente-admin-apellido" maxlength="100" placeholder="Ej. López">
-                        </label>
-
+                        <!-- Sección: Datos Personales -->
+                        <div class="cf-section-sep"><i class="fa-solid fa-user"></i> Datos Personales</div>
+                        <div class="cf-grid2">
+                            <label>
+                                <span>Nombre <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                                <input type="text" id="cliente-admin-nombre" required maxlength="100" placeholder="Ej. Carlos">
+                            </label>
+                            <label>
+                                <span>Apellido</span>
+                                <input type="text" id="cliente-admin-apellido" maxlength="100" placeholder="Ej. López">
+                            </label>
+                            <label>
+                                <span>Teléfono</span>
+                                <input type="text" id="cliente-admin-telefono" maxlength="20" placeholder="Ej. 3001234567">
+                            </label>
+                            <label>
+                                <span>Estado <span class="campo-obligatorio" aria-hidden="true">*</span></span>
+                                <select id="cliente-admin-estado" required>
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </select>
+                            </label>
+                        </div>
                         <label>
                             <span>Dirección</span>
                             <input type="text" id="cliente-admin-direccion" maxlength="200" placeholder="Ej. Calle 10 # 12-34">
                         </label>
 
+                        <!-- Sección: Acceso -->
+                        <div class="cf-section-sep"><i class="fa-solid fa-lock"></i> Acceso</div>
                         <label>
                             <span>Email <span class="campo-obligatorio" aria-hidden="true">*</span></span>
                             <input type="email" id="cliente-admin-email" required maxlength="150" placeholder="Ej. cliente@email.com">
                         </label>
-
-                        <label>
-                            <span>Teléfono</span>
-                            <input type="text" id="cliente-admin-telefono" maxlength="20" placeholder="Ej. 3001234567">
-                        </label>
-
-                        <label>
-                            <span>Estado <span class="campo-obligatorio" aria-hidden="true">*</span></span>
-                            <select id="cliente-admin-estado" required>
-                                <option value="1">Activo</option>
-                                <option value="0">Inactivo</option>
-                            </select>
-                        </label>
-
                         <label id="label-cliente-contrasena" style="display:none">
                             <span>Contraseña temporal <span class="campo-obligatorio" aria-hidden="true">*</span></span>
                             <input type="password" id="cliente-admin-contrasena" minlength="8" maxlength="72"
                                    placeholder="Mín. 8 caracteres — el cliente deberá cambiarla al primer ingreso"
                                    autocomplete="new-password">
-                            <small class="crud-clientes-note" style="color:var(--color-secondary)">
+                            <small class="crud-clientes-note" style="color:#b78a2a">
                                 El cliente deberá cambiar esta contraseña en su primer inicio de sesión.
                             </small>
                         </label>

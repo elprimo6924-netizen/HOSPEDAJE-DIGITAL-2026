@@ -512,7 +512,10 @@ const cargarClienteEnFormularioAdmin = (cliente) => {
     const titulo = document.getElementById('cliente-admin-form-title');
     const botonGuardar = document.getElementById('btn-cliente-admin-guardar');
 
+    const campoTipoDocumento = document.getElementById('cliente-admin-tipo-documento');
+
     if (campoId) campoId.value = obtenerIdCliente(cliente);
+    if (campoTipoDocumento) campoTipoDocumento.value = cliente.TipoDocumento || '';
     if (campoDocumento) {
         campoDocumento.value = obtenerIdCliente(cliente);
         campoDocumento.disabled = true;
@@ -564,6 +567,7 @@ const limpiarFormularioClienteAdmin = (mostrarMensaje = true) => {
 };
 
 const construirPayloadCliente = ({ forzarEstado = null } = {}) => {
+    const campoTipoDocumento = document.getElementById('cliente-admin-tipo-documento');
     const campoDocumento = document.getElementById('cliente-admin-documento');
     const campoNombre = document.getElementById('cliente-admin-nombre');
     const campoApellido = document.getElementById('cliente-admin-apellido');
@@ -574,6 +578,7 @@ const construirPayloadCliente = ({ forzarEstado = null } = {}) => {
     const campoContrasena = document.getElementById('cliente-admin-contrasena');
 
     const payload = {
+        TipoDocumento: campoTipoDocumento?.value?.trim() || null,
         NroDocumento: campoDocumento?.value?.trim(),
         Nombre: campoNombre?.value?.trim(),
         Apellido: campoApellido?.value?.trim() || null,

@@ -1,3 +1,11 @@
+const DOC_TIPOS = {
+    CC:  'Cédula de Ciudadanía',
+    CE:  'Cédula de Extranjería',
+    TI:  'Tarjeta de Identidad',
+    PA:  'Pasaporte',
+    NIT: 'NIT',
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const session = window.getStoredSession ? window.getStoredSession() : verificarSesion();
 
@@ -44,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             userData = await window.apiRequest(`/usuarios/${userId}`);
             
             // Modo vista
-            setViewValue('viewTipoDocumento', userData.TipoDocumento || '-');
+            setViewValue('viewTipoDocumento', DOC_TIPOS[userData.TipoDocumento] || userData.TipoDocumento || '-');
             setViewValue('viewNumeroDocumento', userData.NumeroDocumento || '-');
             setViewValue('viewNombre', userData.Nombre || userData.NombreUsuario || '-');
             setViewValue('viewApellido', userData.Apellido || '-');

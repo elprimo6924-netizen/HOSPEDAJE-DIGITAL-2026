@@ -51,7 +51,7 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
             #_rf_header h2 { font-size:1.15rem; font-weight:800; color:#0f172a; margin:0;
                 display:flex; align-items:center; gap:10px; }
             #_rf_header h2 .rf-icon { width:34px; height:34px; border-radius:9px;
-                background:linear-gradient(135deg,#7c3aed,#6d28d9);
+                background:linear-gradient(135deg,var(--color-secondary,#ff8c42),#ea580c);
                 display:inline-flex; align-items:center; justify-content:center;
                 color:#fff; font-size:.9rem; flex-shrink:0; }
             #_rf_close { background:none; border:none; cursor:pointer; color:#94a3b8;
@@ -66,7 +66,7 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
                 font-size:.7rem; font-weight:800; color:#64748b; text-transform:uppercase;
                 letter-spacing:.08em; margin-bottom:14px; }
             .rf-section-title::after { content:''; flex:1; height:1px; background:#f1f5f9; }
-            .rf-section-title i { color:#7c3aed; font-size:.8rem; }
+            .rf-section-title i { color:var(--color-secondary,#ff8c42); font-size:.8rem; }
 
             .rf-label { font-size:.75rem; font-weight:700; color:#374151;
                 letter-spacing:.02em; display:block; margin-bottom:5px; }
@@ -79,8 +79,8 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
                 border:1.5px solid #e2e8f0; border-radius:9px; font-size:.875rem;
                 color:#0f172a; background:#fafafa; font-family:inherit; outline:none;
                 transition:border-color .18s,box-shadow .18s,background .18s; }
-            .rf-input:focus { border-color:#7c3aed; background:#fff;
-                box-shadow:0 0 0 3px rgba(124,58,237,.1); }
+            .rf-input:focus { border-color:var(--color-secondary,#ff8c42); background:#fff;
+                box-shadow:0 0 0 3px rgba(255,140,66,.1); }
             .rf-input:hover:not(:focus) { border-color:#cbd5e1; }
 
             /* Toggle */
@@ -107,19 +107,19 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
                 padding:11px 13px; border:1.5px solid #e2e8f0; border-radius:10px;
                 background:#fafafa; cursor:pointer;
                 transition:border-color .18s, background .18s; }
-            .rf-perm-card:hover { border-color:#c4b5fd; background:#faf5ff; }
-            .rf-perm-card.selected { border-color:#7c3aed; background:#f5f3ff; }
+            .rf-perm-card:hover { border-color:#ffba80; background:#fffaf5; }
+            .rf-perm-card.selected { border-color:var(--color-secondary,#ff8c42); background:#fff8f0; }
             .rf-perm-card input[type="checkbox"] { display:none; }
             .rf-perm-check { width:18px; height:18px; border-radius:5px; border:1.5px solid #cbd5e1;
                 display:flex; align-items:center; justify-content:center; flex-shrink:0;
                 transition:background .18s, border-color .18s; background:#fff; }
-            .rf-perm-card.selected .rf-perm-check { background:#7c3aed; border-color:#7c3aed; }
+            .rf-perm-card.selected .rf-perm-check { background:var(--color-secondary,#ff8c42); border-color:var(--color-secondary,#ff8c42); }
             .rf-perm-check i { color:#fff; font-size:.6rem; display:none; }
             .rf-perm-card.selected .rf-perm-check i { display:block; }
-            .rf-perm-icon { width:28px; height:28px; border-radius:7px; background:#ede9fe;
+            .rf-perm-icon { width:28px; height:28px; border-radius:7px; background:#fff3e0;
                 display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-            .rf-perm-icon i { color:#7c3aed; font-size:.8rem; }
-            .rf-perm-card.selected .rf-perm-icon { background:#ddd6fe; }
+            .rf-perm-icon i { color:var(--color-secondary,#ff8c42); font-size:.8rem; }
+            .rf-perm-card.selected .rf-perm-icon { background:#ffe0c2; }
             .rf-perm-name { font-size:.82rem; font-weight:600; color:#374151; }
 
             /* "Seleccionar todos" row */
@@ -128,7 +128,7 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
             .rf-select-all-box { width:18px; height:18px; border-radius:5px;
                 border:1.5px solid #cbd5e1; display:flex; align-items:center;
                 justify-content:center; background:#fff; transition:background .18s,border-color .18s; }
-            .rf-select-all-box.all { background:#7c3aed; border-color:#7c3aed; }
+            .rf-select-all-box.all { background:var(--color-secondary,#ff8c42); border-color:var(--color-secondary,#ff8c42); }
             .rf-select-all-box i { color:#fff; font-size:.6rem; display:none; }
             .rf-select-all-box.all i { display:block; }
             .rf-select-all-lbl { font-size:.78rem; font-weight:600; color:#64748b; }
@@ -140,9 +140,9 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
                 border:1.5px solid #e2e8f0; cursor:pointer; transition:all .15s; }
             .rf-btn-cancel:hover { background:#f1f5f9; border-color:#cbd5e1; }
             .rf-btn-submit { padding:10px 26px; border-radius:9px;
-                background:linear-gradient(135deg,#7c3aed,#6d28d9);
+                background:linear-gradient(135deg,var(--color-secondary,#ff8c42),#ea580c);
                 color:#fff; font-weight:700; font-size:.85rem; border:none;
-                cursor:pointer; box-shadow:0 4px 14px rgba(124,58,237,.3);
+                cursor:pointer; box-shadow:0 4px 14px rgba(255,140,66,.3);
                 transition:opacity .15s,transform .15s;
                 display:flex; align-items:center; gap:7px; }
             .rf-btn-submit:hover { opacity:.9; transform:translateY(-1px); }
