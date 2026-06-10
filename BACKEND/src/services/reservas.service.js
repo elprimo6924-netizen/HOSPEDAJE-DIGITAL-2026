@@ -123,12 +123,13 @@ const ReservasService = {
         }
       } catch (_) {}
     }
-    // Fallback 2: buscar en usuarios por id_usuario (cubre reservas creadas por el propio cliente)
-    if (!reserva.Nombre && reserva.id_usuario) {
+    // Fallback 2: por id_usuario SOLO si su NumeroDocumento coincide con el de la reserva
+    // (evita mostrar el nombre del admin cuando él creó la reserva para otro cliente)
+    if (!reserva.Nombre && reserva.id_usuario && reserva.NroDocumentoCliente) {
       try {
         const [[u]] = await db.query(
-          'SELECT * FROM usuarios WHERE IDUsuario = ? LIMIT 1',
-          [reserva.id_usuario]
+          'SELECT * FROM usuarios WHERE IDUsuario = ? AND NumeroDocumento = ? LIMIT 1',
+          [reserva.id_usuario, reserva.NroDocumentoCliente]
         );
         if (u) {
           reserva.Nombre   = u.Nombre || u.NombreUsuario || '';

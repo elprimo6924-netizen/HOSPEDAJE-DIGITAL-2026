@@ -469,7 +469,9 @@
             let r;
             try {
                 r = await requestJson(`/reservas/${id}`);
-            } catch {
+                console.log('[verDetalle] respuesta API:', { IDReserva: r?.IDReserva, Nombre: r?.Nombre, Apellido: r?.Apellido, id_usuario: r?.id_usuario, NroDocumentoCliente: r?.NroDocumentoCliente });
+            } catch (apiErr) {
+                console.error('[verDetalle] API falló, usando caché:', apiErr);
                 r = reservasCargadas.find(x => x.IDReserva === id) || null;
             }
             if (!r) { contenido.innerHTML = '<div style="grid-column:span 2;color:#ef4444">Error al cargar detalle.</div>'; return; }
