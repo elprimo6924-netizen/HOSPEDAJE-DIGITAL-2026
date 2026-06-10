@@ -72,6 +72,16 @@ const CalendarioPicker = {
         });
     },
 
+    // Verifica si un rango de fechas (inicio-fin) cruza alguna fecha bloqueada
+    rangeContainsBlocked(inicio, fin) {
+        if (!State.blockedDates.length) return false;
+        return State.blockedDates.some(r => {
+            const blockStart = new Date(r.FechaInicio + 'T00:00:00');
+            const blockEnd   = new Date(r.FechaFinalizacion + 'T00:00:00');
+            return inicio <= blockEnd && fin >= blockStart;
+        });
+    },
+
     renderMes(año, mes, containerId) {
         const c = document.getElementById(containerId);
         if(!c) return;
@@ -120,11 +130,24 @@ const CalendarioPicker = {
 
     handleClick(fecha) {
         if (!State.fechaInicio || (State.fechaInicio && State.fechaFin)) {
+            // Primer clic — inicio del rango; no puede empezar en fecha bloqueada
+            if (this.isBlocked(fecha)) return;
             State.fechaInicio = fecha;
             State.fechaFin = null;
         } else if (fecha < State.fechaInicio) {
+            if (this.isBlocked(fecha)) return;
             State.fechaInicio = fecha;
         } else {
+            // Segundo clic — fin del rango; validar que el rango completo esté libre
+            if (this.rangeContainsBlocked(State.fechaInicio, fecha)) {
+                UI.showToast('El rango seleccionado incluye fechas ya reservadas. Elige otras fechas.', 'error');
+                // Reiniciar selección para que el usuario empiece de nuevo
+                State.fechaInicio = null;
+                State.fechaFin = null;
+                this.updateSelectionClasses();
+                ResumenLateral.actualizar();
+                return;
+            }
             State.fechaFin = fecha;
         }
         this.updateSelectionClasses();
@@ -139,19 +162,30 @@ const CalendarioPicker = {
 
     updateSelectionClasses(hoverDate = null) {
         const btns = document.querySelectorAll('.day-btn');
+        // Determinar si el rango de hover cruzaría fechas bloqueadas
+        const hoverInvalido = hoverDate && State.fechaInicio && !State.fechaFin
+            && this.rangeContainsBlocked(State.fechaInicio, hoverDate);
+
         btns.forEach(btn => {
             const fd = new Date(btn.dataset.date + 'T00:00:00');
             btn.className = "w-9 h-9 rounded-full text-sm transition-colors cursor-pointer day-btn hover:bg-amber-100 hover:text-amber-800";
-            
+
             const isStart = State.fechaInicio && fd.getTime() === State.fechaInicio.getTime();
             const isEnd = State.fechaFin && fd.getTime() === State.fechaFin.getTime();
             const inRange = State.fechaInicio && State.fechaFin && fd > State.fechaInicio && fd < State.fechaFin;
             const inHoverRange = State.fechaInicio && !State.fechaFin && hoverDate && fd > State.fechaInicio && fd <= hoverDate;
 
-            if (isStart || isEnd) {
+            if (isStart) {
                 btn.className = "w-9 h-9 rounded-full text-sm bg-green-800 text-white font-semibold day-btn";
-            } else if (inRange || inHoverRange) {
+            } else if (isEnd) {
+                btn.className = "w-9 h-9 rounded-full text-sm bg-green-800 text-white font-semibold day-btn";
+            } else if (inRange) {
                 btn.className = "w-9 h-9 text-sm bg-amber-50 text-amber-900 day-btn";
+            } else if (inHoverRange) {
+                // Si el hover cruza fechas bloqueadas, mostrar el rango en rojo
+                btn.className = hoverInvalido
+                    ? "w-9 h-9 text-sm bg-red-50 text-red-400 day-btn"
+                    : "w-9 h-9 text-sm bg-amber-50 text-amber-900 day-btn";
             }
         });
     },

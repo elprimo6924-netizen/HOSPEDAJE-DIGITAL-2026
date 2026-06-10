@@ -241,6 +241,22 @@ const ReservasService = {
       throw new Error("Falta IDHabitacion.");
     }
 
+    // Validar disponibilidad: no puede haber reserva activa que cruce las mismas fechas
+    if (habitacionCol && habitacionId) {
+      const [[{ conflictos }]] = await db.query(
+        `SELECT COUNT(*) AS conflictos
+         FROM reserva
+         WHERE ${habitacionCol} = ?
+           AND IdEstadoReserva NOT IN (3, 4)
+           AND FechaInicio    <= ?
+           AND FechaFinalizacion >= ?`,
+        [habitacionId, FechaFinalizacion, FechaInicio]
+      );
+      if (conflictos > 0) {
+        throw new Error('La habitación ya tiene una reserva en las fechas seleccionadas. Por favor elige otras fechas.');
+      }
+    }
+
     // H3: Validar que las habitaciones de los paquetes seleccionados estén activas
     if (Array.isArray(paquetesIds) && paquetesIds.length > 0) {
       for (const pid of paquetesIds) {
