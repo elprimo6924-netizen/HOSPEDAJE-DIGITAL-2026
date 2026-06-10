@@ -102,6 +102,17 @@ async function requestJson(endpoint, options = {}) {
             body: typeof body === 'string' ? body : (body ? JSON.stringify(body) : undefined)
         });
 
+        if (response.status === 401) {
+            // Token expirado o inválido — limpiar sesión y redirigir a login
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                const enPages = window.location.pathname.includes('/pages/');
+                window.location.href = enPages ? '../login.html' : 'login.html';
+            }
+            throw new Error('Sesión expirada. Redirigiendo a inicio de sesión...');
+        }
+
         if (!response.ok) {
             const mensajeBackend = await extraerMensajeErrorRespuesta(response);
             const mensajeError = mensajeBackend

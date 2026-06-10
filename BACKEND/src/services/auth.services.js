@@ -48,7 +48,7 @@ const login = async (email, contrasena) => {
     }
   }
 
-  const token = jwt.sign({ id: usuario.IDUsuario, rol: usuario.IDRol }, process.env.JWT_SECRET, { expiresIn: "2h" });
+  const token = jwt.sign({ id: usuario.IDUsuario, rol: usuario.IDRol }, process.env.JWT_SECRET, { expiresIn: "8h" });
 
   return {
     token,
