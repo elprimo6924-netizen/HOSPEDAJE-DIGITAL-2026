@@ -547,8 +547,14 @@
 
             const campos = [
                 ['ID Reserva',    `#${r.IDReserva}`],
-                ['Cliente',       esAdmin ? `${r.Nombre||''} ${r.Apellido||''}`.trim()||'—' : 'Tu reserva'],
-                ...(esAdmin ? [['Documento', r.NroDocumentoCliente||'-']] : []),
+                ['Cliente', esAdmin ? (() => {
+                    const nombre = `${r.Nombre||''} ${r.Apellido||''}`.trim();
+                    const doc    = r.NroDocumentoCliente || '';
+                    if (nombre && doc) return `${nombre}<br><small style="color:#64748b">${doc}</small>`;
+                    if (nombre)        return nombre;
+                    if (doc)           return `<span style="color:#64748b;font-style:italic">Doc: ${doc}</span>`;
+                    return '—';
+                })() : 'Tu reserva'],
                 ['Fecha inicio',  formatFecha(r.FechaInicio)],
                 ['Fecha fin',     formatFecha(r.FechaFinalizacion)],
                 ['Base gravable', formatMonto(r.SubTotal)],

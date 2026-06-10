@@ -110,32 +110,62 @@ const ReservasService = {
     );
     if (!reserva) return null;
 
+    console.log('[obtenerPorId] JOIN resultado:', {
+      IDReserva: reserva.IDReserva,
+      NroDocumentoCliente: reserva.NroDocumentoCliente,
+      id_usuario: reserva.id_usuario,
+      NombreDesdeJoin: reserva.Nombre || null,
+      ApellidoDesdeJoin: reserva.Apellido || null,
+    });
+
     // Fallback 1: buscar en usuarios por NumeroDocumento (cubre reservas creadas por admin)
     if (!reserva.Nombre && reserva.NroDocumentoCliente) {
       try {
         const [[u]] = await db.query(
-          'SELECT * FROM usuarios WHERE NumeroDocumento = ? LIMIT 1',
-          [reserva.NroDocumentoCliente]
+          'SELECT IDUsuario, NombreUsuario, Nombre, Apellido, IDRol FROM usuarios WHERE NumeroDocumento = ? LIMIT 1',
+          [String(reserva.NroDocumentoCliente).trim()]
         );
         if (u) {
           reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
           reserva.Apellido = u.Apellido || '';
         }
-      } catch (_) {}
+        console.log('[obtenerPorId] Fallback1 (por doc):', u ? { IDUsuario: u.IDUsuario, nombre: reserva.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
+      } catch (e) {
+        console.error('[obtenerPorId] Fallback1 error:', e.message);
+      }
     }
     // Fallback 2: por id_usuario SOLO si su NumeroDocumento coincide con el de la reserva
-    // (evita mostrar el nombre del admin cuando él creó la reserva para otro cliente)
     if (!reserva.Nombre && reserva.id_usuario && reserva.NroDocumentoCliente) {
       try {
         const [[u]] = await db.query(
-          'SELECT * FROM usuarios WHERE IDUsuario = ? AND NumeroDocumento = ? LIMIT 1',
-          [reserva.id_usuario, reserva.NroDocumentoCliente]
+          'SELECT IDUsuario, NombreUsuario, Nombre, Apellido FROM usuarios WHERE IDUsuario = ? AND NumeroDocumento = ? LIMIT 1',
+          [reserva.id_usuario, String(reserva.NroDocumentoCliente).trim()]
         );
         if (u) {
           reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
           reserva.Apellido = u.Apellido || '';
         }
-      } catch (_) {}
+        console.log('[obtenerPorId] Fallback2 (por id+doc):', u ? { nombre: reserva.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
+      } catch (e) {
+        console.error('[obtenerPorId] Fallback2 error:', e.message);
+      }
+    }
+    // Fallback 3: por id_usuario cuando el usuario NO es admin (IDRol != 1)
+    // Cubre el caso donde el cliente creó la reserva pero su NumeroDocumento no coincide
+    if (!reserva.Nombre && reserva.id_usuario) {
+      try {
+        const [[u]] = await db.query(
+          'SELECT IDUsuario, NombreUsuario, Nombre, Apellido, IDRol FROM usuarios WHERE IDUsuario = ? LIMIT 1',
+          [reserva.id_usuario]
+        );
+        if (u && Number(u.IDRol) !== 1) {
+          reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
+          reserva.Apellido = u.Apellido || '';
+        }
+        console.log('[obtenerPorId] Fallback3 (por id_usuario):', u ? { IDRol: u.IDRol, nombre: reserva.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
+      } catch (e) {
+        console.error('[obtenerPorId] Fallback3 error:', e.message);
+      }
     }
 
     const [paquetes] = await db.query(
