@@ -352,6 +352,16 @@ async function marcarComoLeido() {
     }
 }
 
+// ── NAVEGAR AL PERFIL DESDE HEADER ───────────
+window._irAlPerfilHdr = function () {
+    if (typeof cargarSeccion === 'function') {
+        cargarSeccion('perfil', { preventDefault() {} });
+    } else {
+        const p = window.location.pathname;
+        window.location.href = p.includes('/pages/') ? 'perfil.html' : 'pages/perfil.html';
+    }
+};
+
 // ── INYECTAR CAMPANA EN HEADER ────────────────
 
 function inyectarCampanaEnHeader() {
@@ -361,8 +371,8 @@ function inyectarCampanaEnHeader() {
 
     const wrapper = document.createElement('div');
     wrapper.id = 'campana-header';
-    wrapper.style.cssText = 'position:relative;display:flex;align-items:center;margin-left:auto;flex-shrink:0';
-        wrapper.innerHTML = `
+    wrapper.style.cssText = 'position:relative;display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0';
+    wrapper.innerHTML = `
       <button id="btn-campana"
         style="position:relative;display:flex;align-items:center;justify-content:center;
                width:2.6rem;height:2.6rem;border-radius:0.75rem;border:none;cursor:pointer;
@@ -380,7 +390,17 @@ function inyectarCampanaEnHeader() {
           0
         </span>
       </button>
-            `;
+      <button id="btn-header-perfil"
+        onclick="_irAlPerfilHdr()"
+        style="position:relative;display:flex;align-items:center;justify-content:center;
+               width:2.6rem;height:2.6rem;border-radius:0.75rem;border:none;cursor:pointer;
+               background:rgba(255,255,255,0.12);transition:background 0.2s,transform 0.2s"
+        onmouseenter="this.style.background='rgba(255,255,255,0.22)';this.style.transform='translateY(-1px)'"
+        onmouseleave="this.style.background='rgba(255,255,255,0.12)';this.style.transform=''"
+        title="Mi Perfil" aria-label="Mi Perfil">
+        <i class="fa-solid fa-circle-user" style="color:#fff;font-size:1.15rem"></i>
+      </button>
+    `;
 
     nav.appendChild(wrapper);
 
