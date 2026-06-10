@@ -697,6 +697,71 @@ async function initSidebarControls() {
     };
 })();
 
+// ── TOOLTIPS — Tippy.js (CDN) ───────────────────────────────────────
+(function () {
+    function loadScript(src, cb) {
+        if (document.querySelector(`script[src="${src}"]`)) { if (cb) cb(); return; }
+        const s = document.createElement('script');
+        s.src = src; s.onload = cb;
+        document.head.appendChild(s);
+    }
+    function loadCSS(href) {
+        if (document.querySelector(`link[href="${href}"]`)) return;
+        const l = document.createElement('link');
+        l.rel = 'stylesheet'; l.href = href;
+        document.head.appendChild(l);
+    }
+    function applyTippy() {
+        if (typeof tippy === 'undefined') return;
+        document.querySelectorAll('[title]:not([data-tippy-initialized])').forEach(el => {
+            const content = el.getAttribute('title');
+            if (!content) return;
+            el.removeAttribute('title');
+            el.dataset.tippyInitialized = '1';
+            tippy(el, {
+                content,
+                placement: 'bottom',
+                theme: 'hd-dark',
+                animation: 'shift-away',
+                delay: [120, 0],
+                arrow: true,
+            });
+        });
+    }
+    window.initTooltips = applyTippy;
+
+    function inject() {
+        loadCSS('https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy.css');
+        loadScript('https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js', () => {
+            loadScript('https://cdn.jsdelivr.net/npm/tippy.js@6/dist/tippy.umd.min.js', () => {
+                if (!document.getElementById('_hd_tippy_theme')) {
+                    const st = document.createElement('style');
+                    st.id = '_hd_tippy_theme';
+                    st.textContent = `
+                        .tippy-box[data-theme~='hd-dark']{
+                            background:rgba(7,22,34,.93);color:#f1f5f9;
+                            font-size:.72rem;font-weight:600;letter-spacing:.03em;
+                            border-radius:8px;padding:2px 4px;
+                            box-shadow:0 8px 24px rgba(0,0,0,.4);
+                            border:1px solid rgba(255,255,255,.08);
+                        }
+                        .tippy-box[data-theme~='hd-dark'] .tippy-arrow{color:rgba(7,22,34,.93);}
+                        .tippy-box[data-theme~='hd-dark'] .tippy-content{padding:5px 10px;}
+                    `;
+                    document.head.appendChild(st);
+                }
+                applyTippy();
+                let _t = null;
+                new MutationObserver(() => { clearTimeout(_t); _t = setTimeout(applyTippy, 150); })
+                    .observe(document.body, { childList: true, subtree: true });
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inject);
+    else inject();
+})();
+
 window.getDashboardPorRol = getDashboardPorRol;
 window.getAppBasePath = getAppBasePath;
 window.markActiveSidebarItem = markActiveSidebarItem;

@@ -379,7 +379,7 @@ function inyectarCampanaEnHeader() {
                background:rgba(255,255,255,0.12);transition:background 0.2s,transform 0.2s"
         onmouseenter="this.style.background='rgba(255,255,255,0.22)';this.style.transform='translateY(-1px)'"
         onmouseleave="this.style.background='rgba(255,255,255,0.12)';this.style.transform=''"
-        aria-label="Notificaciones">
+        title="Notificaciones" aria-label="Notificaciones">
         <i class="fa-solid fa-bell" style="color:#fff;font-size:1rem"></i>
         <span id="campana-badge"
           style="position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;
