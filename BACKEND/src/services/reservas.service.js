@@ -96,7 +96,7 @@ const ReservasService = {
       ? ', r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota'
       : '';
     const [[reserva]] = await db.query(
-      `SELECT r.IdReserva AS IDReserva, r.NroDocumentoCliente,
+      `SELECT r.IdReserva AS IDReserva, r.NroDocumentoCliente, r.id_usuario,
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
               r.Sub_Total AS SubTotal, r.Descuento, r.IVA, r.Monto_Total AS MontoTotal,
               r.MetodoPago, r.IdEstadoReserva
@@ -109,6 +109,33 @@ const ReservasService = {
       [id]
     );
     if (!reserva) return null;
+
+    // Fallback 1: buscar en usuarios por NumeroDocumento (cubre reservas creadas por admin)
+    if (!reserva.Nombre && reserva.NroDocumentoCliente) {
+      try {
+        const [[u]] = await db.query(
+          'SELECT * FROM usuarios WHERE NumeroDocumento = ? LIMIT 1',
+          [reserva.NroDocumentoCliente]
+        );
+        if (u) {
+          reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
+          reserva.Apellido = u.Apellido || '';
+        }
+      } catch (_) {}
+    }
+    // Fallback 2: buscar en usuarios por id_usuario (cubre reservas creadas por el propio cliente)
+    if (!reserva.Nombre && reserva.id_usuario) {
+      try {
+        const [[u]] = await db.query(
+          'SELECT * FROM usuarios WHERE IDUsuario = ? LIMIT 1',
+          [reserva.id_usuario]
+        );
+        if (u) {
+          reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
+          reserva.Apellido = u.Apellido || '';
+        }
+      } catch (_) {}
+    }
 
     const [paquetes] = await db.query(
       `SELECT p.IDPaquete, p.NombrePaquete, drp.Precio
@@ -490,6 +517,67 @@ const ReservasService = {
       return result.affectedRows > 0 ? 'rechazado' : null;
     }
     throw new Error("Acción inválida. Use 'aprobar' o 'rechazar'.");
+  },
+
+  syncEstados: async () => {
+    // Normalizar nombres de estados para que coincidan con la lógica del sistema
+    await db.query(
+      `INSERT INTO estadosreserva (IdEstadoReserva, NombreEstadoReserva) VALUES
+         (1, 'Pendiente'),
+         (2, 'Confirmada'),
+         (3, 'Cancelada'),
+         (4, 'Completada'),
+         (5, 'Pendiente Verificación Pago'),
+         (6, 'En Curso')
+       ON DUPLICATE KEY UPDATE NombreEstadoReserva = VALUES(NombreEstadoReserva)`
+    );
+    // Confirmadas (2) cuya fecha de inicio ya llegó → En Curso (6)
+    await db.query(
+      `UPDATE reserva SET IdEstadoReserva = 6
+       WHERE IdEstadoReserva = 2
+         AND FechaInicio <= CURDATE()
+         AND FechaFinalizacion >= CURDATE()`
+    );
+    // En Curso (6) cuya fecha de fin ya pasó → Completada (4)
+    await db.query(
+      `UPDATE reserva SET IdEstadoReserva = 4
+       WHERE IdEstadoReserva = 6
+         AND FechaFinalizacion < CURDATE()`
+    );
+    // Confirmadas (2) que ya pasaron completamente → Completada (4)
+    await db.query(
+      `UPDATE reserva SET IdEstadoReserva = 4
+       WHERE IdEstadoReserva = 2
+         AND FechaFinalizacion < CURDATE()`
+    );
+  },
+
+  getDisponibilidad: async ({ IDHabitacion, IDPaquete } = {}) => {
+    let habitacionId = IDHabitacion ? Number(IDHabitacion) : null;
+    if (!habitacionId && IDPaquete) {
+      const [[paq]] = await db.query(
+        `SELECT IDHabitacion FROM paquetes WHERE IDPaquete = ? LIMIT 1`,
+        [Number(IDPaquete)]
+      );
+      habitacionId = paq?.IDHabitacion ?? null;
+    }
+    if (!habitacionId) return [];
+
+    const rCols = await getReservaCols();
+    const habitacionCol = rCols.has('IDHabitacion')
+      ? 'IDHabitacion'
+      : (rCols.has('IdHabitacion') ? 'IdHabitacion' : null);
+    if (!habitacionCol) return [];
+
+    const [rows] = await db.query(
+      `SELECT FechaInicio, FechaFinalizacion
+       FROM reserva
+       WHERE ${habitacionCol} = ?
+         AND IdEstadoReserva NOT IN (3, 4)
+         AND FechaFinalizacion >= CURDATE()`,
+      [habitacionId]
+    );
+    return rows;
   },
 
   agregarServicios: async (reservaId, serviciosIds) => {

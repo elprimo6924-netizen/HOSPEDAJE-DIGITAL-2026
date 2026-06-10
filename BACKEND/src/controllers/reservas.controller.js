@@ -60,11 +60,14 @@ const crear = async (req, res) => {
 
       payload.NroDocumentoCliente = numeroDocumento;
       payload.id_usuario = userId;
-      // Clientes siempre inician en "Pendiente Verificación Pago"
-      payload.IdEstadoReserva = 5;
     } else {
       payload.id_usuario = payload.id_usuario ?? userId;
     }
+
+    // Estado automático basado en método de pago (aplica a todos los roles)
+    // Efectivo (1) → Confirmada (2) | Tarjeta (2) → Pendiente Verificación Pago (5)
+    const metodoPago = Number(payload.MetodoPago || 1);
+    payload.IdEstadoReserva = metodoPago === 1 ? 2 : 5;
 
     const result = await ReservasService.create(payload);
     const idReserva = result.insertId;
@@ -382,6 +385,27 @@ const agregarServicios = async (req, res) => {
   }
 };
 
+const syncEstados = async (req, res) => {
+  try {
+    await ReservasService.syncEstados();
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error("[Reservas] Error syncEstados:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const getDisponibilidad = async (req, res) => {
+  try {
+    const { IDHabitacion, IDPaquete } = req.query;
+    const fechas = await ReservasService.getDisponibilidad({ IDHabitacion, IDPaquete });
+    return res.status(200).json(fechas);
+  } catch (error) {
+    console.error("[Reservas] Error getDisponibilidad:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   crear,
   obtener,
@@ -394,4 +418,6 @@ module.exports = {
   subirComprobante,
   verificarComprobante,
   cotizar,
+  syncEstados,
+  getDisponibilidad,
 };

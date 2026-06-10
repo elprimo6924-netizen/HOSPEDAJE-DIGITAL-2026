@@ -64,8 +64,12 @@ const CalendarioPicker = {
     },
 
     isBlocked(d) {
-        // TODO: Implementar validacin con State.blockedDates
-        return false;
+        if (!State.blockedDates.length) return false;
+        return State.blockedDates.some(r => {
+            const inicio = new Date(r.FechaInicio + 'T00:00:00');
+            const fin    = new Date(r.FechaFinalizacion + 'T00:00:00');
+            return d >= inicio && d <= fin;
+        });
     },
 
     renderMes(año, mes, containerId) {
@@ -237,10 +241,22 @@ const ModoReserva = {
                 precio: Number(opt.dataset.precio),
                 tipo: 'habitacion'
             };
+            this.loadBlockedDates({ IDHabitacion: opt.value });
         } else {
             State.itemSeleccionado = null;
+            State.blockedDates = [];
+            CalendarioPicker.render();
         }
         ResumenLateral.actualizar();
+    },
+
+    async loadBlockedDates({ IDHabitacion, IDPaquete } = {}) {
+        const param = IDHabitacion
+            ? `IDHabitacion=${IDHabitacion}`
+            : `IDPaquete=${IDPaquete}`;
+        const data = await fetchJson(`/reservas/disponibilidad?${param}`);
+        State.blockedDates = Array.isArray(data) ? data : [];
+        CalendarioPicker.render();
     },
 
     async loadPaquetes() {
@@ -301,6 +317,8 @@ const ModoReserva = {
             servicio: data.NombreServicio || null,
             tipo: 'paquete'
         };
+        // Cargar fechas bloqueadas para la habitación del paquete
+        this.loadBlockedDates({ IDPaquete: data.IDPaquete });
         ResumenLateral.actualizar();
     }
 };
@@ -744,12 +762,7 @@ const ResumenLateral = {
                 imgWrap.classList.add('hidden');
             } else {
                 precioBase = State.itemSeleccionado.precio;
-                if (State.itemSeleccionado.imagen) {
-                    imgEl.src = State.itemSeleccionado.imagen;
-                    imgWrap.classList.remove('hidden');
-                } else {
-                    imgWrap.classList.add('hidden');
-                }
+                imgWrap.classList.add('hidden'); // sin imagen en resumen para paquetes
                 // RES1: Show package included room/service in summary
                 let detailEl = document.getElementById('resumen-paq-detail');
                 if (!detailEl) {
@@ -1129,6 +1142,12 @@ const ReservaForm = {
         BuscadorCliente.init();
 
         document.getElementById('descuento')?.addEventListener('input', () => ResumenLateral.actualizar());
+
+        // Sincronizar estado oculto con método de pago
+        document.getElementById('metodo-pago')?.addEventListener('change', function () {
+            const estadoEl = document.getElementById('estado-reserva');
+            if (estadoEl) estadoEl.value = this.value === '1' ? '2' : '5';
+        });
 
         document.getElementById('btn-confirmar-reserva')?.addEventListener('click', async (e) => {
             e.preventDefault();

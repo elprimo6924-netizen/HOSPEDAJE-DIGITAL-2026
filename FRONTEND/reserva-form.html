@@ -1738,11 +1738,33 @@
                 </button>
             </div>
             <form id="form-reserva-v2" class="flex flex-col gap-4">
-                <!-- PASO 1: FECHAS -->
-                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+                <!-- PASO 1: CLIENTE -->
+                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5 relative">
                     <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
                         <span
                             class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                        Datos del Cliente
+                    </h2>
+                    <div class="relative">
+                        <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                        <input id="buscador-cliente" type="text" autocomplete="off"
+                            placeholder="Escribe nombre, apellido o documento..."
+                            class="w-full h-10 pl-11 pr-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                    </div>
+
+                    <div id="dropdown-clientes"
+                        class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto">
+                    </div>
+                    <div id="cliente-seleccionado"
+                        class="hidden mt-4 flex items-center gap-4 p-3 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
+                    </div>
+                </section>
+
+                <!-- PASO 2: FECHAS -->
+                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
+                        <span
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
                         Fechas de Estancia
                     </h2>
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
@@ -1762,11 +1784,11 @@
                     </div>
                 </section>
 
-                <!-- PASO 2: MODO -->
+                <!-- PASO 3: MODO -->
                 <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
                     <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
                         <span
-                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
                         Opciones de Hospedaje
                     </h2>
                     <div id="modo-toggle" class="flex gap-1 p-1 bg-stone-100 rounded-lg w-fit">
@@ -1793,28 +1815,6 @@
                     </div>
                 </section>
 
-                <!-- PASO 3: CLIENTE -->
-                <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5 relative">
-                    <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
-                        <span
-                            class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
-                        Datos del Cliente
-                    </h2>
-                    <div class="relative">
-                        <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i>
-                        <input id="buscador-cliente" type="text" autocomplete="off"
-                            placeholder="Escribe nombre, apellido o documento..."
-                            class="w-full h-10 pl-11 pr-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
-                    </div>
-
-                    <div id="dropdown-clientes"
-                        class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto">
-                    </div>
-                    <div id="cliente-seleccionado"
-                        class="hidden mt-4 flex items-center gap-4 p-3 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
-                    </div>
-                </section>
-
                 <!-- PASO 4: SERVICIOS -->
                 <section id="seccion-servicios-adicionales"
                     class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
@@ -1827,14 +1827,14 @@
                         style="grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));"></div>
                 </section>
 
-                <!-- PASO 5: PAGO -->
+                <!-- PASO 5: PAGO (estado determinado automáticamente por método de pago) -->
                 <section class="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
                     <h2 class="flex items-center gap-3 mb-4 text-base font-semibold !text-stone-900">
                         <span
                             class="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center shrink-0">5</span>
                         Pago y Detalles
                     </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label
                                 class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Método
@@ -1845,16 +1845,11 @@
                                 <option value="2">Tarjeta de credito o debito</option>
                             </select>
                         </div>
-                        <div>
-                            <label
-                                class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Estado</label>
-                            <select id="estado-reserva"
-                                class="w-full h-10 px-3 text-sm text-stone-800 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
-                                <option value="1">Activa</option>
-                                <option value="2">Pendiente</option>
-                                <option value="3">Cancelada</option>
-                            </select>
-                        </div>
+                        <!-- estado-reserva oculto: se asigna automáticamente según método de pago -->
+                        <select id="estado-reserva" class="hidden">
+                            <option value="2">Confirmada</option>
+                            <option value="5">Pendiente Verificación Pago</option>
+                        </select>
                         <div>
                             <label
                                 class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Descuento
