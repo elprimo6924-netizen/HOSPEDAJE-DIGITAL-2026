@@ -591,6 +591,16 @@
             return roomImages[index % roomImages.length];
         }
 
+        function buildUniqueImageOrder(pool, count) {
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
+            if (count <= shuffled.length) return shuffled.slice(0, count);
+            const ordered = [];
+            for (let i = 0; i < count; i += 1) {
+                ordered.push(shuffled[i % shuffled.length]);
+            }
+            return ordered;
+        }
+
         // Devuelve 3-4 imágenes de fallback según el tipo de habitación
         function getHabFallbackImages(nombre, index) {
             const n = (nombre || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -758,12 +768,15 @@
                 if (statHab) statHab.textContent = habitaciones.length;
 
                 const roomsToDisplay = habitaciones;
+                const uniqueFirstImages = buildUniqueImageOrder(roomImages, roomsToDisplay.length);
 
                 // Guardamos datos completos para el modal (evita problemas con caracteres especiales en data-*)
                 window._habDetalleData = [];
 
                 const html = roomsToDisplay.map((room, index) => {
-                    const imgs = getHabImages(room, index);
+                    const baseImgs = getHabImages(room, index);
+                    const coverImage = uniqueFirstImages[index] || baseImgs[0];
+                    const imgs = [coverImage, ...baseImgs.filter((img) => img !== coverImage)].slice(0, 4);
 
                     // Guardar datos completos en array JS
                     window._habDetalleData.push({

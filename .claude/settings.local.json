@@ -9,7 +9,25 @@
       "Bash(git commit -m ' *)",
       "Bash(dir /s /b)",
       "Bash(node -e \"require\\('nodemailer'\\); console.log\\('OK'\\)\")",
-      "Bash(node test-email.js)"
+      "Bash(node test-email.js)",
+      "Bash(cd /d \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\")",
+      "Bash(Get-ChildItem -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(select-object -First 50)",
+      "Bash(Format-List FullName)",
+      "Bash(curl -s \"https://hospedaje-digital-2026.onrender.com/api/reservas/41\" -H \"Authorization: Bearer test\")",
+      "Bash(node -e \"const svc = require\\('./src/services/reservas.service'\\); console.log\\('OK'\\);\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\('PORT:', process.env.PORT || 3000\\);\")",
+      "Bash(findstr \":3000\\\\|:8080\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/api/reservas -H \"Authorization: Bearer test\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\(\\); console.log\\('DB_HOST:', process.env.DB_HOST, '| DB_NAME:', process.env.DB_NAME, '| JWT_SECRET presente:', !!process.env.JWT_SECRET\\);\")",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(dir \"d:\\\\PROGRAMACION SOFTWARE\\\\01.PROYECTO HOSPEDAJE DIGITAL\\\\FRONTEND\" /b /a-d)",
+      "Bash(timeout 4)",
+      "Bash(node index.js)",
+      "Bash(node -e \"require\\('./src/services/reservas.service'\\); console.log\\('reservas.service OK'\\);\")",
+      "Bash(node -e \"console.log\\('node OK'\\); require\\('./src/config/db'\\); console.log\\('db OK'\\);\")",
+      "Bash(node -e \"const mysql = require\\('mysql2/promise'\\); console.log\\('mysql2 OK'\\);\")",
+      "Bash(npm --version)"
     ]
   }
 }
