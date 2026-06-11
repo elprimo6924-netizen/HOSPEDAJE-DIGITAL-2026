@@ -95,6 +95,9 @@ const ReservasService = {
     const compFields2 = rCols2.has('ComprobantePago')
       ? ', r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota'
       : '';
+    const habCol2 = rCols2.has('IDHabitacion') ? 'IDHabitacion' : (rCols2.has('IdHabitacion') ? 'IdHabitacion' : null);
+    const habJoin   = habCol2 ? `LEFT JOIN habitacion h ON r.${habCol2} = h.IDHabitacion` : '';
+    const habSelect = habCol2 ? ', h.NombreHabitacion' : '';
     const [[reserva]] = await db.query(
       `SELECT r.IdReserva AS IDReserva, r.NroDocumentoCliente, r.id_usuario,
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
@@ -102,9 +105,11 @@ const ReservasService = {
               r.MetodoPago, r.IdEstadoReserva
               ${compFields2},
               c.Nombre, c.Apellido, e.NombreEstadoReserva
+              ${habSelect}
        FROM reserva r
        LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
        LEFT JOIN estadosreserva e ON r.IdEstadoReserva = e.IdEstadoReserva
+       ${habJoin}
        WHERE r.IdReserva = ?`,
       [id]
     );

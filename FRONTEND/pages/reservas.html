@@ -204,13 +204,13 @@
                     <table class="crud-reservas-tabla">
                         <thead>
                             <tr>
-                                <th>#</th><th>Cliente</th><th>Paquetes</th>
+                                <th>#</th><th>Cliente</th>
                                 <th>Fecha Inicio</th><th>Fecha Fin</th>
                                 <th>Total</th><th>Estado</th><th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="reservas-tbody">
-                            <tr><td colspan="8" class="mensaje-vacio">Cargando reservas...</td></tr>
+                            <tr><td colspan="7" class="mensaje-vacio">Cargando reservas...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -340,7 +340,7 @@
             const pagina = lista.slice(desde, hasta);
 
             if (!pagina.length) {
-                tbody.innerHTML = '<tr><td colspan="8" class="mensaje-vacio">No hay reservas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="mensaje-vacio">No hay reservas.</td></tr>';
             } else {
                 tbody.innerHTML = pagina.map(r => {
                     const clienteLabel = esAdmin
@@ -350,7 +350,6 @@
                     <tr>
                         <td><strong>#${r.IDReserva}</strong></td>
                         <td>${clienteLabel}</td>
-                        <td>${r.Paquetes||'<span style="color:#94a3b8">—</span>'}</td>
                         <td>${formatFecha(r.FechaInicio)}</td>
                         <td>${formatFecha(r.FechaFinalizacion)}</td>
                         <td><strong>${formatMonto(r.MontoTotal)}</strong></td>
@@ -439,7 +438,7 @@
             } catch (e) {
                 mostrarMensaje('Error al cargar reservas.', 'error');
                 document.getElementById('reservas-tbody').innerHTML =
-                    '<tr><td colspan="8" class="mensaje-vacio">Error al cargar reservas.</td></tr>';
+                    '<tr><td colspan="7" class="mensaje-vacio">Error al cargar reservas.</td></tr>';
             }
         }
 
@@ -481,9 +480,21 @@
                               border:1px solid ${border};border-radius:6px;padding:2px 9px;
                               font-size:.76rem;font-weight:600;margin:2px">${txt}</span>`;
 
-            const paqHtml = (r.paquetes || []).length
-                ? r.paquetes.map(p => chip(p.NombrePaquete, '#f0fdf4', '#166534', '#bbf7d0')).join('')
-                : (r.Paquetes ? r.Paquetes.split(', ').map(p => chip(p, '#f0fdf4', '#166534', '#bbf7d0')).join('') : '<span style="color:#94a3b8">—</span>');
+            // Alojamiento: muestra nombre de paquete(s) o nombre de habitación según el tipo
+            const tienePaquetes = (r.paquetes || []).length > 0;
+            const alojamientoHtml = (() => {
+                if (tienePaquetes) {
+                    return r.paquetes.map(p =>
+                        chip(`<i class="fa-solid fa-box-open" style="font-size:.65rem"></i> ${p.NombrePaquete}`,
+                             '#f0fdf4', '#166534', '#bbf7d0')
+                    ).join('');
+                }
+                if (r.NombreHabitacion) {
+                    return chip(`<i class="fa-solid fa-bed" style="font-size:.65rem"></i> ${r.NombreHabitacion}`,
+                                '#fdf4ff', '#7e22ce', '#e9d5ff');
+                }
+                return '<span style="color:#94a3b8">—</span>';
+            })();
 
             const svcHtml = (r.servicios || []).length
                 ? r.servicios.map(s => {
@@ -562,7 +573,7 @@
                 ['IVA incluido',  formatMonto(r.IVA)],
                 ['Total',         `<strong style="font-size:1.05rem;color:#0f172a;">${formatMonto(r.MontoTotal)}</strong>`],
                 ['Estado reserva',badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)],
-                ['Paquetes',      paqHtml],
+                ['Alojamiento',   alojamientoHtml],
                 ['Servicios',     svcHtml],
             ];
             // Bloque comprobante de pago
