@@ -1292,7 +1292,7 @@ const ReservaForm = {
             };
 
             try {
-                const metodoPago = Number(document.getElementById('metodo-pago').value) || 1;
+                const metodoPago = Number(document.getElementById('metodo-pago')?.value) || 1;
                 const result = await requestJson('/reservas', { method: 'POST', body: payload });
                 const reservaId = result?.reservaId;
 
@@ -1304,16 +1304,15 @@ const ReservaForm = {
                 }
                 const _isCliente = _role === 2 || _role === 3 || _role === 0;
 
-                if (_isCliente && reservaId) {
-                    if (metodoPago === 2) {
-                        // Tarjeta: mostrar aviso de 30 minutos y enlace al correo
-                        mostrarModalPagoTarjeta(reservaId);
-                    } else {
-                        // Efectivo: reserva confirmada, no se requiere comprobante
-                        UI.showToast('¡Reserva confirmada! La habitación ha sido bloqueada para tus fechas.', 'success');
-                        setTimeout(() => window.location.href = 'pages/reservas.html', 2000);
-                    }
+                if (metodoPago === 2 && reservaId) {
+                    // Tarjeta (cualquier rol): mostrar aviso de 30 minutos y correo con link
+                    mostrarModalPagoTarjeta(reservaId);
+                } else if (_isCliente && reservaId) {
+                    // Efectivo + cliente: reserva confirmada, no se requiere comprobante
+                    UI.showToast('¡Reserva confirmada! La habitación ha sido bloqueada para tus fechas.', 'success');
+                    setTimeout(() => window.location.href = 'pages/reservas.html', 2000);
                 } else {
+                    // Efectivo + admin: overlay clásico
                     const idEl = document.getElementById('rf-success-id');
                     if (idEl && reservaId) idEl.textContent = `#${reservaId}`;
                     const overlay = document.getElementById('rf-success-overlay');
