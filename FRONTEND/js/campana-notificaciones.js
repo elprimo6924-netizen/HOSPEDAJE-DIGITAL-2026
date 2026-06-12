@@ -10,12 +10,13 @@ let panelAbierto = false;
 
 // ── RUTAS POR TIPO ───────────────────────────
 const RUTAS_NOTIFICACIONES = {
-    usuario:   'usuarios.html',
-    cliente:   'clientes.html',
-    reserva:   'reservas.html',
-    habitacion:'habitaciones.html',
-    paquete:   'paquetes.html',
-    servicio:  'servicios.html',
+    usuario:      'usuarios.html',
+    cliente:      'clientes.html',
+    reserva:      'reservas.html',
+    comprobante:  'reservas.html',
+    habitacion:   'habitaciones.html',
+    paquete:      'paquetes.html',
+    servicio:     'servicios.html',
 };
 
 function manejarClickNotificacion(tipo, entidadId) {
@@ -55,9 +56,9 @@ function destacarRegistroEnPagina(entidadId, tipo) {
 function getCampanaVisto() {
     try {
         return JSON.parse(localStorage.getItem(CAMPANA_STORAGE_KEY)) || {
-            usuarios: 0, clientes: 0, reservas: 0, timestamp: 0
+            usuarios: 0, clientes: 0, reservas: 0, comprobantes: 0, timestamp: 0
         };
-    } catch { return { usuarios: 0, clientes: 0, reservas: 0, timestamp: 0 }; }
+    } catch { return { usuarios: 0, clientes: 0, reservas: 0, comprobantes: 0, timestamp: 0 }; }
 }
 
 function setCampanaVisto(datos) {
@@ -113,10 +114,11 @@ async function obtenerDatosNotificaciones() {
     const esAdmin = getRolActual() === 1;
 
     if (esAdmin) {
-        const [usuarios, clientes, reservas] = await Promise.allSettled([
+        const [usuarios, clientes, reservas, comprobantes] = await Promise.allSettled([
             fetchConToken(`${base}/usuarios`),
             fetchConToken(`${base}/clientes`),
-            fetchConToken(`${base}/reservas`)
+            fetchConToken(`${base}/reservas`),
+            fetchConToken(`${base}/reservas/comprobantes-pendientes`),
         ]);
         return {
             esAdmin: true,
@@ -126,6 +128,8 @@ async function obtenerDatosNotificaciones() {
                 ? (Array.isArray(clientes.value) ? clientes.value : []) : [],
             reservas: reservas.status === 'fulfilled'
                 ? (Array.isArray(reservas.value) ? reservas.value : []) : [],
+            comprobantes: comprobantes.status === 'fulfilled'
+                ? (Array.isArray(comprobantes.value) ? comprobantes.value : []) : [],
         };
     } else {
         const [reservas] = await Promise.allSettled([
@@ -165,10 +169,17 @@ function buildItemHTML(tipo, item) {
             bg:    'bg-amber-400/10',
             label: 'Nueva reserva',
             nombre: `Reserva #${item.IdReserva || item.id || '?'}`
+        },
+        comprobante: {
+            icono: 'fa-receipt',
+            color: 'text-orange-400',
+            bg:    'bg-orange-400/10',
+            label: '⚡ Verificar pago',
+            nombre: `Comprobante reserva #${item.IdReserva || '?'}`
         }
     };
-    const cfg      = configs[tipo];
-    const fecha    = item.createdAt || item.FechaReserva || item.fecha_registro || null;
+    const cfg      = configs[tipo] || configs.reserva;
+    const fecha    = item.createdAt || item.ComprobanteFecha || item.FechaReserva || item.fecha_registro || null;
     const fechaTxt = formatearFecha(fecha);
     const detalle  = fechaTxt ? `${cfg.label} · ${fechaTxt}` : cfg.label;
     const entidadId = item.IDUsuario || item.IDCliente || item.NroDocumento ||
@@ -255,15 +266,21 @@ async function actualizarCampana() {
     const esAdmin = datos.esAdmin;
 
     if (esAdmin) {
-        const totalActual = datos.usuarios.length + datos.clientes.length + datos.reservas.length;
-        const totalVisto  = visto.usuarios + visto.clientes + visto.reservas;
-        const nuevos      = Math.max(0, totalActual - totalVisto);
+        const comprobantes  = datos.comprobantes || [];
+        const totalActual   = datos.usuarios.length + datos.clientes.length +
+                              datos.reservas.length + comprobantes.length;
+        const totalVisto    = (visto.usuarios || 0) + (visto.clientes || 0) +
+                              (visto.reservas || 0) + (visto.comprobantes || 0);
+        // Comprobantes pendientes siempre cuentan como nuevos (requieren acción)
+        const nuevos        = Math.max(0, totalActual - totalVisto) + comprobantes.length;
 
         actualizarBadge(badge, nuevos);
         if (pie) pie.textContent = `${totalActual} notificaciones en total`;
 
         if (lista) {
             const items = [
+                // Comprobantes primero — requieren acción urgente
+                ...comprobantes.slice(-5).reverse().map(c => buildItemHTML('comprobante', c)),
                 ...datos.usuarios.slice(-3).reverse().map(u => buildItemHTML('usuario', u)),
                 ...datos.clientes.slice(-3).reverse().map(c => buildItemHTML('cliente', c)),
                 ...datos.reservas.slice(-4).reverse().map(r => buildItemHTML('reserva', r)),
@@ -340,9 +357,10 @@ async function marcarComoLeido() {
     catch { datos = { esAdmin: false, usuarios: [], clientes: [], reservas: [] }; }
 
     setCampanaVisto({
-        usuarios: datos.esAdmin ? datos.usuarios.length : 0,
-        clientes: datos.esAdmin ? datos.clientes.length : 0,
-        reservas: datos.reservas.length
+        usuarios:     datos.esAdmin ? datos.usuarios.length : 0,
+        clientes:     datos.esAdmin ? datos.clientes.length : 0,
+        reservas:     datos.reservas.length,
+        comprobantes: datos.esAdmin ? (datos.comprobantes || []).length : 0,
     });
 
     const badge = document.getElementById('campana-badge');

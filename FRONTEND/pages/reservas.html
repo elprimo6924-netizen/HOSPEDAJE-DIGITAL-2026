@@ -1224,7 +1224,16 @@
                 if (esAdmin) {
                     requestJson('/reservas/sync-estados', { method: 'POST' }).catch(() => {});
                 }
-                cargarReservas();
+                cargarReservas().then(() => {
+                    // Si llega desde notificación de comprobante → abrir detalle de esa reserva
+                    const _notifId   = sessionStorage.getItem('notif_entidad_id');
+                    const _notifTipo = sessionStorage.getItem('notif_tipo');
+                    if (_notifId && _notifTipo === 'comprobante') {
+                        sessionStorage.removeItem('notif_entidad_id');
+                        sessionStorage.removeItem('notif_tipo');
+                        setTimeout(() => verDetalle(Number(_notifId)), 400);
+                    }
+                });
 
                 // Si llega desde el link del correo (?comprobante=ID), abrir modal de upload
                 const _qp = new URLSearchParams(window.location.search);

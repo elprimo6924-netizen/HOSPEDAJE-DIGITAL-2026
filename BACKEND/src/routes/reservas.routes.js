@@ -11,8 +11,9 @@ const {
 router.get("/",              reservasController.obtener);
 router.get("/cotizar",       reservasController.cotizar);
 router.get("/mis-reservas",  reservasController.obtenerMisReservas);
-router.get("/disponibilidad", reservasController.getDisponibilidad);
-router.post("/sync-estados", requireAdmin, reservasController.syncEstados);
+router.get("/disponibilidad",           reservasController.getDisponibilidad);
+router.get("/comprobantes-pendientes", requireAdmin, reservasController.getComprobantesPendientes);
+router.post("/sync-estados",           requireAdmin, reservasController.syncEstados);
 router.get("/:id", requireReservaOwnerOrAdmin, reservasController.obtenerPorId);
 router.post("/", reservasController.crear);
 

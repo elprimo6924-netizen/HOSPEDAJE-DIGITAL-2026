@@ -404,6 +404,27 @@ const agregarServicios = async (req, res) => {
   }
 };
 
+const getComprobantesPendientes = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.IdReserva, r.ComprobanteFecha,
+              COALESCE(c.Nombre, u.NombreUsuario, u.Nombre, '') AS Nombre,
+              COALESCE(c.Apellido, u.Apellido, '') AS Apellido
+       FROM reserva r
+       LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
+       LEFT JOIN usuarios u ON r.id_usuario = u.IDUsuario
+       WHERE r.ComprobantePago IS NOT NULL
+         AND r.ComprobantePago != ''
+         AND r.ComprobanteEstado = 'pendiente'
+       ORDER BY r.ComprobanteFecha DESC`
+    );
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("[Reservas] getComprobantesPendientes:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 const syncEstados = async (req, res) => {
   try {
     await ReservasService.syncEstados();
@@ -439,4 +460,5 @@ module.exports = {
   cotizar,
   syncEstados,
   getDisponibilidad,
+  getComprobantesPendientes,
 };
