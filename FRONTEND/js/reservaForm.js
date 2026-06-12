@@ -283,6 +283,8 @@ async function guardarReservaAdmin(e) {
   const serviciosIds = [...document.querySelectorAll('#reserva-admin-servicios-grid .servicio-toggle-btn.seleccionado')]
                          .map(e => Number(e.dataset.id));
 
+  const habSelVal = Number(rfEl('reserva-admin-habitacion')?.value) || null;
+
   const body = {
     NroDocumentoCliente: nroDoc,
     FechaInicio:         fi,
@@ -293,6 +295,7 @@ async function guardarReservaAdmin(e) {
     Descuento:           Number(rfEl('reserva-admin-descuento')?.value || 0),
     IVA:                 Number(rfEl('reserva-admin-iva')?.value || 0),
     MontoTotal:          Number(rfEl('reserva-admin-total')?.value || 0),
+    IDHabitacion:        habSelVal,
     paquetesIds,
     serviciosIds,
   };

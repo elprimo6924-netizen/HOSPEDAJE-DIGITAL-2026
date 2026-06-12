@@ -242,9 +242,8 @@ const ReservasService = {
       habitacionId = paq?.IDHabitacion ?? null;
     }
 
-    if (habitacionCol && !habitacionId) {
-      throw new Error("Falta IDHabitacion.");
-    }
+    // IDHabitacion es opcional si no se seleccionó habitación ni paquete
+    // (en ese caso no se puede hacer validación de conflicto)
 
     // Validar disponibilidad: no puede haber reserva activa que cruce las mismas fechas
     if (habitacionCol && habitacionId) {
@@ -641,7 +640,8 @@ const ReservasService = {
     if (!habitacionCol) return [];
 
     const [rows] = await db.query(
-      `SELECT FechaInicio, FechaFinalizacion
+      `SELECT DATE_FORMAT(FechaInicio, '%Y-%m-%d')       AS FechaInicio,
+              DATE_FORMAT(FechaFinalizacion, '%Y-%m-%d') AS FechaFinalizacion
        FROM reserva
        WHERE ${habitacionCol} = ?
          AND IdEstadoReserva NOT IN (3, 4)

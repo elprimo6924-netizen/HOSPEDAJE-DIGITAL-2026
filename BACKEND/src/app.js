@@ -81,6 +81,46 @@ const app = express();
     }
 })();
 
+// Migración: IDHabitacion en reserva (necesario para bloqueo de fechas)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const colExists = async (col) => {
+            const [[row]] = await db.query(
+                'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+                [dbName, 'reserva', col]
+            );
+            return row.c > 0;
+        };
+
+        if (!(await colExists('IDHabitacion'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN IDHabitacion INT NULL');
+            console.log('[MIGRATION] Columna IDHabitacion agregada a reserva.');
+        }
+
+        // Backfill: poblar IDHabitacion desde detallereservapaquetes → paquetes
+        await db.query(`
+            UPDATE reserva r
+            JOIN (
+                SELECT drp.IDReserva, MIN(p.IDHabitacion) AS IDHabitacion
+                FROM detallereservapaquetes drp
+                JOIN paquetes p ON drp.IDPaquete = p.IDPaquete
+                GROUP BY drp.IDReserva
+            ) src ON r.IdReserva = src.IDReserva
+            SET r.IDHabitacion = src.IDHabitacion
+            WHERE r.IDHabitacion IS NULL
+        `);
+
+        // Invalidar cache para que el service detecte la nueva columna
+        const svc = require('./services/reservas.service.js');
+        if (typeof svc._resetColsCache === 'function') svc._resetColsCache();
+
+        console.log('[MIGRATION] Migración IDHabitacion OK.');
+    } catch (err) {
+        console.error("[MIGRATION] Error en migración IDHabitacion:", err.message);
+    }
+})();
+
 // =============================
 // MIDDLEWARES
 // =============================
