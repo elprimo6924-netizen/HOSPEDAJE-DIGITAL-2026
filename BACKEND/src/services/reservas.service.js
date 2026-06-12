@@ -97,7 +97,7 @@ const ReservasService = {
       : '';
     const habCol2 = rCols2.has('IDHabitacion') ? 'IDHabitacion' : (rCols2.has('IdHabitacion') ? 'IdHabitacion' : null);
     const habJoin   = habCol2 ? `LEFT JOIN habitacion h ON r.${habCol2} = h.IDHabitacion` : '';
-    const habSelect = habCol2 ? ', h.NombreHabitacion' : '';
+    const habSelect = habCol2 ? `, r.${habCol2} AS IDHabitacion, h.NombreHabitacion` : '';
     const [[reserva]] = await db.query(
       `SELECT r.IdReserva AS IDReserva, r.NroDocumentoCliente, r.id_usuario,
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
@@ -174,15 +174,32 @@ const ReservasService = {
     }
 
     const [paquetes] = await db.query(
-      `SELECT p.IDPaquete, p.NombrePaquete, drp.Precio
+      `SELECT p.IDPaquete, p.NombrePaquete, drp.Precio, h.NombreHabitacion
        FROM detallereservapaquetes drp
        JOIN paquetes p ON drp.IDPaquete = p.IDPaquete
+       LEFT JOIN habitacion h ON p.IDHabitacion = h.IDHabitacion
        WHERE drp.IDReserva = ?`,
       [id]
     );
 
+    // Si no hay NombreHabitacion desde el JOIN directo, intentar sacarlo de los paquetes
+    if (!reserva.NombreHabitacion && paquetes.length > 0 && paquetes[0].NombreHabitacion) {
+      reserva.NombreHabitacion = paquetes[0].NombreHabitacion;
+    }
+
+    // Si aún no hay nombre, buscar desde IDHabitacion de la reserva
+    if (!reserva.NombreHabitacion && reserva.IDHabitacion) {
+      const [[hab]] = await db.query(
+        'SELECT NombreHabitacion FROM habitacion WHERE IDHabitacion = ? LIMIT 1',
+        [reserva.IDHabitacion]
+      );
+      if (hab) reserva.NombreHabitacion = hab.NombreHabitacion;
+    }
+
+    const svcCols = await getDetalleServicioCols();
+    const horaField = svcCols.has('HoraServicio') ? ', drs.HoraServicio' : '';
     const [servicios] = await db.query(
-      `SELECT s.IDServicio, s.NombreServicio, drs.Precio, drs.HoraServicio
+      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}
        FROM detallereservaservicio drs
        JOIN servicio s ON drs.IDServicio = s.IDServicio
        WHERE drs.IDReserva = ?`,

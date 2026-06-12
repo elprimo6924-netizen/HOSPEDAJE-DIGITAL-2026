@@ -640,6 +640,30 @@
                        </div>`;
             }
 
+            // Nombre del alojamiento para el banner
+            const tieneAlojamiento = tienePaquetes || !!r.NombreHabitacion;
+            const alojNombreHtml = (() => {
+                if (tienePaquetes) {
+                    return r.paquetes.map(p =>
+                        `<span style="display:inline-flex;align-items:center;gap:4px;
+                                      background:#fff8;border:1px solid ${estadoPagoBanner.border};
+                                      border-radius:6px;padding:2px 9px;font-size:.75rem;font-weight:700;
+                                      color:${estadoPagoBanner.color};margin:1px 2px;">
+                             <i class="fa-solid fa-box-open" style="font-size:.6rem"></i> ${p.NombrePaquete}
+                         </span>`
+                    ).join('');
+                }
+                if (r.NombreHabitacion) {
+                    return `<span style="display:inline-flex;align-items:center;gap:4px;
+                                         background:#fff8;border:1px solid ${estadoPagoBanner.border};
+                                         border-radius:6px;padding:2px 9px;font-size:.75rem;font-weight:700;
+                                         color:${estadoPagoBanner.color};margin:1px 2px;">
+                                <i class="fa-solid fa-bed" style="font-size:.6rem"></i> ${r.NombreHabitacion}
+                            </span>`;
+                }
+                return '';
+            })();
+
             // Banner de estado de pago (encabezado prominente)
             const bannerHtml = `
                 <div style="grid-column:1/-1;display:flex;align-items:center;gap:12px;
@@ -650,9 +674,10 @@
                                 display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="fa-solid ${estadoPagoBanner.icon}" style="color:${estadoPagoBanner.color};font-size:1.1rem;"></i>
                     </div>
-                    <div>
+                    <div style="flex:1;min-width:0;">
                         <div style="font-size:.88rem;font-weight:800;color:${estadoPagoBanner.color};">${estadoPagoBanner.titulo}</div>
                         ${estadoPagoBanner.texto ? `<div style="font-size:.78rem;color:${estadoPagoBanner.color};opacity:.85;margin-top:2px;">${estadoPagoBanner.texto}</div>` : ''}
+                        ${tieneAlojamiento ? `<div style="margin-top:6px;line-height:1.8;">${alojNombreHtml}</div>` : ''}
                     </div>
                 </div>`;
 
