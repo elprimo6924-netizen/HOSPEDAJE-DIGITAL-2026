@@ -80,12 +80,11 @@ const crear = async (req, res) => {
     const userNombreExpr = userNombreParts.length
       ? `MAX(COALESCE(${userNombreParts.join(", ")}))`
       : "NULL";
-    const userApellidoExpr = usuarioCols.has("Apellido") ? "MAX(u.Apellido)" : "NULL";
-    const userEmailExpr = usuarioCols.has("Email") ? "MAX(u.Email)" : "NULL";
-    const userTelefonoExpr = usuarioCols.has("Telefono") ? "MAX(u.Telefono)" : "NULL";
-    const userJoin = usuarioCols.has("NumeroDocumento")
-      ? "LEFT JOIN usuarios u ON u.NumeroDocumento = r.NroDocumentoCliente"
-      : "";
+    const userApellidoExpr  = usuarioCols.has("Apellido") ? "MAX(u.Apellido)" : "NULL";
+    const userEmailExpr     = usuarioCols.has("Email")    ? "MAX(u.Email)"    : "NULL";
+    const userTelefonoExpr  = usuarioCols.has("Telefono") ? "MAX(u.Telefono)" : "NULL";
+    // JOIN por id_usuario (siempre fiable) en vez de NumeroDocumento (puede no coincidir)
+    const userJoin = "LEFT JOIN usuarios u ON r.id_usuario = u.IDUsuario";
 
     // Notificaciones en segundo plano — no bloquean la respuesta
     db.query(
@@ -108,8 +107,18 @@ const crear = async (req, res) => {
       WHERE r.IdReserva = ? LIMIT 1`,
       [idReserva]
     ).then(([rows]) => {
-      if (!rows.length) return;
+      if (!rows.length) {
+        console.warn(`[Notif] No se encontraron datos para reserva #${idReserva}`);
+        return;
+      }
       const c = rows[0];
+      console.log(`[Notif] Reserva #${idReserva} | Email: ${c.Email || 'NULL'} | MetodoPago: ${metodoPago}`);
+
+      if (!c.Email) {
+        console.warn(`[Notif] Email nulo para reserva #${idReserva} — no se enviará correo`);
+        return;
+      }
+
       const notifPayload = {
         clienteNombre: `${c.Nombre ?? ""} ${c.Apellido ?? ""}`.trim(),
         reservaId: idReserva,
@@ -122,22 +131,19 @@ const crear = async (req, res) => {
       };
 
       if (metodoPago === 2) {
-        // Pago con tarjeta: notificar que debe subir comprobante en 30 min
         const appUrl = process.env.APP_URL || 'http://localhost:3000';
         const linkSubir = `${appUrl}/pages/reservas.html?comprobante=${idReserva}`;
-        Promise.allSettled([
-          EmailService.enviarPendienteComprobante({
-            ...notifPayload, clienteEmail: c.Email, linkSubir,
-          }),
-        ]);
+        EmailService.enviarPendienteComprobante({ ...notifPayload, clienteEmail: c.Email, linkSubir })
+          .then(ok => console.log(`[Notif] enviarPendienteComprobante → ${ok ? 'OK' : 'FALLÓ'}`))
+          .catch(err => console.error(`[Notif] Error enviarPendienteComprobante:`, err.message));
       } else {
-        // Pago en efectivo: confirmación normal
-        Promise.allSettled([
-          EmailService.enviarConfirmacionReserva({ ...notifPayload, clienteEmail: c.Email }),
-          WhatsappService.enviarConfirmacionReserva({ ...notifPayload, clienteTelefono: c.Telefono }),
-        ]);
+        EmailService.enviarConfirmacionReserva({ ...notifPayload, clienteEmail: c.Email })
+          .then(ok => console.log(`[Notif] enviarConfirmacionReserva → ${ok ? 'OK' : 'FALLÓ'}`))
+          .catch(err => console.error(`[Notif] Error enviarConfirmacionReserva:`, err.message));
+        WhatsappService.enviarConfirmacionReserva({ ...notifPayload, clienteTelefono: c.Telefono })
+          .catch(() => {});
       }
-    }).catch((err) => console.error("Error al despachar notificaciones de reserva:", err.message));
+    }).catch((err) => console.error("[Notif] Error al despachar notificaciones:", err.message));
 
     return res.status(201).json({ mensaje: "Reserva creada", reservaId: idReserva, metodoPago });
   } catch (error) {
