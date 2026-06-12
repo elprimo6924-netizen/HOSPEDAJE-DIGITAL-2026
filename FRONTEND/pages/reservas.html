@@ -598,6 +598,13 @@
                        </a>`;
                 const notaHtml = r.ComprobanteNota
                     ? `<p style="margin:6px 0 0;font-size:.78rem;color:#b91c1c;"><i class="fa-solid fa-comment-dots" style="margin-right:4px;"></i>${r.ComprobanteNota}</p>` : '';
+                // Si el comprobante fue rechazado y es cliente → botón para subir uno nuevo
+                const btnResubir = (!esAdmin && r.ComprobanteEstado === 'rechazado')
+                    ? `<button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobante(${r.IDReserva})"
+                           style="margin-top:10px;padding:9px 16px;border-radius:9px;border:none;
+                                  background:#f59e0b;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;">
+                           <i class="fa-solid fa-arrow-up-from-bracket" style="margin-right:7px;"></i>Subir nuevo comprobante
+                       </button>` : '';
                 comprobanteHtml = `
                     <div style="grid-column:1/-1;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 16px;margin-top:4px;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -607,12 +614,30 @@
                         </div>
                         ${previewEl}
                         ${notaHtml}
+                        ${btnResubir}
                     </div>`;
             } else {
-                comprobanteHtml = `
-                    <div style="grid-column:1/-1;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:10px;padding:12px 14px;margin-top:4px;">
-                        <p style="margin:0;font-size:.82rem;color:#94a3b8;"><i class="fa-solid fa-file-circle-xmark" style="margin-right:6px;"></i>Sin comprobante adjunto.</p>
-                    </div>`;
+                // Sin comprobante: si el cliente tiene reserva pendiente de pago → mostrar botón
+                const necesitaComprobante = !esAdmin && Number(r.IdEstadoReserva) === 5;
+                comprobanteHtml = necesitaComprobante
+                    ? `<div style="grid-column:1/-1;background:#fff7ed;border:1.5px dashed #fed7aa;border-radius:12px;
+                                   padding:14px 16px;margin-top:4px;display:flex;align-items:center;
+                                   justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                           <p style="margin:0;font-size:.84rem;color:#92400e;font-weight:600;line-height:1.4;">
+                               <i class="fa-solid fa-triangle-exclamation" style="margin-right:7px;"></i>
+                               Aún no has subido el comprobante de pago.<br>
+                               <span style="font-weight:400;font-size:.78rem;color:#b45309;">Recuerda que tienes 30 minutos desde que hiciste la reserva.</span>
+                           </p>
+                           <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobante(${r.IDReserva})"
+                               style="flex-shrink:0;padding:10px 18px;border-radius:10px;border:none;
+                                      background:#f59e0b;color:#fff;font-weight:700;font-size:.83rem;cursor:pointer;
+                                      box-shadow:0 4px 12px rgba(245,158,11,.35);white-space:nowrap;">
+                               <i class="fa-solid fa-cloud-arrow-up" style="margin-right:7px;"></i>Subir comprobante
+                           </button>
+                       </div>`
+                    : `<div style="grid-column:1/-1;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:10px;padding:12px 14px;margin-top:4px;">
+                           <p style="margin:0;font-size:.82rem;color:#94a3b8;"><i class="fa-solid fa-file-circle-xmark" style="margin-right:6px;"></i>Sin comprobante adjunto.</p>
+                       </div>`;
             }
 
             // Banner de estado de pago (encabezado prominente)
@@ -680,7 +705,26 @@
                     btnAgregar.style.display = 'none';
                 }
             } else if (footer) {
-                footer.style.display = 'none';
+                // Cliente: limpiar botón previo
+                document.getElementById('btn-subir-comp-cliente')?.remove();
+                // Mostrar botón subir si reserva pendiente de pago sin comprobante
+                const clientePuedeSubir = Number(r.IdEstadoReserva) === 5 &&
+                    (!r.ComprobantePago || r.ComprobanteEstado === 'rechazado');
+                if (clientePuedeSubir) {
+                    const btnSubir = document.createElement('button');
+                    btnSubir.id = 'btn-subir-comp-cliente';
+                    btnSubir.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" style="margin-right:8px;"></i>Subir comprobante de pago';
+                    btnSubir.style.cssText = 'padding:10px 20px;border-radius:10px;border:none;background:#f59e0b;color:#fff;font-weight:700;font-size:.84rem;cursor:pointer;box-shadow:0 4px 12px rgba(245,158,11,.35);';
+                    btnSubir.onclick = () => {
+                        document.getElementById('modal-reserva-detalle').classList.add('hidden');
+                        abrirModalSubirComprobante(r.IDReserva);
+                    };
+                    footer.style.display = 'flex';
+                    footer.style.justifyContent = 'flex-end';
+                    footer.appendChild(btnSubir);
+                } else {
+                    footer.style.display = 'none';
+                }
             }
         }
 
