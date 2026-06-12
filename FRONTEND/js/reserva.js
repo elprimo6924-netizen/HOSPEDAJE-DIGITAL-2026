@@ -936,6 +936,75 @@ function mostrarAvisoNoDevolucion() {
     });
 }
 
+// ── Modal informativo: reserva con tarjeta — 30 minutos para comprobante ──
+function mostrarModalPagoTarjeta(reservaId) {
+    document.getElementById('modal-pago-tarjeta')?.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-pago-tarjeta';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);padding:16px;';
+
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:0;max-width:480px;width:100%;
+                    box-shadow:0 32px 80px rgba(0,0,0,0.35);animation:ptUp .25s ease;overflow:hidden;">
+            <style>@keyframes ptUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}</style>
+
+            <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:24px 24px 20px;text-align:center;">
+                <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.2);
+                            display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <i class="fa-solid fa-envelope-circle-check" style="color:#fff;font-size:1.6rem;"></i>
+                </div>
+                <h2 style="margin:0;color:#fff;font-size:1.1rem;font-weight:800;">¡Reserva registrada!</h2>
+                <p style="margin:6px 0 0;color:rgba(255,255,255,.85);font-size:0.82rem;">Reserva <strong>#${reservaId}</strong></p>
+            </div>
+
+            <div style="padding:24px;">
+                <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:18px;text-align:center;">
+                    <p style="margin:0 0 6px;color:#78350f;font-weight:800;font-size:0.95rem;">
+                        <i class="fa-solid fa-clock" style="margin-right:6px;"></i>Tienes 30 minutos
+                    </p>
+                    <p style="margin:0;color:#92400e;font-size:0.82rem;line-height:1.55;">
+                        Para subir el comprobante de pago y confirmar tu reserva.<br>
+                        Si vence el plazo, la reserva será <strong>cancelada automáticamente</strong>.
+                    </p>
+                </div>
+
+                <p style="margin:0 0 18px;color:#475569;font-size:0.855rem;line-height:1.65;text-align:center;">
+                    Te enviamos un <strong>correo electrónico</strong> con el enlace para adjuntar<br>
+                    el desprendible de pago (transferencia o depósito).
+                </p>
+
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button id="pt-subir-ahora"
+                        style="padding:12px 20px;border-radius:10px;border:none;
+                               background:#f59e0b;color:#fff;font-weight:700;font-size:0.88rem;cursor:pointer;
+                               box-shadow:0 4px 14px rgba(245,158,11,.4);">
+                        <i class="fa-solid fa-cloud-arrow-up" style="margin-right:8px;"></i>Subir comprobante ahora
+                    </button>
+                    <button id="pt-subir-despues"
+                        style="padding:11px 20px;border-radius:10px;border:1.5px solid #e2e8f0;
+                               background:#f8fafc;color:#64748b;font-weight:600;font-size:0.85rem;cursor:pointer;">
+                        <i class="fa-solid fa-clock" style="margin-right:7px;"></i>Subir más tarde (por correo)
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('pt-subir-ahora').onclick = () => {
+        modal.remove();
+        mostrarModalComprobante(reservaId);
+    };
+    document.getElementById('pt-subir-despues').onclick = () => {
+        modal.remove();
+        UI.showToast('Reserva guardada. Revisa tu correo para subir el comprobante.', 'info');
+        setTimeout(() => window.location.href = 'pages/reservas.html', 1800);
+    };
+}
+
 // ── Modal de subida de comprobante de pago ─────────────────────────────────
 function mostrarModalComprobante(reservaId) {
     document.getElementById('modal-comprobante-pago')?.remove();
@@ -1223,19 +1292,27 @@ const ReservaForm = {
             };
 
             try {
+                const metodoPago = Number(document.getElementById('metodo-pago').value) || 1;
                 const result = await requestJson('/reservas', { method: 'POST', body: payload });
                 const reservaId = result?.reservaId;
 
-                // Determinar si es cliente (mostrar modal comprobante) o admin (overlay clásico)
+                // Determinar si es cliente (flujo con modal) o admin (overlay clásico)
                 const _sess  = window.getStoredSession ? window.getStoredSession() : null;
                 let _role    = Number(_sess?.usuario?.IDRol ?? _sess?.user?.rol ?? 0);
                 if (!_role) {
                     try { _role = Number(JSON.parse(localStorage.getItem('user') || '{}').IDRol || 0); } catch(_) {}
                 }
-                const _isCliente = _role === 2 || _role === 3 || _role === 0; // 0 = sin sesión admin → mostrar modal
+                const _isCliente = _role === 2 || _role === 3 || _role === 0;
 
                 if (_isCliente && reservaId) {
-                    mostrarModalComprobante(reservaId);
+                    if (metodoPago === 2) {
+                        // Tarjeta: mostrar aviso de 30 minutos y enlace al correo
+                        mostrarModalPagoTarjeta(reservaId);
+                    } else {
+                        // Efectivo: reserva confirmada, no se requiere comprobante
+                        UI.showToast('¡Reserva confirmada! La habitación ha sido bloqueada para tus fechas.', 'success');
+                        setTimeout(() => window.location.href = 'pages/reservas.html', 2000);
+                    }
                 } else {
                     const idEl = document.getElementById('rf-success-id');
                     if (idEl && reservaId) idEl.textContent = `#${reservaId}`;

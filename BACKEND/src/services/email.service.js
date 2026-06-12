@@ -352,6 +352,60 @@ const EmailService = {
       return false;
     }
   },
+
+  /* ── Pendiente comprobante — pago con tarjeta (30 minutos) ── */
+  enviarPendienteComprobante: async ({ clienteNombre, clienteEmail, reservaId, linkSubir, fechaInicio, fechaFin, montoTotal }) => {
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());
+    if (!emailValido) {
+      console.warn(`[Email] Correo inválido para pendiente comprobante: "${clienteEmail}"`);
+      return false;
+    }
+    try {
+      const info = await enviarCorreo({
+        from:    process.env.EMAIL_FROM,
+        to:      clienteEmail,
+        subject: `⏳ Reserva #${reservaId} pendiente — sube tu comprobante en 30 minutos`,
+        html: wrap(`
+          ${header("Confirmación de reserva pendiente")}
+          <div style="padding:30px">
+            <h2 style="color:#333">Hola, ${clienteNombre || 'cliente'}</h2>
+            <p style="color:#555;line-height:1.6">
+              Tu reserva <strong>#${reservaId}</strong> ha sido registrada exitosamente.<br>
+              Para confirmarla, debes subir el <strong>comprobante de pago</strong> dentro de los próximos <strong style="color:#b45309">30 minutos</strong>.
+            </p>
+            <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:8px;padding:18px;margin:20px 0;text-align:center">
+              <p style="margin:0 0 6px;color:#78350f;font-weight:700;font-size:15px">⏰ Tiempo límite: 30 minutos</p>
+              <p style="margin:0;color:#92400e;font-size:13px">Si no subes el comprobante antes de que venza el plazo, la reserva será cancelada automáticamente y la habitación quedará disponible nuevamente.</p>
+            </div>
+            <ul style="color:#555;padding-left:20px;line-height:2">
+              <li><strong>Reserva:</strong>    #${reservaId}</li>
+              ${fechaInicio  ? `<li><strong>Entrada:</strong>    ${fechaInicio}</li>`  : ''}
+              ${fechaFin     ? `<li><strong>Salida:</strong>     ${fechaFin}</li>`     : ''}
+              ${montoTotal   ? `<li><strong>Total:</strong>      $${Number(montoTotal).toLocaleString('es-CO')}</li>` : ''}
+            </ul>
+            <div style="text-align:center;margin:28px 0 10px">
+              <a href="${linkSubir}"
+                 style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;
+                        padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;
+                        box-shadow:0 4px 14px rgba(224,112,32,.4)">
+                📎 Subir comprobante de pago
+              </a>
+            </div>
+            <p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:18px">
+              Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+              <span style="color:${ACCENT}">${linkSubir}</span>
+            </p>
+          </div>
+          ${footer()}
+        `),
+      });
+      console.log(`[Email] Pendiente comprobante enviado a ${clienteEmail} (ID: ${info.messageId})`);
+      return true;
+    } catch (err) {
+      console.error("[Email] Error en enviarPendienteComprobante:", err.message);
+      return false;
+    }
+  },
 };
 
 module.exports = EmailService;

@@ -64,6 +64,10 @@ const app = express();
             await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteNota VARCHAR(255) NULL');
             migracionHizo = true;
         }
+        if (!(await colExists('FechaLimiteComprobante'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN FechaLimiteComprobante DATETIME NULL');
+            migracionHizo = true;
+        }
 
         // Invalidar cache del service para que lea las nuevas columnas
         if (migracionHizo) {

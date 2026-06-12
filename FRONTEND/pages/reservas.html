@@ -1048,6 +1048,115 @@
             });
         }
 
+        /* ── Modal upload comprobante para clientes (acceso desde link de correo) ── */
+        function abrirModalSubirComprobante(reservaId) {
+            document.getElementById('modal-upload-comp')?.remove();
+            const modal = document.createElement('div');
+            modal.id = 'modal-upload-comp';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);padding:16px;';
+            modal.innerHTML = `
+                <div style="background:#fff;border-radius:20px;max-width:480px;width:100%;
+                            box-shadow:0 32px 80px rgba(0,0,0,.35);overflow:hidden;animation:ucUp .25s ease;">
+                    <style>@keyframes ucUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}</style>
+                    <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:22px 24px 18px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.2);
+                                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-receipt" style="color:#fff;font-size:1.2rem;"></i>
+                            </div>
+                            <div>
+                                <h2 style="margin:0;color:#fff;font-size:1rem;font-weight:800;">Subir comprobante de pago</h2>
+                                <p style="margin:4px 0 0;color:rgba(255,255,255,.85);font-size:.78rem;">Reserva <strong>#${reservaId}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding:22px 24px;">
+                        <p style="margin:0 0 16px;color:#475569;font-size:.855rem;line-height:1.65;">
+                            Adjunta el comprobante de tu pago (transferencia o depósito). Un administrador lo revisará y confirmará tu reserva.
+                        </p>
+                        <div id="uc-drop" style="border:2px dashed #d1d5db;border-radius:14px;padding:26px 20px;
+                                text-align:center;cursor:pointer;background:#f8fafc;transition:border-color .2s,background .2s;margin-bottom:12px;">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem;color:#94a3b8;display:block;margin-bottom:8px;"></i>
+                            <p style="margin:0 0 4px;font-size:.875rem;font-weight:600;color:#475569;">Arrastra tu archivo aquí</p>
+                            <p style="margin:0;font-size:.78rem;color:#94a3b8;">JPG, PNG o PDF — máx. 5 MB</p>
+                            <input type="file" id="uc-file" accept=".jpg,.jpeg,.png,.pdf" style="display:none;">
+                        </div>
+                        <div id="uc-preview" style="display:none;margin-bottom:12px;"></div>
+                        <div id="uc-err" style="display:none;padding:9px 14px;background:#fef2f2;border:1px solid #fecaca;
+                             border-radius:8px;font-size:.82rem;color:#7f1d1d;font-weight:600;margin-bottom:12px;"></div>
+                        <div style="display:flex;gap:10px;justify-content:flex-end;">
+                            <button id="uc-cancel" style="padding:10px 18px;border-radius:10px;border:1.5px solid #e2e8f0;
+                                background:#f8fafc;color:#64748b;font-weight:600;font-size:.84rem;cursor:pointer;">Cancelar</button>
+                            <button id="uc-send" disabled style="padding:10px 22px;border-radius:10px;border:none;
+                                background:#f59e0b;color:#fff;font-weight:700;font-size:.84rem;cursor:pointer;opacity:.5;">
+                                <i class="fa-solid fa-paper-plane" style="margin-right:7px;"></i>Enviar comprobante
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+
+            const dropZone = modal.querySelector('#uc-drop');
+            const fileInput = modal.querySelector('#uc-file');
+            const preview   = modal.querySelector('#uc-preview');
+            const errEl     = modal.querySelector('#uc-err');
+            const sendBtn   = modal.querySelector('#uc-send');
+            const cancelBtn = modal.querySelector('#uc-cancel');
+            const ALLOWED   = ['image/jpeg','image/png','application/pdf'];
+            let selFile = null;
+
+            const showErr = (m) => { errEl.textContent = m; errEl.style.display = 'block'; };
+            const clearErr = () => { errEl.style.display = 'none'; };
+            const renderPrev = (file) => {
+                clearErr();
+                if (!ALLOWED.includes(file.type)) { showErr('Solo JPG, PNG o PDF.'); return; }
+                if (file.size > 5 * 1024 * 1024) { showErr('El archivo supera 5 MB.'); return; }
+                selFile = file;
+                sendBtn.disabled = false; sendBtn.style.opacity = '1';
+                dropZone.style.borderColor = '#f59e0b'; dropZone.style.background = '#fffbeb';
+                const sz = (file.size/1048576).toFixed(2);
+                if (file.type === 'application/pdf') {
+                    preview.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f1f5f9;border-radius:8px;">
+                        <i class="fa-solid fa-file-pdf" style="color:#dc2626;font-size:1.6rem;"></i>
+                        <div style="font-size:.84rem;font-weight:600;">${file.name} <span style="color:#64748b;font-weight:400;">(${sz} MB)</span></div></div>`;
+                } else {
+                    const r2 = new FileReader();
+                    r2.onload = ev => { preview.innerHTML = `<img src="${ev.target.result}" style="max-height:150px;max-width:100%;border-radius:8px;border:1px solid #e2e8f0;display:block;margin:0 auto;">`; };
+                    r2.readAsDataURL(file);
+                }
+                preview.style.display = 'block';
+            };
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => { if (fileInput.files[0]) renderPrev(fileInput.files[0]); });
+            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor='#f59e0b'; dropZone.style.background='#fffbeb'; });
+            dropZone.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files[0]) renderPrev(e.dataTransfer.files[0]); });
+            cancelBtn.onclick = () => modal.remove();
+            sendBtn.onclick = async () => {
+                if (!selFile) return;
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:7px;"></i>Enviando...';
+                try {
+                    const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : 'http://localhost:3000/api';
+                    const fd = new FormData();
+                    fd.append('comprobante', selFile);
+                    const tok = localStorage.getItem('token');
+                    const res = await fetch(`${apiUrl}/reservas/${reservaId}/comprobante`, {
+                        method: 'POST', headers: tok ? { Authorization: `Bearer ${tok}` } : {}, body: fd
+                    });
+                    if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.error || 'Error al subir'); }
+                    modal.remove();
+                    mostrarMensaje(`Comprobante de reserva #${reservaId} enviado. Pendiente de revisión.`, 'ok');
+                    cargarReservas();
+                } catch (err) {
+                    showErr(err.message || 'No se pudo subir el comprobante.');
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:7px;"></i>Enviar comprobante';
+                }
+            };
+        }
+
         /* ── Init ── */
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -1072,6 +1181,15 @@
                     requestJson('/reservas/sync-estados', { method: 'POST' }).catch(() => {});
                 }
                 cargarReservas();
+
+                // Si llega desde el link del correo (?comprobante=ID), abrir modal de upload
+                const _qp = new URLSearchParams(window.location.search);
+                const _compId = _qp.get('comprobante');
+                if (_compId) {
+                    // Limpiar el param de la URL sin recargar
+                    history.replaceState(null, '', window.location.pathname);
+                    setTimeout(() => abrirModalSubirComprobante(Number(_compId)), 800);
+                }
             } catch (e) { console.error('Error en reservas.html:', e); }
         });
     </script>

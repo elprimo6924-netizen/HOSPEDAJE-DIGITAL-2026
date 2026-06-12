@@ -110,7 +110,7 @@ const crear = async (req, res) => {
     ).then(([rows]) => {
       if (!rows.length) return;
       const c = rows[0];
-      const payload = {
+      const notifPayload = {
         clienteNombre: `${c.Nombre ?? ""} ${c.Apellido ?? ""}`.trim(),
         reservaId: idReserva,
         habitacion: c.habitacion || 'Reserva confirmada',
@@ -120,13 +120,26 @@ const crear = async (req, res) => {
         paquetes: c.paquetes_str ? c.paquetes_str.split('|').filter(Boolean) : [],
         servicios: c.servicios_str ? c.servicios_str.split('|').filter(Boolean) : [],
       };
-      Promise.allSettled([
-        EmailService.enviarConfirmacionReserva({ ...payload, clienteEmail: c.Email }),
-        WhatsappService.enviarConfirmacionReserva({ ...payload, clienteTelefono: c.Telefono }),
-      ]);
+
+      if (metodoPago === 2) {
+        // Pago con tarjeta: notificar que debe subir comprobante en 30 min
+        const appUrl = process.env.APP_URL || 'http://localhost:3000';
+        const linkSubir = `${appUrl}/pages/reservas.html?comprobante=${idReserva}`;
+        Promise.allSettled([
+          EmailService.enviarPendienteComprobante({
+            ...notifPayload, clienteEmail: c.Email, linkSubir,
+          }),
+        ]);
+      } else {
+        // Pago en efectivo: confirmación normal
+        Promise.allSettled([
+          EmailService.enviarConfirmacionReserva({ ...notifPayload, clienteEmail: c.Email }),
+          WhatsappService.enviarConfirmacionReserva({ ...notifPayload, clienteTelefono: c.Telefono }),
+        ]);
+      }
     }).catch((err) => console.error("Error al despachar notificaciones de reserva:", err.message));
 
-    return res.status(201).json({ mensaje: "Reserva creada", reservaId: idReserva });
+    return res.status(201).json({ mensaje: "Reserva creada", reservaId: idReserva, metodoPago });
   } catch (error) {
     console.error("RESERVAS ERROR:", error);
     return res.status(500).json({ error: "Error creando la reserva", detalle: error.message });
