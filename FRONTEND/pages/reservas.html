@@ -556,8 +556,9 @@
                 };
             })();
 
+            const tieneServicios = (r.servicios || []).length > 0 || !!r.Servicios;
+
             const campos = [
-                ['ID Reserva',    `#${r.IDReserva}`],
                 ['Cliente', esAdmin ? (() => {
                     const nombre = `${r.Nombre||''} ${r.Apellido||''}`.trim();
                     const doc    = r.NroDocumentoCliente || '';
@@ -573,8 +574,8 @@
                 ['IVA incluido',  formatMonto(r.IVA)],
                 ['Total',         `<strong style="font-size:1.05rem;color:#0f172a;">${formatMonto(r.MontoTotal)}</strong>`],
                 ['Estado reserva',badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)],
-                ['Alojamiento',   alojamientoHtml],
-                ['Servicios',     svcHtml],
+                ['Tipo Alojamiento', alojamientoHtml],
+                ...(tieneServicios ? [['Servicios', svcHtml]] : []),
             ];
             // Bloque comprobante de pago
             const apiBase = (typeof CONFIG !== 'undefined' && CONFIG.API_URL)
