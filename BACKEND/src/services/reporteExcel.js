@@ -56,21 +56,17 @@ function applyZebra(row, idx) {
 }
 
 function addDataBar(ws, col, startRow, endRow) {
-    if (!ws.conditionalFormattings) ws.conditionalFormattings = [];
-    ws.conditionalFormattings.push({
-        ref: `${col}${startRow}:${col}${endRow}`,
-        rules: [{
-            type: 'dataBar',
-            dataBar: {
-                minLength: 0,
-                maxLength: 100,
-                color: { argb: C.naranja },
-                showValue: true,
+    try {
+        ws.addConditionalFormatting({
+            ref: `${col}${startRow}:${col}${endRow}`,
+            rules: [{
+                type: 'dataBar',
+                priority: 1,
                 cfvo: [{ type: 'min' }, { type: 'max' }],
-            },
-            priority: 1,
-        }],
-    });
+                color: { argb: C.naranja },
+            }],
+        });
+    } catch (_) { /* dataBar no crítico */ }
 }
 
 function mergeFill(ws, startCell, endCell, argb) {
@@ -334,7 +330,7 @@ function buildPorEstado(wb, estados) {
         addDataBar(ws, 'C', dataStart, dataStart + estados.length - 1);
     }
 
-    ws.autoFilter = { from: 'B5', to: 'D5' };
+    ws.autoFilter = 'B5:D5';
 }
 
 /* ────────────────────────────────────────────── */
@@ -430,7 +426,7 @@ function buildPorMes(wb, meses) {
         addDataBar(ws, 'D', dataStart, dataStart + meses.length - 1);
     }
 
-    ws.autoFilter = { from: 'B5', to: 'D5' };
+    ws.autoFilter = 'B5:D5';
 }
 
 /* ────────────────────────────────────────────── */
@@ -630,7 +626,7 @@ function buildRecientes(wb, recientes) {
         ws.getCell('B6').font  = { color: { argb: C.grisTexto }, italic: true };
     }
 
-    ws.autoFilter = { from: 'B5', to: 'G5' };
+    ws.autoFilter = 'B5:G5';
 }
 
 /* ────────────────────────────────────────────── */
@@ -658,7 +654,6 @@ async function generarReporteExcel(res) {
     res.setHeader('Content-Disposition', `attachment; filename="Hospedaje_Digital_${fechaArchivo}.xlsx"`);
 
     await wb.xlsx.write(res);
-    res.end();
 }
 
 module.exports = { generarReporteExcel };
