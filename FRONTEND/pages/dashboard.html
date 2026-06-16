@@ -11,6 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html, body { background-color: #0f1e1c !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
@@ -110,6 +111,25 @@
         .skeleton { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
+        /* ── Botón exportar ── */
+        .btn-export {
+            display: inline-flex; align-items: center; gap: .5rem;
+            padding: .55rem 1.1rem;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #fff;
+            border: none; border-radius: 10px;
+            font-size: .82rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(22,163,74,.30);
+            transition: all .22s;
+            text-decoration: none;
+        }
+        .btn-export:hover:not(:disabled) {
+            background: linear-gradient(135deg, #15803d, #166534);
+            box-shadow: 0 6px 20px rgba(22,163,74,.45);
+            transform: translateY(-1px);
+        }
+        .btn-export:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
         /* ── Responsive ── */
         @media (max-width:1100px) {
             .kpi-grid { grid-template-columns: repeat(3,1fr); }
@@ -140,7 +160,12 @@
                 <!-- Header -->
                 <div class="db-header">
                     <h2 class="db-title"><i class="fa-solid fa-chart-line" style="color:#e07020;margin-right:.45rem"></i>Panel de <span>Control</span></h2>
-                    <span class="db-date" id="db-fecha"></span>
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                        <span class="db-date" id="db-fecha"></span>
+                        <button id="btn-exportar-excel" class="btn-export" onclick="exportarExcel()" disabled title="Exportar reporte a Excel">
+                            <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                        </button>
+                    </div>
                 </div>
 
                 <!-- KPI Cards -->
@@ -405,6 +430,138 @@
             : '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#94a3b8">Sin reservas</td></tr>';
     }
 
+    /* ── Datos del dashboard (se llenan al cargar) ── */
+    let _dashData = null;
+    let _recientesData = [];
+
+    /* ── Exportar a Excel ── */
+    function exportarExcel() {
+        if (!_dashData || typeof XLSX === 'undefined') return;
+
+        const btn = document.getElementById('btn-exportar-excel');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...'; }
+
+        try {
+            const XLSX_lib = window.XLSX;
+            const wb = XLSX_lib.utils.book_new();
+            const hoy = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+            const ahora = new Date().toLocaleString('es-CO');
+
+            /* ── Hoja 1: Resumen KPIs ── */
+            const wsKPIData = [
+                ['HOSPEDAJE DIGITAL — REPORTE EJECUTIVO'],
+                [`Generado el: ${ahora}`],
+                [],
+                ['INDICADORES CLAVE DEL PERIODO'],
+                ['Indicador', 'Valor'],
+                ['Ingresos del mes',         Number(_dashData.ingresosMes    || 0)],
+                ['Reservas activas',          Number(_dashData.reservasActivas || 0)],
+                ['Habitaciones ocupadas hoy', Number(_dashData.habOcupadas    || 0)],
+                ['Total clientes registrados',Number(_dashData.totalClientes  || 0)],
+                ['Paquetes disponibles',      Number(_dashData.paqActivos     || 0)],
+            ];
+            const wsKPI = XLSX_lib.utils.aoa_to_sheet(wsKPIData);
+            wsKPI['!cols'] = [{ wch: 36 }, { wch: 20 }];
+            wsKPI['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:1} }, { s:{r:1,c:0}, e:{r:1,c:1} }, { s:{r:3,c:0}, e:{r:3,c:1} }];
+            XLSX_lib.utils.book_append_sheet(wb, wsKPI, 'Resumen KPIs');
+
+            /* ── Hoja 2: Reservas por mes ── */
+            const meses = _dashData.reservasPorMes || [];
+            const wsMesesData = [
+                ['RESERVAS E INGRESOS POR MES'],
+                [],
+                ['Mes', 'Total Reservas', 'Ingresos ($)'],
+                ...meses.map(r => {
+                    const [y, m] = r.mes.split('-');
+                    const label = new Date(y, m-1).toLocaleDateString('es-CO', { month:'long', year:'numeric' });
+                    return [label, Number(r.total), Number(r.ingresos || 0)];
+                }),
+            ];
+            const wsMeses = XLSX_lib.utils.aoa_to_sheet(wsMesesData);
+            wsMeses['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 18 }];
+            wsMeses['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
+            XLSX_lib.utils.book_append_sheet(wb, wsMeses, 'Por Mes');
+
+            /* ── Hoja 3: Reservas por estado ── */
+            const estados = _dashData.reservasPorEstado || [];
+            const total = estados.reduce((a, r) => a + Number(r.total), 0);
+            const wsEstadoData = [
+                ['RESERVAS POR ESTADO'],
+                [],
+                ['Estado', 'Cantidad', '% del Total'],
+                ...estados.map(r => [
+                    r.nombre,
+                    Number(r.total),
+                    total > 0 ? +(Number(r.total) / total * 100).toFixed(1) : 0,
+                ]),
+                [],
+                ['TOTAL', total, 100],
+            ];
+            const wsEstado = XLSX_lib.utils.aoa_to_sheet(wsEstadoData);
+            wsEstado['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 14 }];
+            wsEstado['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
+            XLSX_lib.utils.book_append_sheet(wb, wsEstado, 'Por Estado');
+
+            /* ── Hoja 4: Top paquetes ── */
+            const paquetes = _dashData.topPaquetes || [];
+            const wsPaqData = [
+                ['PAQUETES MÁS SOLICITADOS'],
+                [],
+                ['#', 'Nombre del Paquete', 'Veces Solicitado'],
+                ...paquetes.map((p, i) => [i + 1, p.NombrePaquete, Number(p.total)]),
+            ];
+            const wsPaq = XLSX_lib.utils.aoa_to_sheet(wsPaqData);
+            wsPaq['!cols'] = [{ wch: 5 }, { wch: 34 }, { wch: 20 }];
+            wsPaq['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
+            XLSX_lib.utils.book_append_sheet(wb, wsPaq, 'Top Paquetes');
+
+            /* ── Hoja 5: Top servicios ── */
+            const servicios = _dashData.topServicios || [];
+            const wsSvcData = [
+                ['SERVICIOS MÁS SOLICITADOS'],
+                [],
+                ['#', 'Nombre del Servicio', 'Veces Solicitado'],
+                ...servicios.map((s, i) => [i + 1, s.NombreServicio, Number(s.total)]),
+            ];
+            const wsSvc = XLSX_lib.utils.aoa_to_sheet(wsSvcData);
+            wsSvc['!cols'] = [{ wch: 5 }, { wch: 34 }, { wch: 20 }];
+            wsSvc['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
+            XLSX_lib.utils.book_append_sheet(wb, wsSvc, 'Top Servicios');
+
+            /* ── Hoja 6: Reservas recientes ── */
+            if (_recientesData.length) {
+                const wsRecData = [
+                    ['RESERVAS RECIENTES'],
+                    [],
+                    ['# Reserva', 'Documento Cliente', 'Fecha Inicio', 'Fecha Fin', 'Monto Total ($)', 'Estado'],
+                    ..._recientesData.map(r => [
+                        r.IdReserva,
+                        r.NroDocumentoCliente || '—',
+                        r.FechaInicio ? new Date(r.FechaInicio).toLocaleDateString('es-CO') : '—',
+                        r.FechaFinalizacion ? new Date(r.FechaFinalizacion).toLocaleDateString('es-CO') : '—',
+                        Number(r.Monto_Total || 0),
+                        r.estado || '—',
+                    ]),
+                ];
+                const wsRec = XLSX_lib.utils.aoa_to_sheet(wsRecData);
+                wsRec['!cols'] = [{ wch: 11 }, { wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 24 }];
+                wsRec['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:5} }];
+                XLSX_lib.utils.book_append_sheet(wb, wsRec, 'Reservas Recientes');
+            }
+
+            /* ── Descargar ── */
+            const fechaArchivo = new Date().toISOString().split('T')[0];
+            XLSX_lib.writeFile(wb, `Hospedaje_Digital_${fechaArchivo}.xlsx`);
+
+        } catch (err) {
+            console.error('Error al exportar:', err);
+            alert('Error al generar el archivo Excel. Intenta nuevamente.');
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Exportar Excel'; }
+        }
+    }
+    window.exportarExcel = exportarExcel;
+
     /* ── Init ── */
     document.addEventListener('DOMContentLoaded', async () => {
         const session = window.getStoredSession ? window.getStoredSession() : null;
@@ -420,6 +577,7 @@
 
         try {
             const data = await requestJson('/dashboard/estadisticas');
+            _dashData = data;
 
             renderKPIs(data);
             renderChartMensual(data.reservasPorMes || []);
@@ -428,15 +586,21 @@
             renderRanking('rank-servicios', data.topServicios || [], 'NombreServicio');
 
             if (esAdmin) {
-                renderRecientes(data.reservasRecientes || []);
+                _recientesData = data.reservasRecientes || [];
+                renderRecientes(_recientesData);
             } else {
                 try {
                     const misRes = await requestJson('/reservas/mis-reservas');
-                    renderRecientes(Array.isArray(misRes) ? misRes.slice(0, 5) : []);
+                    _recientesData = Array.isArray(misRes) ? misRes.slice(0, 5) : [];
+                    renderRecientes(_recientesData);
                 } catch {
                     renderRecientes([]);
                 }
             }
+
+            /* Habilitar botón exportar */
+            const btnExp = document.getElementById('btn-exportar-excel');
+            if (btnExp) btnExp.disabled = false;
 
         } catch (e) {
             console.error('Dashboard error:', e.message);
