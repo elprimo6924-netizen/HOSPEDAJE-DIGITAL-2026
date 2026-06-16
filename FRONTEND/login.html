@@ -3,273 +3,500 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Hospedaje Digital</title>
+    <title>Iniciar Sesión — Hospedaje Digital</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        display: ['Sora', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-        #login-bg {
-            position: fixed;
-            inset: 0;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            /* Fallback mientras carga la imagen */
-            background-color: #101827;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --lux-navy:   #090f1c;
+            --lux-card:   #0c1828;
+            --lux-border: rgba(30,52,90,0.9);
+            --lux-gold:   #d6b25e;
+            --lux-gold2:  #b78a2a;
+            --lux-gold3:  #ead483;
+            --lux-ivory:  #f0e6d3;
+            --lux-iv3:    rgba(240,230,211,0.38);
         }
-        #snow-canvas {
-            position: fixed;
+
+        html, body {
+            min-height: 100vh;
+            font-family: 'Sora', sans-serif;
+            background: var(--lux-navy);
+            overflow-x: hidden;
+        }
+
+        /* ── Layout dos paneles ── */
+        .login-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            min-height: 100vh;
+        }
+
+        /* ── Panel izquierdo: imagen ── */
+        .login-panel-img {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-panel-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.72);
+        }
+
+        .login-panel-img-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to right, transparent 60%, var(--lux-navy) 100%),
+                linear-gradient(to top,   rgba(5,10,22,0.70) 0%, transparent 50%);
+        }
+
+        .login-panel-img-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 3rem 3.5rem;
+        }
+
+        .login-panel-img-content .ornament {
+            height: 1px;
+            width: 120px;
+            background: linear-gradient(90deg, transparent, var(--lux-gold) 50%, transparent);
+            margin-bottom: 1.5rem;
+        }
+
+        .login-panel-img-content h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--lux-ivory);
+            letter-spacing: 0.06em;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+        }
+
+        .login-panel-img-content p {
+            color: rgba(240,230,211,0.60);
+            font-size: 0.88rem;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+        }
+
+        /* Etiquetas de credenciales de ejemplo */
+        .img-badges {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .img-badge {
+            background: rgba(214,178,94,0.12);
+            border: 1px solid rgba(214,178,94,0.25);
+            border-radius: 999px;
+            padding: 0.35rem 1rem;
+            font-size: 0.74rem;
+            color: var(--lux-gold);
+            letter-spacing: 0.08em;
+        }
+
+        /* ── Panel derecho: formulario ── */
+        .login-panel-form {
+            background: var(--lux-navy);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2.5rem;
+            position: relative;
+            border-left: 1px solid rgba(214,178,94,0.10);
+        }
+
+        /* Textura de fondo sutil */
+        .login-panel-form::before {
+            content: '';
+            position: absolute;
             inset: 0;
             pointer-events: none;
-            z-index: 2;
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d6b25e' fill-opacity='0.018'%3E%3Cpath d='M40 0l2 10-2 2-2-2zm0 80l2-10-2-2-2 2zm40-40l-10 2-2-2 2-2zm-80 0l10 2 2-2-2-2zM13.4 13.4l7.1 7.1-1.4 2-2-1.4zm53.2 53.2l-7.1-7.1 1.4-2 2 1.4zm0-53.2l-7.1 7.1-2-1.4 1.4-2zm-53.2 53.2l7.1-7.1 2 1.4-1.4 2z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .login-form-inner {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        /* Cabecera del formulario */
+        .login-crown {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-crown-badge {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(214,178,94,0.18), rgba(214,178,94,0.07));
+            border: 1px solid rgba(214,178,94,0.30);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--lux-gold);
+            font-size: 1.5rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .login-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--lux-ivory);
+            text-align: center;
+            letter-spacing: 0.10em;
+            margin-bottom: 0.4rem;
+        }
+
+        .login-ornament {
+            height: 1px;
+            max-width: 160px;
+            margin: 0 auto 0.5rem;
+            background: linear-gradient(90deg, transparent, rgba(214,178,94,0.55) 50%, transparent);
+        }
+
+        .login-subtitle {
+            text-align: center;
+            font-size: 0.74rem;
+            color: var(--lux-iv3);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 2.2rem;
+        }
+
+        /* Sección de campos */
+        .lux-section {
+            background: linear-gradient(160deg, rgba(14,28,50,0.80), rgba(9,17,32,0.90));
+            border: 1px solid rgba(24,44,78,0.80);
+            border-top: 1px solid rgba(214,178,94,0.13);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Labels */
+        .lux-label {
+            display: block;
+            color: rgba(214,178,94,0.80);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        /* Inputs */
+        .lux-input {
+            width: 100%;
+            background: rgba(4,8,18,0.88);
+            border: 1px solid rgba(28,48,82,0.85);
+            border-radius: 10px;
+            color: var(--lux-ivory);
+            padding: 11px 16px;
+            font-size: 0.84rem;
+            font-family: 'Sora', sans-serif;
+            outline: none;
+            transition: border-color 0.22s, box-shadow 0.22s, background 0.22s;
+        }
+        .lux-input::placeholder { color: rgba(240,230,211,0.18); }
+        .lux-input:focus {
+            border-color: var(--lux-gold) !important;
+            background: rgba(4,8,18,0.96) !important;
+            box-shadow: 0 0 0 3px rgba(214,178,94,0.11), 0 2px 10px rgba(0,0,0,0.35) !important;
+        }
+        .lux-input.border-green-400 { border-color: #4ade80 !important; box-shadow: 0 0 0 3px rgba(74,222,128,0.09) !important; }
+        .lux-input.border-red-400   { border-color: #f87171 !important; box-shadow: 0 0 0 3px rgba(248,113,113,0.09) !important; }
+
+        /* Botón toggle contraseña */
+        .lux-pw-btn {
+            background: none; border: none;
+            color: rgba(214,178,94,0.45);
+            cursor: pointer; transition: color 0.2s;
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+        }
+        .lux-pw-btn:hover { color: var(--lux-gold); }
+
+        /* Botón submit */
+        .lux-btn {
+            width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: linear-gradient(135deg, #d6b25e 0%, #b78a2a 100%);
+            color: #1a0e00;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 0.86rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            border: 1px solid rgba(214,178,94,0.38);
+            border-radius: 12px;
+            padding: 15px 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(183,138,42,0.30), 0 3px 10px rgba(0,0,0,0.45);
+            transition: all 0.26s;
+            margin-top: 1.25rem;
+        }
+        .lux-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e8ca78 0%, #d6b25e 100%);
+            box-shadow: 0 14px 40px rgba(183,138,42,0.46), 0 4px 14px rgba(0,0,0,0.45);
+            transform: translateY(-2px);
+        }
+        .lux-btn:disabled { opacity: 0.52; cursor: not-allowed; transform: none; }
+
+        /* Error */
+        .lux-err {
+            background: rgba(110,20,20,0.22);
+            border: 1px solid rgba(248,113,113,0.33);
+            border-radius: 12px;
+            color: #fca5a5;
+            padding: 11px 14px;
+            font-size: 0.80rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        /* Links de pie */
+        .login-links {
+            margin-top: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            text-align: center;
+        }
+        .login-links a {
+            font-size: 0.78rem;
+            color: rgba(240,230,211,0.45);
+            text-decoration: none;
+            transition: color 0.2s;
+            letter-spacing: 0.04em;
+        }
+        .login-links a span {
+            color: var(--lux-gold);
+            font-weight: 600;
+            text-decoration: underline;
+            text-decoration-color: rgba(214,178,94,0.35);
+            text-underline-offset: 3px;
+        }
+        .login-links a:hover span { color: var(--lux-gold3); }
+
+        /* ── Responsive ── */
+        @media (max-width: 860px) {
+            .login-wrapper { grid-template-columns: 1fr; }
+
+            .login-panel-img {
+                height: 260px;
+                min-height: 260px;
+            }
+            .login-panel-img-overlay {
+                background: linear-gradient(to bottom, transparent 30%, var(--lux-navy) 100%);
+            }
+            .login-panel-img-content {
+                padding: 1.5rem 2rem;
+            }
+            .login-panel-img-content h2 { font-size: 1.5rem; }
+            .img-badges { display: none; }
+
+            .login-panel-form {
+                border-left: none;
+                border-top: 1px solid rgba(214,178,94,0.10);
+                padding: 2rem 1.5rem 3rem;
+            }
+        }
+
+        @media (max-width: 440px) {
+            .login-panel-form { padding: 1.75rem 1.25rem 2.5rem; }
         }
     </style>
 </head>
-<body class="min-h-screen overflow-hidden font-display text-slate-900">
+<body>
 
-    <!-- ===== FONDO: imagen del login ===== -->
-    <div id="login-bg">
-        <!-- Overlay oscuro sobre la imagen para legibilidad de la tarjeta -->
-        <div class="absolute inset-0 bg-black/55"></div>
+<div class="login-wrapper">
+
+    <!-- ══ Panel izquierdo: imagen del hotel ══ -->
+    <div class="login-panel-img">
+        <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1400&q=85"
+             alt="Lobby del hotel Hospedaje Digital">
+        <div class="login-panel-img-overlay"></div>
+        <div class="login-panel-img-content">
+            <div class="ornament"></div>
+            <h2>Bienvenido de<br>regreso</h2>
+            <p>Experiencias de lujo en cada estadía</p>
+            <div class="img-badges">
+                <span class="img-badge"><i class="fa-solid fa-star" style="margin-right:5px;font-size:.65rem;"></i>Reservas en línea</span>
+                <span class="img-badge"><i class="fa-solid fa-shield-halved" style="margin-right:5px;font-size:.65rem;"></i>Pago seguro</span>
+                <span class="img-badge"><i class="fa-solid fa-concierge-bell" style="margin-right:5px;font-size:.65rem;"></i>Servicio 24/7</span>
+            </div>
+        </div>
     </div>
 
-    <!-- ===== NIEVE: canvas transparente ===== -->
-    <canvas id="snow-canvas"></canvas>
+    <!-- ══ Panel derecho: formulario ══ -->
+    <div class="login-panel-form">
+        <div class="login-form-inner">
 
-    <!-- ===== CONTENIDO ===== -->
-    <main class="relative flex min-h-screen items-center justify-center px-4 py-10" style="z-index:3">
-
-        <section class="relative w-full max-w-md rounded-[28px] bg-white/10 backdrop-blur-md border border-white/20 p-8 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-            <div class="text-center">
-                <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm border border-white/30">
-                    <i class="fa-solid fa-hotel text-2xl"></i>
+            <!-- Cabecera -->
+            <div class="login-crown">
+                <div class="login-crown-badge">
+                    <i class="fa-solid fa-crown"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-white">Hospedaje Digital</h1>
-                <p class="mt-2 text-sm text-white/70">Ingresa a tu cuenta</p>
             </div>
+            <h1 class="login-title">Iniciar Sesión</h1>
+            <div class="login-ornament"></div>
+            <p class="login-subtitle">Hospedaje Digital</p>
 
-            <div class="mt-8 rounded-[24px] border border-white/20 bg-white/10 p-5">
-                <form id="loginForm" class="space-y-5">
-                    <div id="errorMessage" class="hidden rounded-xl border border-red-300/60 bg-red-500/20 px-4 py-3 text-sm text-red-100"></div>
+            <!-- Error global -->
+            <div id="errorMessage" class="lux-err hidden"></div>
 
-                    <div class="field-wrapper space-y-2 relative">
-                        <label for="email" class="text-sm font-semibold text-white/90">
-                            Correo Electrónico <span class="text-orange-300">*</span>
+            <!-- Formulario -->
+            <form id="loginForm">
+                <div class="lux-section">
+                    <!-- Email -->
+                    <div style="margin-bottom:1.1rem;">
+                        <label for="email" class="lux-label">
+                            Correo Electrónico <span style="color:#f87171;">*</span>
                         </label>
-                        <input type="email" id="email" name="email" required placeholder="admin@hotel.com" autocomplete="email"
-                            class="w-full rounded-xl border border-white/30 bg-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white/25 focus:ring-4 focus:ring-orange-400/20">
+                        <input type="email" id="email" name="email" required
+                            autocomplete="email" placeholder="correo@ejemplo.com"
+                            class="lux-input">
                     </div>
 
-                    <div class="field-wrapper space-y-2 relative">
-                        <label for="password" class="text-sm font-semibold text-white/90">Contraseña</label>
-                        <div class="relative">
-                            <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password"
-                                class="w-full rounded-xl border border-white/30 bg-white/15 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/40 outline-none transition-all duration-200 focus:border-orange-400 focus:bg-white/25 focus:ring-4 focus:ring-orange-400/20">
-                            <button type="button" id="togglePassword"
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors cursor-pointer" style="background:none;border:none;">
-                                <i id="toggleIcon" class="fa-solid fa-eye"></i>
+                    <!-- Contraseña -->
+                    <div>
+                        <label for="password" class="lux-label">
+                            Contraseña <span style="color:#f87171;">*</span>
+                        </label>
+                        <div style="position:relative;">
+                            <input type="password" id="password" name="password" required
+                                autocomplete="current-password" placeholder="••••••••"
+                                class="lux-input" style="padding-right:46px;">
+                            <button type="button" id="togglePassword" class="lux-pw-btn">
+                                <i id="toggleIcon" class="fa-solid fa-eye text-sm"></i>
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <button id="loginBtn" type="submit"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-base font-bold text-white shadow-lg shadow-orange-900/30 transition-all hover:-translate-y-0.5 hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-500/30 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-                        <span id="loginBtnText">Iniciar Sesión</span>
-                        <i id="loginBtnIcon" class="fa-solid fa-arrow-right-to-bracket"></i>
-                    </button>
-                </form>
-            </div>
+                <button id="loginBtn" type="submit" class="lux-btn">
+                    <span id="loginBtnText">Ingresar</span>
+                    <i id="loginBtnIcon" class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
 
-            <div class="mt-6 space-y-3 text-center text-sm text-white/70">
-                <p>¿No tienes cuenta? <a href="pages/register.html" class="font-semibold text-white underline decoration-orange-400 decoration-2 underline-offset-4">Regístrate aquí</a></p>
-                <p><a href="pages/recuperarpass.html" class="font-semibold text-white underline decoration-orange-400 decoration-2 underline-offset-4">¿Olvidaste tu contraseña?</a></p>
-                <p><a href="landingPage.html" class="font-semibold text-white underline decoration-orange-400 decoration-2 underline-offset-4">← Volver</a></p>
-            </div>
-        </section>
-    </main>
+            <!-- Links -->
+            <nav class="login-links">
+                <a href="pages/recuperarpass.html">¿Olvidaste tu contraseña? <span>Recupérala aquí</span></a>
+                <a href="pages/register.html">¿No tienes cuenta? <span>Regístrate</span></a>
+                <a href="landingPage.html"><span>← Volver al inicio</span></a>
+            </nav>
 
-    <script src="js/config.js"></script>
-    <script src="js/validation.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/auth.js"></script>
+        </div>
+    </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const loginForm       = document.getElementById("loginForm");
-            const errorContainer  = document.getElementById("errorMessage");
-            const loginBtn        = document.getElementById("loginBtn");
-            const loginBtnText    = document.getElementById("loginBtnText");
-            const loginBtnIcon    = document.getElementById("loginBtnIcon");
-            const emailInput      = document.getElementById("email");
-            const passwordInput   = document.getElementById("password");
+</div>
 
-            document.getElementById('togglePassword').addEventListener('click', () => {
-                const input = document.getElementById('password');
-                const icon  = document.getElementById('toggleIcon');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.className = 'fa-solid fa-eye-slash';
-                } else {
-                    input.type = 'password';
-                    icon.className = 'fa-solid fa-eye';
-                }
-            });
+<script src="js/config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
 
-            emailInput.addEventListener('blur', function () {
-                if (this.value && typeof validarEmail === 'function') {
-                    const v = validarEmail(this.value);
-                    if (typeof setFieldState === 'function')
-                        setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
-                } else if (this.value) {
-                    if (typeof setFieldState === 'function') setFieldState(this, 'valido');
-                }
-            });
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const loginForm      = document.getElementById("loginForm");
+    const errorContainer = document.getElementById("errorMessage");
+    const loginBtn       = document.getElementById("loginBtn");
+    const loginBtnText   = document.getElementById("loginBtnText");
+    const loginBtnIcon   = document.getElementById("loginBtnIcon");
+    const emailInput     = document.getElementById("email");
+    const passwordInput  = document.getElementById("password");
 
-            emailInput.addEventListener('focus',    function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
-            passwordInput.addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
+    // Toggle contraseña
+    document.getElementById('togglePassword').addEventListener('click', () => {
+        const isPass = passwordInput.type === 'password';
+        passwordInput.type = isPass ? 'text' : 'password';
+        document.getElementById('toggleIcon').className = isPass
+            ? 'fa-solid fa-eye-slash text-sm'
+            : 'fa-solid fa-eye text-sm';
+    });
 
-            if (loginForm) {
-                loginForm.addEventListener("submit", async (e) => {
-                    e.preventDefault();
-                    errorContainer.classList.add("hidden");
-                    errorContainer.innerHTML = "";
+    // Validación blur email
+    emailInput.addEventListener('blur', function () {
+        if (this.value && typeof validarEmail === 'function') {
+            const v = validarEmail(this.value);
+            if (typeof setFieldState === 'function')
+                setFieldState(this, v.valido ? 'valido' : 'invalido', v.valido ? '' : 'Ingresa un correo válido');
+        }
+    });
+    emailInput.addEventListener('focus',    function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
+    passwordInput.addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
-                    const email     = emailInput.value;
-                    const contrasena = passwordInput.value;
+    // Submit
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorContainer.classList.add("hidden");
+        errorContainer.innerHTML = "";
 
-                    if (typeof validarEmail === 'function') {
-                        const vEmail = validarEmail(email);
-                        if (!vEmail.valido) {
-                            errorContainer.classList.remove("hidden");
-                            errorContainer.textContent = vEmail.mensaje;
-                            if (typeof setFieldState === 'function') setFieldState(emailInput, 'invalido', vEmail.mensaje);
-                            return;
-                        }
-                    }
+        const email    = emailInput.value.trim();
+        const password = passwordInput.value;
 
-                    loginBtn.disabled        = true;
-                    loginBtnText.textContent = 'Verificando...';
-                    loginBtnIcon.className   = 'fa-solid fa-spinner fa-spin';
-
-                    try {
-                        const result = await loginUsuario(email, contrasena);
-                        if (result.success) {
-                            loginBtnText.textContent = '¡Bienvenido!';
-                            loginBtnIcon.className   = 'fa-solid fa-check';
-                            setTimeout(() => {
-                                window.location.href = result.data?.usuario?.requiereCambioPassword
-                                    ? "pages/cambiar-contrasena.html"
-                                    : "pages/dashboard.html";
-                            }, 500);
-                        } else {
-                            errorContainer.classList.remove("hidden");
-                            errorContainer.textContent = result.message;
-                            loginBtn.disabled        = false;
-                            loginBtnText.textContent = 'Iniciar Sesión';
-                            loginBtnIcon.className   = 'fa-solid fa-arrow-right-to-bracket';
-                        }
-                    } catch (err) {
-                        errorContainer.classList.remove("hidden");
-                        errorContainer.textContent = "Error de conexión con el servidor";
-                        loginBtn.disabled        = false;
-                        loginBtnText.textContent = 'Iniciar Sesión';
-                        loginBtnIcon.className   = 'fa-solid fa-arrow-right-to-bracket';
-                    }
-                });
+        if (typeof validarEmail === 'function') {
+            const vEmail = validarEmail(email);
+            if (!vEmail.valido) {
+                errorContainer.classList.remove("hidden");
+                errorContainer.textContent = vEmail.mensaje;
+                if (typeof setFieldState === 'function') setFieldState(emailInput, 'invalido', vEmail.mensaje);
+                return;
             }
-        });
-    </script>
-
-    <!-- ===== FONDO + NIEVE ===== -->
-    <script>
-    (function () {
-        'use strict';
-
-        // Construir URL de la imagen usando el mismo origen que la API
-        const imgBase = (typeof CONFIG !== 'undefined' && CONFIG.API_URL)
-            ? CONFIG.API_URL.replace(/\/api\/?$/, '')
-            : 'http://localhost:3000';
-
-        document.getElementById('login-bg').style.backgroundImage =
-            "url('" + imgBase + "/img/01.login.png')";
-
-        // ── NIEVE ──────────────────────────────────────────────────────────
-        const canvas = document.getElementById('snow-canvas');
-        const ctx    = canvas.getContext('2d');
-
-        // Ajustar canvas al tamaño de la ventana
-        function redimensionar() {
-            canvas.width  = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        redimensionar();
-        window.addEventListener('resize', redimensionar);
-
-        const TOTAL_COPOS = 200;
-        // Tiempo global para oscilación natural del viento
-        let tiempo = 0;
-
-        // Crear un copo con posición inicial aleatoria
-        function crearCopo(desde_arriba) {
-            return {
-                x:        Math.random() * canvas.width,
-                y:        desde_arriba ? -Math.random() * 20 : Math.random() * canvas.height,
-                radio:    Math.random() * 2.8 + 0.8,          // 0.8 – 3.6 px
-                velocidad: Math.random() * 1.4 + 0.5,         // caída: 0.5 – 1.9 px/frame
-                oscilacion: Math.random() * 0.8 + 0.2,        // amplitud de balanceo lateral
-                fase:     Math.random() * Math.PI * 2,        // fase inicial del balanceo
-                opacidad: Math.random() * 0.55 + 0.35,        // 0.35 – 0.90
-            };
         }
 
-        // Inicializar todos los copos distribuidos en pantalla
-        const copos = Array.from({ length: TOTAL_COPOS }, () => crearCopo(false));
+        loginBtn.disabled       = true;
+        loginBtnText.textContent = 'Verificando...';
+        loginBtnIcon.className   = 'fa-solid fa-spinner fa-spin';
 
-        function animar() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            tiempo += 0.012;
-
-            copos.forEach(function (c, i) {
-                // Dibujar copo como círculo blanco
-                ctx.beginPath();
-                ctx.arc(c.x, c.y, c.radio, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,255,255,' + c.opacidad + ')';
-                ctx.fill();
-
-                // Mover: caída vertical + balanceo horizontal sinusoidal
-                c.y += c.velocidad;
-                c.x += Math.sin(tiempo + c.fase) * c.oscilacion;
-
-                // Reiniciar copo que salió por abajo
-                if (c.y > canvas.height + c.radio + 2) {
-                    copos[i] = crearCopo(true);
-                }
-                // Wrap lateral
-                if (c.x < -c.radio)              c.x = canvas.width  + c.radio;
-                if (c.x > canvas.width + c.radio) c.x = -c.radio;
-            });
-
-            requestAnimationFrame(animar);
+        try {
+            const result = await loginUsuario(email, password);
+            if (result.success) {
+                loginBtnText.textContent = '¡Bienvenido!';
+                loginBtnIcon.className   = 'fa-solid fa-check';
+                setTimeout(() => {
+                    window.location.href = result.data?.usuario?.requiereCambioPassword
+                        ? "pages/cambiar-contrasena.html"
+                        : "pages/dashboard.html";
+                }, 500);
+            } else {
+                errorContainer.classList.remove("hidden");
+                errorContainer.textContent = result.message;
+                loginBtn.disabled        = false;
+                loginBtnText.textContent = 'Ingresar';
+                loginBtnIcon.className   = 'fa-solid fa-arrow-right-to-bracket';
+            }
+        } catch {
+            errorContainer.classList.remove("hidden");
+            errorContainer.textContent = "Error de conexión con el servidor";
+            loginBtn.disabled        = false;
+            loginBtnText.textContent = 'Ingresar';
+            loginBtnIcon.className   = 'fa-solid fa-arrow-right-to-bracket';
         }
-
-        animar();
-    })();
-    </script>
+    });
+});
+</script>
 </body>
 </html>
