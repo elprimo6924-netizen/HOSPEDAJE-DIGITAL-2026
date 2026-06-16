@@ -11,7 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html, body { background-color: #0f1e1c !important; color: var(--color-text) !important; margin: 0 !important; padding: 0 !important; }
@@ -434,130 +433,47 @@
     let _dashData = null;
     let _recientesData = [];
 
-    /* ── Exportar a Excel ── */
-    function exportarExcel() {
-        if (!_dashData || typeof XLSX === 'undefined') return;
-
+    /* ── Exportar a Excel (backend ExcelJS) ── */
+    async function exportarExcel() {
         const btn = document.getElementById('btn-exportar-excel');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...'; }
+        if (!btn || btn.disabled) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
 
         try {
-            const XLSX_lib = window.XLSX;
-            const wb = XLSX_lib.utils.book_new();
-            const hoy = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
-            const ahora = new Date().toLocaleString('es-CO');
+            const apiBase = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : null)
+                         || (window.CONFIG?.API_URL)
+                         || 'http://localhost:3000/api';
+            const resp = await fetch(`${apiBase}/dashboard/exportar-excel`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
 
-            /* ── Hoja 1: Resumen KPIs ── */
-            const wsKPIData = [
-                ['HOSPEDAJE DIGITAL — REPORTE EJECUTIVO'],
-                [`Generado el: ${ahora}`],
-                [],
-                ['INDICADORES CLAVE DEL PERIODO'],
-                ['Indicador', 'Valor'],
-                ['Ingresos del mes',         Number(_dashData.ingresosMes    || 0)],
-                ['Reservas activas',          Number(_dashData.reservasActivas || 0)],
-                ['Habitaciones ocupadas hoy', Number(_dashData.habOcupadas    || 0)],
-                ['Total clientes registrados',Number(_dashData.totalClientes  || 0)],
-                ['Paquetes disponibles',      Number(_dashData.paqActivos     || 0)],
-            ];
-            const wsKPI = XLSX_lib.utils.aoa_to_sheet(wsKPIData);
-            wsKPI['!cols'] = [{ wch: 36 }, { wch: 20 }];
-            wsKPI['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:1} }, { s:{r:1,c:0}, e:{r:1,c:1} }, { s:{r:3,c:0}, e:{r:3,c:1} }];
-            XLSX_lib.utils.book_append_sheet(wb, wsKPI, 'Resumen KPIs');
-
-            /* ── Hoja 2: Reservas por mes ── */
-            const meses = _dashData.reservasPorMes || [];
-            const wsMesesData = [
-                ['RESERVAS E INGRESOS POR MES'],
-                [],
-                ['Mes', 'Total Reservas', 'Ingresos ($)'],
-                ...meses.map(r => {
-                    const [y, m] = r.mes.split('-');
-                    const label = new Date(y, m-1).toLocaleDateString('es-CO', { month:'long', year:'numeric' });
-                    return [label, Number(r.total), Number(r.ingresos || 0)];
-                }),
-            ];
-            const wsMeses = XLSX_lib.utils.aoa_to_sheet(wsMesesData);
-            wsMeses['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 18 }];
-            wsMeses['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
-            XLSX_lib.utils.book_append_sheet(wb, wsMeses, 'Por Mes');
-
-            /* ── Hoja 3: Reservas por estado ── */
-            const estados = _dashData.reservasPorEstado || [];
-            const total = estados.reduce((a, r) => a + Number(r.total), 0);
-            const wsEstadoData = [
-                ['RESERVAS POR ESTADO'],
-                [],
-                ['Estado', 'Cantidad', '% del Total'],
-                ...estados.map(r => [
-                    r.nombre,
-                    Number(r.total),
-                    total > 0 ? +(Number(r.total) / total * 100).toFixed(1) : 0,
-                ]),
-                [],
-                ['TOTAL', total, 100],
-            ];
-            const wsEstado = XLSX_lib.utils.aoa_to_sheet(wsEstadoData);
-            wsEstado['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 14 }];
-            wsEstado['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
-            XLSX_lib.utils.book_append_sheet(wb, wsEstado, 'Por Estado');
-
-            /* ── Hoja 4: Top paquetes ── */
-            const paquetes = _dashData.topPaquetes || [];
-            const wsPaqData = [
-                ['PAQUETES MÁS SOLICITADOS'],
-                [],
-                ['#', 'Nombre del Paquete', 'Veces Solicitado'],
-                ...paquetes.map((p, i) => [i + 1, p.NombrePaquete, Number(p.total)]),
-            ];
-            const wsPaq = XLSX_lib.utils.aoa_to_sheet(wsPaqData);
-            wsPaq['!cols'] = [{ wch: 5 }, { wch: 34 }, { wch: 20 }];
-            wsPaq['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
-            XLSX_lib.utils.book_append_sheet(wb, wsPaq, 'Top Paquetes');
-
-            /* ── Hoja 5: Top servicios ── */
-            const servicios = _dashData.topServicios || [];
-            const wsSvcData = [
-                ['SERVICIOS MÁS SOLICITADOS'],
-                [],
-                ['#', 'Nombre del Servicio', 'Veces Solicitado'],
-                ...servicios.map((s, i) => [i + 1, s.NombreServicio, Number(s.total)]),
-            ];
-            const wsSvc = XLSX_lib.utils.aoa_to_sheet(wsSvcData);
-            wsSvc['!cols'] = [{ wch: 5 }, { wch: 34 }, { wch: 20 }];
-            wsSvc['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:2} }];
-            XLSX_lib.utils.book_append_sheet(wb, wsSvc, 'Top Servicios');
-
-            /* ── Hoja 6: Reservas recientes ── */
-            if (_recientesData.length) {
-                const wsRecData = [
-                    ['RESERVAS RECIENTES'],
-                    [],
-                    ['# Reserva', 'Documento Cliente', 'Fecha Inicio', 'Fecha Fin', 'Monto Total ($)', 'Estado'],
-                    ..._recientesData.map(r => [
-                        r.IdReserva,
-                        r.NroDocumentoCliente || '—',
-                        r.FechaInicio ? new Date(r.FechaInicio).toLocaleDateString('es-CO') : '—',
-                        r.FechaFinalizacion ? new Date(r.FechaFinalizacion).toLocaleDateString('es-CO') : '—',
-                        Number(r.Monto_Total || 0),
-                        r.estado || '—',
-                    ]),
-                ];
-                const wsRec = XLSX_lib.utils.aoa_to_sheet(wsRecData);
-                wsRec['!cols'] = [{ wch: 11 }, { wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 24 }];
-                wsRec['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:5} }];
-                XLSX_lib.utils.book_append_sheet(wb, wsRec, 'Reservas Recientes');
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.error || `Error ${resp.status}`);
             }
 
-            /* ── Descargar ── */
-            const fechaArchivo = new Date().toISOString().split('T')[0];
-            XLSX_lib.writeFile(wb, `Hospedaje_Digital_${fechaArchivo}.xlsx`);
+            const blob = await resp.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `Hospedaje_Digital_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
         } catch (err) {
             console.error('Error al exportar:', err);
-            alert('Error al generar el archivo Excel. Intenta nuevamente.');
+            alert('Error al generar el reporte Excel: ' + err.message);
         } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Exportar Excel'; }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Exportar Excel';
         }
     }
     window.exportarExcel = exportarExcel;
@@ -598,9 +514,12 @@
                 }
             }
 
-            /* Habilitar botón exportar */
+            /* Botón exportar — solo visible para administradores */
             const btnExp = document.getElementById('btn-exportar-excel');
-            if (btnExp) btnExp.disabled = false;
+            if (btnExp) {
+                if (esAdmin) { btnExp.disabled = false; }
+                else         { btnExp.style.display = 'none'; }
+            }
 
         } catch (e) {
             console.error('Dashboard error:', e.message);

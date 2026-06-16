@@ -1,4 +1,5 @@
-const DashboardService = require("../services/dashboard.service");
+const DashboardService  = require("../services/dashboard.service");
+const { generarReporteExcel } = require("../services/reporteExcel");
 
 const estadisticas = async (req, res) => {
 
@@ -19,6 +20,17 @@ const estadisticas = async (req, res) => {
 
 };
 
+const exportarExcel = async (req, res) => {
+    try {
+        await generarReporteExcel(res);
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Error generando reporte Excel", detalle: error.message });
+        }
+    }
+};
+
 module.exports = {
-    estadisticas
+    estadisticas,
+    exportarExcel,
 };
