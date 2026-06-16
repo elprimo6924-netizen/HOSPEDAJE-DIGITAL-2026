@@ -392,11 +392,23 @@ const verificarComprobante = async (req, res) => {
 const agregarServicios = async (req, res) => {
   try {
     const { id } = req.params;
-    const { serviciosIds } = req.body;
-    if (!Array.isArray(serviciosIds) || serviciosIds.length === 0) {
+    const { servicios, serviciosIds, metodoPago } = req.body;
+
+    let lista;
+    if (Array.isArray(servicios) && servicios.length > 0) {
+      lista = servicios;
+    } else if (Array.isArray(serviciosIds) && serviciosIds.length > 0) {
+      lista = serviciosIds.map(sid => ({ IDServicio: sid, Cantidad: 1 }));
+    } else {
       return res.status(400).json({ error: "Selecciona al menos un servicio" });
     }
-    await ReservasService.agregarServicios(id, serviciosIds);
+
+    await ReservasService.agregarServicios(id, lista);
+
+    if (metodoPago !== undefined && metodoPago !== null) {
+      await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
+    }
+
     return res.status(200).json({ mensaje: "Servicios agregados correctamente" });
   } catch (error) {
     console.error("[Reservas] Error al agregar servicios:", error);
@@ -446,6 +458,25 @@ const getDisponibilidad = async (req, res) => {
   }
 };
 
+const extenderDias = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nuevaFechaFin } = req.body;
+    if (!nuevaFechaFin) return res.status(400).json({ error: "Indica la nueva fecha de finalización" });
+
+    const result = await ReservasService.extenderDias(id, nuevaFechaFin);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+
+    return res.status(200).json({
+      mensaje: `Reserva extendida ${result.nightsExtra} noche${result.nightsExtra !== 1 ? "s" : ""} adicional${result.nightsExtra !== 1 ? "es" : ""}. Costo adicional: $${Number(result.costoExtra).toLocaleString("es-CO")}`,
+      ...result,
+    });
+  } catch (error) {
+    console.error("[Reservas] Error al extender días:", error);
+    return res.status(500).json({ error: "Error al extender la reserva", detalle: error.message });
+  }
+};
+
 module.exports = {
   crear,
   obtener,
@@ -455,6 +486,7 @@ module.exports = {
   actualizar,
   eliminar,
   agregarServicios,
+  extenderDias,
   subirComprobante,
   verificarComprobante,
   cotizar,

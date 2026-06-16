@@ -63,6 +63,8 @@ const login = async (email, contrasena) => {
       Telefono: usuario.Telefono || "",
       Pais: usuario.Pais || "",
       Direccion: usuario.Direccion || "",
+      NumeroDocumento: usuario.NumeroDocumento || "",
+      TipoDocumento: usuario.TipoDocumento || "CC",
       rol: usuario.IDRol,
       IDRol: usuario.IDRol,
       rolNombre: usuario.RolNombre,

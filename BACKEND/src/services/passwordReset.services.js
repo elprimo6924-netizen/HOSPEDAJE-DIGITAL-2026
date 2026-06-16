@@ -34,8 +34,7 @@ const requestPasswordReset = async (email) => {
         );
 
         if (users.length === 0) {
-            // Por seguridad, no revelar si el email existe o no
-            return { success: true, message: "Si el email existe, recibirá un código de recuperación" };
+            return { success: false, error: "No existe ninguna cuenta asociada a ese correo electrónico." };
         }
 
         const code = generateCode();

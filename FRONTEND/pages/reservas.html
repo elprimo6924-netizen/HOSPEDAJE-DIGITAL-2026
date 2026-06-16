@@ -170,7 +170,7 @@
                 <p style="margin:0;font-size:0.82rem;color:#fca5a5;line-height:1.5;">
                     <strong style="color:#f87171;">Política de cancelación:</strong>
                     En caso de cancelación, <strong style="color:#f87171;">no se realizará devolución del dinero</strong>.
-                    Solo el <strong style="color:#f87171;">administrador</strong> puede anular reservas.
+                    Los clientes pueden cancelar sus propias reservas con al menos <strong style="color:#f87171;">3 días de anticipación</strong>.
                 </p>
             </div>
 
@@ -238,7 +238,13 @@
                 <button class="modal-reserva-close" id="btn-cerrar-modal-reserva" aria-label="Cerrar">&times;</button>
                 <h4>Detalle de Reserva</h4>
                 <div id="detalle-reserva-contenido" class="detalle-grid"></div>
-                <div id="detalle-modal-footer" style="display:none;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);">
+                <div id="detalle-modal-footer" style="display:none;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);">
+                    <button id="btn-agregar-dias-detalle"
+                        style="display:none;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;
+                               border:1.5px solid #6366f1;background:#eef2ff;color:#3730a3;
+                               font-weight:700;font-size:0.84rem;cursor:pointer;">
+                        <i class="fa-solid fa-calendar-plus"></i> Agregar días
+                    </button>
                     <button id="btn-agregar-svc-detalle"
                         style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;
                                border:none;background:linear-gradient(135deg,#d6b25e,#b78a2a);color:#1b1205;
@@ -365,7 +371,9 @@
                                 ${esAdmin ? `
                                 <button class="btn-mini btn-mini-editar"  onclick="editarReserva(${r.IDReserva})"      title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
                                 ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva}, '${r.FechaInicio}')" title="Cancelar reserva"><i class="fa-solid fa-ban"></i></button>` : ''}
-                                ` : ''}
+                                ` : `
+                                ${![3, 4, 6].includes(r.IdEstadoReserva) ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva}, '${r.FechaInicio}')" title="Cancelar reserva"><i class="fa-solid fa-ban"></i></button>` : ''}
+                                `}
                             </div>
                         </td>
                     </tr>`;
@@ -574,6 +582,9 @@
                 ['IVA incluido',  formatMonto(r.IVA)],
                 ['Total',         `<strong style="font-size:1.05rem;color:#0f172a;">${formatMonto(r.MontoTotal)}</strong>`],
                 ['Estado reserva',badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)],
+                ['Método de pago', Number(r.MetodoPago) === 2
+                    ? '<i class="fa-solid fa-credit-card" style="color:#1d4ed8;margin-right:5px;"></i>Tarjeta de crédito/débito'
+                    : '<i class="fa-solid fa-money-bill-wave" style="color:#16a34a;margin-right:5px;"></i>Efectivo'],
                 ['Tipo Alojamiento', alojamientoHtml],
                 ...(tieneServicios ? [['Servicios', svcHtml]] : []),
             ];
@@ -685,9 +696,10 @@
             contenido.innerHTML = bannerHtml + campos.map(([l,v]) =>
                 `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('') + comprobanteHtml;
 
-            // Footer: botones aprobar/rechazar + agregar servicio
-            const footer    = document.getElementById('detalle-modal-footer');
+            // Footer: botones aprobar/rechazar + agregar servicio + agregar días
+            const footer     = document.getElementById('detalle-modal-footer');
             const btnAgregar = document.getElementById('btn-agregar-svc-detalle');
+            const btnDias    = document.getElementById('btn-agregar-dias-detalle');
 
             // Limpiar botones de verificación previos
             document.getElementById('btn-aprobar-comprobante')?.remove();
@@ -695,8 +707,6 @@
 
             if (footer && esAdmin) {
                 footer.style.display = 'flex';
-                footer.style.flexWrap = 'wrap';
-                footer.style.gap = '8px';
 
                 // Botones verificación (solo si comprobante pendiente)
                 if (r.ComprobantePago && r.ComprobanteEstado === 'pendiente') {
@@ -723,34 +733,73 @@
                     footer.insertBefore(btnApr, footer.firstChild);
                 }
 
-                // Botón agregar servicio (si no cancelada)
-                if (btnAgregar && r.IdEstadoReserva !== 3) {
-                    btnAgregar.style.display = 'inline-flex';
-                    btnAgregar.onclick = () => mostrarModalAgregarServicios(r.IDReserva);
-                } else if (btnAgregar) {
-                    btnAgregar.style.display = 'none';
+                // Botón agregar servicio (si no cancelada/completada)
+                const puedeAgregar = ![3, 4].includes(r.IdEstadoReserva);
+                if (btnAgregar) {
+                    btnAgregar.style.display = puedeAgregar ? 'inline-flex' : 'none';
+                    if (puedeAgregar) btnAgregar.onclick = () => mostrarModalAgregarServicios(r.IDReserva);
+                }
+
+                // Botón agregar días (solo para reservas de habitación, si no cancelada/completada)
+                if (btnDias) {
+                    const puedeExtender = puedeAgregar && !!r.IDHabitacion;
+                    btnDias.style.display = puedeExtender ? 'inline-flex' : 'none';
+                    if (puedeExtender) btnDias.onclick = () => mostrarModalAgregarDias(r.IDReserva, r);
                 }
             } else if (footer) {
-                // Cliente: limpiar botón previo
+                // Cliente: limpiar botones previos
                 document.getElementById('btn-subir-comp-cliente')?.remove();
-                // Mostrar botón subir si reserva pendiente de pago sin comprobante
-                const clientePuedeSubir = Number(r.IdEstadoReserva) === 5 &&
+                document.getElementById('btn-cliente-svc')?.remove();
+                document.getElementById('btn-cliente-dias')?.remove();
+
+                const estadoCliente = Number(r.IdEstadoReserva);
+                const clienteActiva = ![3, 4, 6].includes(estadoCliente);
+                let hayBotones = false;
+
+                footer.style.display = 'flex';
+                footer.style.justifyContent = 'flex-end';
+                footer.style.flexWrap = 'wrap';
+                footer.style.gap = '8px';
+
+                // Botón agregar servicios
+                if (clienteActiva) {
+                    const btnSvc = document.createElement('button');
+                    btnSvc.id = 'btn-cliente-svc';
+                    btnSvc.innerHTML = '<i class="fa-solid fa-plus" style="margin-right:8px;"></i>Agregar servicios';
+                    btnSvc.style.cssText = 'padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#d6b25e,#b78a2a);color:#1b1205;font-weight:700;font-size:.84rem;cursor:pointer;';
+                    btnSvc.onclick = () => mostrarModalAgregarServicios(r.IDReserva, true);
+                    footer.appendChild(btnSvc);
+                    hayBotones = true;
+                }
+
+                // Botón agregar días (solo habitación)
+                if (clienteActiva && r.IDHabitacion) {
+                    const btnDiasC = document.createElement('button');
+                    btnDiasC.id = 'btn-cliente-dias';
+                    btnDiasC.innerHTML = '<i class="fa-solid fa-calendar-plus" style="margin-right:8px;"></i>Agregar días';
+                    btnDiasC.style.cssText = 'padding:9px 18px;border-radius:10px;border:1.5px solid #6366f1;background:#eef2ff;color:#3730a3;font-weight:700;font-size:.84rem;cursor:pointer;';
+                    btnDiasC.onclick = () => mostrarModalAgregarDias(r.IDReserva, r, true);
+                    footer.appendChild(btnDiasC);
+                    hayBotones = true;
+                }
+
+                // Botón subir comprobante
+                const clientePuedeSubir = [1, 5].includes(estadoCliente) &&
                     (!r.ComprobantePago || r.ComprobanteEstado === 'rechazado');
                 if (clientePuedeSubir) {
                     const btnSubir = document.createElement('button');
                     btnSubir.id = 'btn-subir-comp-cliente';
-                    btnSubir.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" style="margin-right:8px;"></i>Subir comprobante de pago';
-                    btnSubir.style.cssText = 'padding:10px 20px;border-radius:10px;border:none;background:#f59e0b;color:#fff;font-weight:700;font-size:.84rem;cursor:pointer;box-shadow:0 4px 12px rgba(245,158,11,.35);';
+                    btnSubir.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" style="margin-right:8px;"></i>Subir comprobante';
+                    btnSubir.style.cssText = 'padding:9px 18px;border-radius:10px;border:none;background:#f59e0b;color:#fff;font-weight:700;font-size:.84rem;cursor:pointer;box-shadow:0 4px 12px rgba(245,158,11,.35);';
                     btnSubir.onclick = () => {
                         document.getElementById('modal-reserva-detalle').classList.add('hidden');
                         abrirModalSubirComprobante(r.IDReserva);
                     };
-                    footer.style.display = 'flex';
-                    footer.style.justifyContent = 'flex-end';
                     footer.appendChild(btnSubir);
-                } else {
-                    footer.style.display = 'none';
+                    hayBotones = true;
                 }
+
+                if (!hayBotones) footer.style.display = 'none';
             }
         }
 
@@ -766,7 +815,7 @@
                     <p style="margin:0 0 12px;font-size:.85rem;color:#475569;">Indica el motivo (opcional, se le mostrará al cliente):</p>
                     <textarea id="rc-nota" placeholder="Ej: El comprobante no es legible, adjunta uno nuevo..."
                         style="width:100%;min-height:80px;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:.85rem;
-                               resize:vertical;outline:none;font-family:inherit;box-sizing:border-box;" maxlength="255"></textarea>
+                               color:#1e293b;background:#fff;resize:vertical;outline:none;font-family:inherit;box-sizing:border-box;" maxlength="255"></textarea>
                     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
                         <button onclick="document.getElementById('modal-rechazar-comp').remove()"
                             style="padding:9px 18px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-weight:600;font-size:.84rem;cursor:pointer;">
@@ -792,15 +841,18 @@
         }
 
         /* ── Modal agregar servicios adicionales ── */
-        async function mostrarModalAgregarServicios(reservaId) {
+        async function mostrarModalAgregarServicios(reservaId, pedirComprobante = false) {
             document.getElementById('modal-agregar-svc')?.remove();
 
-            // Cargar servicios activos
             let servicios = [];
             try {
                 servicios = await requestJson('/servicios/activos');
                 if (!Array.isArray(servicios)) servicios = [];
             } catch { servicios = []; }
+
+            // Estado de cantidades por servicio
+            const cantidades = {};
+            servicios.forEach(s => { cantidades[s.IDServicio] = 0; });
 
             const modal = document.createElement('div');
             modal.id = 'modal-agregar-svc';
@@ -808,44 +860,75 @@
 
             const serviciosHtml = servicios.length > 0
                 ? servicios.map(s => `
-                    <label style="display:flex;align-items:center;gap:12px;padding:12px 14px;
-                                  border:1.5px solid #e2e8f0;border-radius:10px;cursor:pointer;
-                                  transition:border-color .15s,background .15s;" class="svc-label">
-                        <input type="checkbox" value="${s.IDServicio}" style="accent-color:#b78a2a;width:17px;height:17px;flex-shrink:0;">
+                    <div data-svcid="${s.IDServicio}" data-costo="${s.Costo||0}"
+                         style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+                                border:1.5px solid #e2e8f0;border-radius:10px;
+                                transition:border-color .15s,background .15s;" class="svc-row">
                         <div style="flex:1;min-width:0;">
                             <div style="font-size:0.875rem;font-weight:600;color:#0f172a;">${s.NombreServicio}</div>
                             <div style="font-size:0.775rem;color:#64748b;margin-top:2px;">
-                                $${Number(s.Costo||0).toLocaleString('es-CO')} / servicio
+                                $${Number(s.Costo||0).toLocaleString('es-CO')} / unidad
                                 ${s.Duracion ? ` · ${s.Duracion} min` : ''}
                             </div>
                         </div>
-                    </label>`).join('')
+                        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                            <button class="svc-btn-menos" data-id="${s.IDServicio}"
+                                style="width:30px;height:30px;border-radius:8px;border:1.5px solid #e2e8f0;
+                                       background:#f8fafc;color:#475569;font-size:1.1rem;font-weight:700;
+                                       cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
+                            <span class="svc-qty" data-id="${s.IDServicio}"
+                                style="min-width:24px;text-align:center;font-size:0.9rem;font-weight:700;color:#0f172a;">0</span>
+                            <button class="svc-btn-mas" data-id="${s.IDServicio}"
+                                style="width:30px;height:30px;border-radius:8px;border:1.5px solid #b78a2a;
+                                       background:#fffbeb;color:#92400e;font-size:1.1rem;font-weight:700;
+                                       cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+                        </div>
+                    </div>`).join('')
                 : '<p style="color:#64748b;font-size:0.875rem;text-align:center;padding:20px 0;">No hay servicios disponibles.</p>';
 
             modal.innerHTML = `
-                <div style="background:#fff;border-radius:18px;padding:30px;max-width:500px;width:100%;
+                <div style="background:#fff;border-radius:18px;padding:30px;max-width:520px;width:100%;
                             box-shadow:0 30px 80px rgba(0,0,0,0.35);animation:mcUp .22s ease;
-                            max-height:85vh;display:flex;flex-direction:column;">
+                            max-height:90vh;display:flex;flex-direction:column;">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-shrink:0;">
                         <div style="width:46px;height:46px;border-radius:12px;background:#fffbeb;
                                     display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <i class="fa-solid fa-plus" style="color:#b78a2a;font-size:1.2rem;"></i>
                         </div>
                         <div>
-                            <h2 style="margin:0;font-size:1.05rem;font-weight:800;color:#0f172a;">Agregar servicio adicional</h2>
-                            <p style="margin:3px 0 0;font-size:0.78rem;color:#64748b;">Reserva #${reservaId} — selecciona los servicios a agregar</p>
+                            <h2 style="margin:0;font-size:1.05rem;font-weight:800;color:#0f172a;">Agregar servicios adicionales</h2>
+                            <p style="margin:3px 0 0;font-size:0.78rem;color:#64748b;">Reserva #${reservaId} — indica la cantidad de cada servicio</p>
                         </div>
                     </div>
 
-                    <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;
-                                padding-right:4px;margin-bottom:18px;">
+                    <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding-right:4px;">
                         ${serviciosHtml}
                     </div>
 
-                    <div id="svc-modal-msg" style="display:none;margin-bottom:12px;padding:10px 14px;
-                         border-radius:8px;font-size:0.82rem;font-weight:600;"></div>
+                    <!-- Total en tiempo real -->
+                    <div style="margin-top:14px;padding:12px 14px;background:#fffbeb;border:1.5px solid #fde68a;
+                                border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+                        <span style="font-size:0.85rem;font-weight:600;color:#92400e;">Costo adicional:</span>
+                        <span id="svc-total" style="font-size:1rem;font-weight:800;color:#92400e;">$0</span>
+                    </div>
 
-                    <div style="display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
+                    <!-- Método de pago -->
+                    <div style="margin-top:12px;flex-shrink:0;">
+                        <label style="font-size:0.82rem;font-weight:600;color:#475569;display:block;margin-bottom:6px;">
+                            Método de pago para estos servicios
+                        </label>
+                        <select id="svc-metodo-pago"
+                            style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;
+                                   font-size:0.85rem;color:#1e293b;background:#fff;outline:none;cursor:pointer;">
+                            <option value="1">💵 Efectivo</option>
+                            <option value="2">💳 Tarjeta de crédito/débito</option>
+                        </select>
+                    </div>
+
+                    <div id="svc-modal-msg" style="display:none;margin-top:10px;padding:10px 14px;
+                         border-radius:8px;font-size:0.82rem;font-weight:600;flex-shrink:0;"></div>
+
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-shrink:0;">
                         <button id="svc-modal-cancelar"
                             style="padding:10px 22px;border-radius:10px;border:1.5px solid #e2e8f0;
                                    background:#f8fafc;color:#475569;font-weight:600;font-size:0.85rem;cursor:pointer;">
@@ -856,18 +939,46 @@
                                    background:linear-gradient(135deg,#d6b25e,#b78a2a);color:#1b1205;
                                    font-weight:700;font-size:0.85rem;cursor:pointer;
                                    box-shadow:0 4px 14px rgba(183,138,42,0.3);">
-                            <i class="fa-solid fa-check" style="margin-right:6px;"></i>Agregar seleccionados
+                            <i class="fa-solid fa-check" style="margin-right:6px;"></i>Agregar servicios
                         </button>
                     </div>
                 </div>`;
 
             document.body.appendChild(modal);
 
-            // Resaltar al seleccionar
-            modal.querySelectorAll('.svc-label').forEach(label => {
-                label.querySelector('input').addEventListener('change', function() {
-                    label.style.borderColor = this.checked ? '#b78a2a' : '#e2e8f0';
-                    label.style.background  = this.checked ? '#fffbeb' : '#fff';
+            const actualizarTotal = () => {
+                let total = 0;
+                servicios.forEach(s => {
+                    total += (cantidades[s.IDServicio] || 0) * Number(s.Costo || 0);
+                });
+                document.getElementById('svc-total').textContent = '$' + total.toLocaleString('es-CO');
+            };
+
+            modal.querySelectorAll('.svc-btn-mas').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sid = Number(btn.dataset.id);
+                    cantidades[sid] = (cantidades[sid] || 0) + 1;
+                    modal.querySelector(`.svc-qty[data-id="${sid}"]`).textContent = cantidades[sid];
+                    const row = modal.querySelector(`.svc-row[data-svcid="${sid}"]`);
+                    row.style.borderColor = '#b78a2a';
+                    row.style.background = '#fffbeb';
+                    actualizarTotal();
+                });
+            });
+
+            modal.querySelectorAll('.svc-btn-menos').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sid = Number(btn.dataset.id);
+                    if ((cantidades[sid] || 0) > 0) {
+                        cantidades[sid]--;
+                        modal.querySelector(`.svc-qty[data-id="${sid}"]`).textContent = cantidades[sid];
+                        const row = modal.querySelector(`.svc-row[data-svcid="${sid}"]`);
+                        if (cantidades[sid] === 0) {
+                            row.style.borderColor = '#e2e8f0';
+                            row.style.background = '#fff';
+                        }
+                        actualizarTotal();
+                    }
                 });
             });
 
@@ -883,14 +994,16 @@
             document.getElementById('svc-modal-cancelar').onclick = () => modal.remove();
 
             document.getElementById('svc-modal-confirmar').onclick = async () => {
-                const seleccionados = [...modal.querySelectorAll('input[type="checkbox"]:checked')]
-                    .map(cb => Number(cb.value));
+                const lista = servicios
+                    .filter(s => (cantidades[s.IDServicio] || 0) > 0)
+                    .map(s => ({ IDServicio: s.IDServicio, Cantidad: cantidades[s.IDServicio] }));
 
-                if (seleccionados.length === 0) {
-                    showMsg('Selecciona al menos un servicio.', false);
+                if (lista.length === 0) {
+                    showMsg('Agrega al menos un servicio usando los botones +.', false);
                     return;
                 }
 
+                const metodoPago = Number(document.getElementById('svc-metodo-pago').value);
                 const btn = document.getElementById('svc-modal-confirmar');
                 btn.disabled = true;
                 btn.textContent = 'Agregando...';
@@ -898,18 +1011,152 @@
                 try {
                     await requestJson(`/reservas/${reservaId}/servicios`, {
                         method: 'POST',
-                        body: { serviciosIds: seleccionados }
+                        body: { servicios: lista, metodoPago }
                     });
-                    showMsg(`${seleccionados.length} servicio${seleccionados.length !== 1 ? 's' : ''} agregado${seleccionados.length !== 1 ? 's' : ''} correctamente.`, true);
+                    const totalSvcs = lista.reduce((a, i) => a + i.Cantidad, 0);
+                    showMsg(`${totalSvcs} servicio${totalSvcs !== 1 ? 's' : ''} agregado${totalSvcs !== 1 ? 's' : ''} correctamente.${pedirComprobante ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
                     setTimeout(() => {
                         modal.remove();
-                        verDetalle(reservaId);
+                        if (pedirComprobante) {
+                            document.getElementById('modal-reserva-detalle')?.classList.add('hidden');
+                            abrirModalSubirComprobante(reservaId);
+                        } else {
+                            verDetalle(reservaId);
+                        }
                         cargarReservas();
-                    }, 1200);
+                    }, 1400);
                 } catch (err) {
                     showMsg(err.message || 'Error al agregar los servicios.', false);
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Agregar seleccionados';
+                    btn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Agregar servicios';
+                }
+            };
+        }
+
+        /* ── Modal agregar días adicionales ── */
+        function mostrarModalAgregarDias(reservaId, reserva, pedirComprobante = false) {
+            document.getElementById('modal-agregar-dias')?.remove();
+
+            const fechaActualFin = reserva.FechaFinalizacion
+                ? reserva.FechaFinalizacion.split('T')[0]
+                : '';
+            // Min = día siguiente al fin actual
+            const minFecha = (() => {
+                if (!fechaActualFin) return '';
+                const d = new Date(fechaActualFin + 'T12:00:00');
+                d.setDate(d.getDate() + 1);
+                return d.toISOString().split('T')[0];
+            })();
+
+            // Precio por noche (se calcula en el backend, aquí solo estimamos)
+            const modal = document.createElement('div');
+            modal.id = 'modal-agregar-dias';
+            modal.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(5px);padding:16px;';
+            modal.innerHTML = `
+                <div style="background:#fff;border-radius:18px;padding:30px;max-width:440px;width:100%;
+                            box-shadow:0 30px 80px rgba(0,0,0,0.35);animation:mcUp .22s ease;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                        <div style="width:46px;height:46px;border-radius:12px;background:#eef2ff;
+                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-calendar-plus" style="color:#4f46e5;font-size:1.2rem;"></i>
+                        </div>
+                        <div>
+                            <h2 style="margin:0;font-size:1.05rem;font-weight:800;color:#0f172a;">Agregar días adicionales</h2>
+                            <p style="margin:3px 0 0;font-size:0.78rem;color:#64748b;">Reserva #${reservaId} — extiende la fecha de finalización</p>
+                        </div>
+                    </div>
+
+                    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+                        <p style="margin:0;font-size:0.82rem;color:#475569;">
+                            Fecha fin actual: <strong style="color:#0f172a;">${fechaActualFin || '—'}</strong>
+                        </p>
+                    </div>
+
+                    <label style="font-size:0.82rem;font-weight:600;color:#475569;display:block;margin-bottom:6px;">
+                        Nueva fecha de finalización
+                    </label>
+                    <input type="date" id="dias-nueva-fecha"
+                        min="${minFecha}"
+                        style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:9px;
+                               font-size:0.9rem;color:#1e293b;background:#fff;outline:none;box-sizing:border-box;cursor:pointer;">
+
+                    <div id="dias-preview" style="display:none;margin-top:12px;padding:10px 14px;
+                         background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:9px;
+                         font-size:0.83rem;color:#3730a3;font-weight:600;"></div>
+
+                    <div id="dias-msg" style="display:none;margin-top:10px;padding:10px 14px;
+                         border-radius:8px;font-size:0.82rem;font-weight:600;"></div>
+
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+                        <button onclick="document.getElementById('modal-agregar-dias').remove()"
+                            style="padding:10px 22px;border-radius:10px;border:1.5px solid #e2e8f0;
+                                   background:#f8fafc;color:#475569;font-weight:600;font-size:0.85rem;cursor:pointer;">
+                            Cancelar
+                        </button>
+                        <button id="dias-confirmar"
+                            style="padding:10px 24px;border-radius:10px;border:none;
+                                   background:linear-gradient(135deg,#818cf8,#4f46e5);color:#fff;
+                                   font-weight:700;font-size:0.85rem;cursor:pointer;
+                                   box-shadow:0 4px 14px rgba(79,70,229,0.35);">
+                            <i class="fa-solid fa-calendar-plus" style="margin-right:6px;"></i>Confirmar extensión
+                        </button>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(modal);
+
+            const inputFecha = document.getElementById('dias-nueva-fecha');
+            const preview    = document.getElementById('dias-preview');
+
+            inputFecha.addEventListener('change', () => {
+                const nv = inputFecha.value;
+                if (!nv || !fechaActualFin) { preview.style.display = 'none'; return; }
+                const actual = new Date(fechaActualFin + 'T12:00:00');
+                const nueva  = new Date(nv + 'T12:00:00');
+                const extra  = Math.ceil((nueva - actual) / 86400000);
+                if (extra > 0) {
+                    preview.style.display = 'block';
+                    preview.textContent = `+${extra} noche${extra !== 1 ? 's' : ''} adicional${extra !== 1 ? 'es' : ''}`;
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            const showMsg = (txt, ok) => {
+                const el = document.getElementById('dias-msg');
+                el.style.display = 'block';
+                el.style.background = ok ? '#f0fdf4' : '#fef2f2';
+                el.style.color      = ok ? '#166534'  : '#7f1d1d';
+                el.style.border     = ok ? '1px solid #bbf7d0' : '1px solid #fecaca';
+                el.textContent = txt;
+            };
+
+            document.getElementById('dias-confirmar').onclick = async () => {
+                const nv = inputFecha.value;
+                if (!nv) { showMsg('Selecciona la nueva fecha de finalización.', false); return; }
+                const btn = document.getElementById('dias-confirmar');
+                btn.disabled = true;
+                btn.textContent = 'Guardando...';
+                try {
+                    const res = await requestJson(`/reservas/${reservaId}/extender-dias`, {
+                        method: 'PUT',
+                        body: { nuevaFechaFin: nv }
+                    });
+                    showMsg(`${res.mensaje || 'Reserva extendida correctamente.'}${pedirComprobante ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
+                    setTimeout(() => {
+                        modal.remove();
+                        if (pedirComprobante) {
+                            document.getElementById('modal-reserva-detalle')?.classList.add('hidden');
+                            abrirModalSubirComprobante(reservaId);
+                        } else {
+                            verDetalle(reservaId);
+                        }
+                        cargarReservas();
+                    }, 1400);
+                } catch (err) {
+                    showMsg(err.message || 'Error al extender la reserva.', false);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-calendar-plus" style="margin-right:6px;"></i>Confirmar extensión';
                 }
             };
         }
@@ -1031,11 +1278,6 @@
         }
 
         function cancelarReservaUI(id, fechaInicio) {
-            if (!esAdmin) {
-                mostrarMensaje('No autorizado.', 'error');
-                return;
-            }
-
             // Validar política de 3 días antes de mostrar el modal de motivo
             const { ok, dias } = validarPlazo3Dias(fechaInicio);
             if (!ok) {

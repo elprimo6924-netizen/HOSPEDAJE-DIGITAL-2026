@@ -27,8 +27,11 @@ router.put("/:id", requireAdmin, reservasController.actualizar);
 router.post("/:id/comprobante",           requireReservaOwnerOrAdmin, uploadComprobante, reservasController.subirComprobante);
 router.put("/:id/comprobante/verificar",  requireAdmin,               reservasController.verificarComprobante);
 
-// Agregar servicios adicionales a una reserva existente
-router.post("/:id/servicios", requireAdmin, reservasController.agregarServicios);
+// Agregar servicios adicionales a una reserva existente (admin o dueño)
+router.post("/:id/servicios", requireReservaOwnerOrAdmin, reservasController.agregarServicios);
+
+// Extender días de una reserva de habitación (admin o dueño)
+router.put("/:id/extender-dias", requireReservaOwnerOrAdmin, reservasController.extenderDias);
 
 // Eliminar reserva (borra el registro de la BD)
 router.delete("/:id", requireAdmin, reservasController.eliminar);

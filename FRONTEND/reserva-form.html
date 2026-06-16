@@ -2005,130 +2005,85 @@
             const reserva = raw ? JSON.parse(raw) : null;
             sessionStorage.removeItem('reserva_form_data');
 
+            // Fix #6: Si el usuario no es admin, ocultar sección de cliente y auto-rellenar
+            const _user = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch(_) { return {}; } })();
+            const _esAdmin = Number(_user.IDRol) === 1;
+            if (!_esAdmin && _user.NumeroDocumento) {
+                const seccionCliente = document.querySelector('#form-reserva-v2 section:first-child');
+                if (seccionCliente) seccionCliente.style.display = 'none';
+                const nombreCompleto = [_user.nombre || '', _user.Apellido || ''].filter(Boolean).join(' ').trim() || _user.Email || '';
+                setTimeout(() => {
+                    if (typeof BuscadorCliente !== 'undefined') {
+                        BuscadorCliente.seleccionar(_user.NumeroDocumento, nombreCompleto);
+                    } else if (typeof State !== 'undefined') {
+                        State.cliente = { documento: _user.NumeroDocumento, nombre: nombreCompleto };
+                    }
+                }, 200);
+            }
+
             if (reserva) {
-                document.getElementById('rf-subtitulo').textContent = `Editar reserva #${reserva.IDReserva}`;
-                document.title = `Editar reserva #${reserva.IDReserva} — Hospedaje Digital`;
+                // Fix #7: Precargar datos de la reserva al editar
+                const tituloEl = document.querySelector('h1.rf-form-title');
+                if (tituloEl) tituloEl.textContent = `Editar Reserva #${reserva.IDReserva}`;
+                document.title = `Editar Reserva #${reserva.IDReserva} — Hospedaje Digital`;
 
-                document.getElementById('reserva-admin-id').value = reserva.IDReserva || '';
-                document.getElementById('reserva-admin-fecha-inicio').value = reserva.FechaInicio ? reserva.FechaInicio.split('T')[0] : '';
-                document.getElementById('reserva-admin-fecha-fin').value = reserva.FechaFinalizacion ? reserva.FechaFinalizacion.split('T')[0] : '';
-                document.getElementById('reserva-admin-subtotal').value = reserva.SubTotal || 0;
-                document.getElementById('reserva-admin-descuento').value = reserva.Descuento || 0;
-                document.getElementById('reserva-admin-iva').value = reserva.IVA || 0;
-                document.getElementById('reserva-admin-total').value = reserva.MontoTotal || 0;
-                document.getElementById('reserva-admin-metodo-pago').value = reserva.MetodoPago || 1;
-                document.getElementById('reserva-admin-estado').value = reserva.IdEstadoReserva || 1;
-
-                const clienteBuscar = document.getElementById('reserva-admin-cliente-buscar');
-                const clienteId = document.getElementById('reserva-admin-cliente-id');
-                if (clienteBuscar && reserva.NroDocumento) {
-                    const nombre = `${reserva.Nombre || ''} ${reserva.Apellido || ''}`.trim();
-                    clienteBuscar.value = nombre ? `${nombre} — ${reserva.NroDocumento}` : reserva.NroDocumento;
-                    clienteBuscar.dataset.documentoSeleccionado = reserva.NroDocumento;
+                // Fechas: setear en State y re-renderizar calendario
+                if (reserva.FechaInicio && typeof State !== 'undefined') {
+                    State.fechaInicio = new Date(reserva.FechaInicio.split('T')[0] + 'T12:00:00');
+                    if (reserva.FechaFinalizacion) {
+                        State.fechaFin = new Date(reserva.FechaFinalizacion.split('T')[0] + 'T12:00:00');
+                    }
+                    if (typeof CalendarioPicker !== 'undefined') CalendarioPicker.render();
                 }
-                if (clienteId) clienteId.value = reserva.NroDocumento || '';
 
-                const paqIds = reserva.PaquetesIds ? String(reserva.PaquetesIds).split(',').map(s => s.trim()) : [];
-                const svcIds = reserva.ServiciosIds ? String(reserva.ServiciosIds).split(',').map(s => s.trim()) : [];
-                await cargarSelectsReserva(paqIds, svcIds);
-
-                const selectHab = document.getElementById('reserva-admin-habitacion');
-                if (selectHab && reserva.IDHabitacion) selectHab.value = reserva.IDHabitacion;
-            } else {
-                await cargarSelectsReserva([], []);
-                limpiarFormularioReservaAdmin();
-            }
-
-            configurarBuscadorCliente();
-
-            // Patch recalcularPrecio para sincronizar sidebar
-            if (typeof recalcularPrecio === 'function') {
-                const _orig = recalcularPrecio;
-                window.recalcularPrecio = function () { _orig(); actualizarSidebar(); };
-                ['reserva-admin-habitacion', 'reserva-admin-fecha-inicio', 'reserva-admin-fecha-fin'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) { el.removeEventListener('change', _orig); el.addEventListener('change', window.recalcularPrecio); }
-                });
-                const descEl = document.getElementById('reserva-admin-descuento');
-                if (descEl) { descEl.removeEventListener('input', _orig); descEl.addEventListener('input', window.recalcularPrecio); }
-            }
-
-            // Observar selección de paquetes/servicios
-            const obs = new MutationObserver(actualizarSidebar);
-            ['reserva-admin-paquetes-grid', 'reserva-admin-servicios-grid'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) obs.observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] });
-            });
-
-            document.getElementById('form-reserva-admin')?.addEventListener('submit', guardarReservaAdmin);
-
-            actualizarSidebar();
-
-            // ── Validación de salida sin guardar ─────────────────────────────────────
-            let formularioModificado = false;
-            let guardadoExitoso = false;
-
-            // Marca el formulario como modificado ante cualquier interacción
-            const marcarModificado = () => { formularioModificado = true; };
-
-            document.getElementById('form-reserva-admin')
-                ?.addEventListener('input', marcarModificado);
-            document.getElementById('form-reserva-admin')
-                ?.addEventListener('change', marcarModificado);
-
-            // También al seleccionar paquetes / servicios (clicks en el grid)
-            ['reserva-admin-paquetes-grid', 'reserva-admin-servicios-grid'].forEach(id => {
-                document.getElementById(id)?.addEventListener('click', marcarModificado);
-            });
-
-            // Cuando el formulario se guarda exitosamente, desactivar la guardia
-            const formEl = document.getElementById('form-reserva-admin');
-            if (formEl) {
-                formEl.addEventListener('submit', () => {
-                    guardadoExitoso = true;
-                });
-            }
-
-            // Función central: pregunta al usuario si realmente desea salir
-            async function confirmarSalida() {
-                if (!formularioModificado || guardadoExitoso) return true;
-                return await confirmarAccion(
-                    'Tienes cambios sin guardar. Si sales ahora, perderás la información ingresada.',
-                    '¿Salir sin guardar?'
-                );
-            }
-
-            // Helper: navega a reservas después de confirmar
-            function navegarAReservas() {
-                window.location.href = 'pages/reservas.html';
-            }
-
-            // Botón "Volver a reservas" (panel izquierdo)
-            document.getElementById('btn-volver-panel')?.addEventListener('click', async (e) => {
-                e.preventDefault();
-                if (await confirmarSalida()) navegarAReservas();
-            });
-
-            // Botón "Cancelar" (sidebar)
-            document.getElementById('btn-cancelar-sidebar')?.addEventListener('click', async (e) => {
-                e.preventDefault();
-                if (await confirmarSalida()) navegarAReservas();
-            });
-
-            // Botón "Limpiar": también advierte si hay datos
-            document.getElementById('btn-reserva-admin-limpiar')?.addEventListener('click', async () => {
-                if (formularioModificado) {
-                    const ok = await confirmarAccion(
-                        'Se borrarán todos los campos del formulario.',
-                        '¿Limpiar formulario?'
-                    );
-                    if (!ok) return;
+                // Cliente (solo para admin; clientes ya se autorellenan arriba)
+                if (_esAdmin && (reserva.NroDocumentoCliente || reserva.NroDocumento)) {
+                    const docCli = reserva.NroDocumentoCliente || reserva.NroDocumento;
+                    const nombreCli = [reserva.Nombre || '', reserva.Apellido || ''].filter(Boolean).join(' ').trim() || docCli;
+                    setTimeout(() => {
+                        if (typeof BuscadorCliente !== 'undefined') {
+                            BuscadorCliente.seleccionar(docCli, nombreCli);
+                        }
+                    }, 200);
                 }
-                limpiarFormularioReservaAdmin();
-                formularioModificado = false;
-                setTimeout(actualizarSidebar, 50);
-            }, { once: false });   // reemplaza el listener anterior
 
+                // Método de pago y descuento
+                const mpEl = document.getElementById('metodo-pago');
+                if (mpEl && reserva.MetodoPago) {
+                    mpEl.value = String(reserva.MetodoPago);
+                    mpEl.dispatchEvent(new Event('change'));
+                }
+                const descEl = document.getElementById('descuento');
+                if (descEl) descEl.value = reserva.Descuento || 0;
+
+                // Habitación o paquete (esperar que carguen los selects de reserva.js)
+                const paqIds = (reserva.paquetes || []).map(p => p.IDPaquete)
+                    .concat((reserva.PaquetesIds ? String(reserva.PaquetesIds).split(',').map(s => s.trim()).filter(Boolean).map(Number) : []));
+                const uniqPaqIds = [...new Set(paqIds)];
+                const tienePaquetes = uniqPaqIds.length > 0;
+
+                if (tienePaquetes) {
+                    const btnPaq = document.getElementById('btn-paquete');
+                    if (btnPaq) btnPaq.click();
+                    const idPaq = String(uniqPaqIds[0]);
+                    const intPaq = setInterval(() => {
+                        const card = document.querySelector(`.paquete-card[data-id="${idPaq}"]`);
+                        if (card) { clearInterval(intPaq); card.click(); }
+                    }, 150);
+                    setTimeout(() => clearInterval(intPaq), 5000);
+                } else if (reserva.IDHabitacion) {
+                    const idHab = String(reserva.IDHabitacion);
+                    const intHab = setInterval(() => {
+                        const sel = document.getElementById('select-habitacion');
+                        if (sel && sel.options.length > 1) {
+                            clearInterval(intHab);
+                            sel.value = idHab;
+                            if (sel.value === idHab) sel.dispatchEvent(new Event('change'));
+                        }
+                    }, 150);
+                    setTimeout(() => clearInterval(intHab), 5000);
+                }
+            }
         });
     </script>
 </body>

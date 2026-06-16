@@ -668,27 +668,98 @@ const ReservasService = {
     return rows;
   },
 
-  agregarServicios: async (reservaId, serviciosIds) => {
+  agregarServicios: async (reservaId, servicios) => {
     const detalleCols = await getDetalleServicioCols();
     const hasHoraServicio = detalleCols.has("HoraServicio");
 
-    for (const sid of serviciosIds) {
+    let costoAdicional = 0;
+
+    for (const item of servicios) {
+      const sid = typeof item === "object" ? item.IDServicio : item;
+      const qty = typeof item === "object" ? Math.max(1, Number(item.Cantidad) || 1) : 1;
+
+      const [[svc]] = await db.query("SELECT Costo FROM servicio WHERE IDServicio = ?", [sid]);
+      if (!svc) continue;
+
       if (hasHoraServicio) {
         await db.query(
           `INSERT IGNORE INTO detallereservaservicio
            (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
-           SELECT ?, ?, 1, Costo, 1, NULL FROM servicio WHERE IDServicio = ?`,
-          [reservaId, sid, sid]
+           VALUES (?, ?, ?, ?, 1, NULL)`,
+          [reservaId, sid, qty, svc.Costo]
         );
       } else {
         await db.query(
           `INSERT IGNORE INTO detallereservaservicio
            (IDReserva, IDServicio, Cantidad, Precio, Estado)
-           SELECT ?, ?, 1, Costo, 1 FROM servicio WHERE IDServicio = ?`,
-          [reservaId, sid, sid]
+           VALUES (?, ?, ?, ?, 1)`,
+          [reservaId, sid, qty, svc.Costo]
         );
       }
+      costoAdicional += svc.Costo * qty;
     }
+
+    if (costoAdicional > 0) {
+      await db.query(
+        "UPDATE reserva SET Monto_Total = Monto_Total + ? WHERE IdReserva = ?",
+        [costoAdicional, reservaId]
+      );
+    }
+  },
+
+  extenderDias: async (reservaId, nuevaFechaFin) => {
+    const reservaCols = await getReservaCols();
+    const habCol = reservaCols.has("IDHabitacion")
+      ? "IDHabitacion"
+      : reservaCols.has("IdHabitacion") ? "IdHabitacion" : null;
+
+    const selectHab = habCol ? `, r.${habCol} AS IDHabitacion` : "";
+    const [[reserva]] = await db.query(
+      `SELECT r.IdReserva, r.FechaFinalizacion, r.Monto_Total${selectHab}
+       FROM reserva r WHERE r.IdReserva = ?`,
+      [reservaId]
+    );
+    if (!reserva) return { ok: false, error: "Reserva no encontrada" };
+    if (!reserva.IDHabitacion) return { ok: false, error: "Solo se pueden extender reservas de habitación individual" };
+
+    const fechaActualFin = new Date(reserva.FechaFinalizacion);
+    const fechaNuevaFin  = new Date(nuevaFechaFin + "T12:00:00");
+
+    if (fechaNuevaFin <= fechaActualFin) {
+      return { ok: false, error: "La nueva fecha debe ser posterior a la fecha de finalización actual" };
+    }
+
+    // Verificar disponibilidad para el período de extensión
+    const habitacionCol = habCol || "IDHabitacion";
+    const [[conflict]] = await db.query(
+      `SELECT COUNT(*) AS cnt FROM reserva
+       WHERE ${habitacionCol} = ?
+         AND IdEstadoReserva NOT IN (3, 4)
+         AND IdReserva != ?
+         AND FechaInicio < ?
+         AND FechaFinalizacion > ?`,
+      [reserva.IDHabitacion, reservaId, nuevaFechaFin, reserva.FechaFinalizacion]
+    );
+    if (conflict.cnt > 0) {
+      return { ok: false, error: "La habitación no está disponible para las fechas de extensión solicitadas" };
+    }
+
+    // Precio por noche de la habitación
+    const [[hab]] = await db.query(
+      "SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1",
+      [reserva.IDHabitacion]
+    );
+    if (!hab) return { ok: false, error: "Habitación no encontrada" };
+
+    const nightsExtra = Math.ceil((fechaNuevaFin - fechaActualFin) / 86400000);
+    const costoExtra  = Number(hab.Costo) * nightsExtra;
+
+    await db.query(
+      "UPDATE reserva SET FechaFinalizacion = ?, Monto_Total = Monto_Total + ? WHERE IdReserva = ?",
+      [nuevaFechaFin, costoExtra, reservaId]
+    );
+
+    return { ok: true, nightsExtra, costoExtra };
   },
 };
 
