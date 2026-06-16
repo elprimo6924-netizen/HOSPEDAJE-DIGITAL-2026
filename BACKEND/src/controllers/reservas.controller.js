@@ -409,6 +409,14 @@ const agregarServicios = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
+    // Si quien agrega es un cliente, volver a Pendiente Verificación Pago (5)
+    if (Number(req.usuario?.rol) !== 1) {
+      await db.query(
+        "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        [id]
+      );
+    }
+
     return res.status(200).json({ mensaje: "Servicios agregados correctamente" });
   } catch (error) {
     console.error("[Reservas] Error al agregar servicios:", error);
@@ -466,6 +474,14 @@ const extenderDias = async (req, res) => {
 
     const result = await ReservasService.extenderDias(id, nuevaFechaFin);
     if (!result.ok) return res.status(400).json({ error: result.error });
+
+    // Si quien extiende es un cliente, volver a Pendiente Verificación Pago (5)
+    if (Number(req.usuario?.rol) !== 1) {
+      await db.query(
+        "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        [id]
+      );
+    }
 
     return res.status(200).json({
       mensaje: `Reserva extendida ${result.nightsExtra} noche${result.nightsExtra !== 1 ? "s" : ""} adicional${result.nightsExtra !== 1 ? "es" : ""}. Costo adicional: $${Number(result.costoExtra).toLocaleString("es-CO")}`,

@@ -138,10 +138,13 @@ const CalendarioPicker = {
             if (this.isBlocked(fecha)) return;
             State.fechaInicio = fecha;
         } else {
-            // Segundo clic — fin del rango; validar que el rango completo esté libre
+            // Segundo clic — fin del rango; debe ser al menos 1 día después
+            if (fecha.getTime() - State.fechaInicio.getTime() < 86400000) {
+                UI.showToast('La fecha de salida debe ser al menos 1 noche después de la entrada.', 'error');
+                return;
+            }
             if (this.rangeContainsBlocked(State.fechaInicio, fecha)) {
                 UI.showToast('El rango seleccionado incluye fechas ya reservadas. Elige otras fechas.', 'error');
-                // Reiniciar selección para que el usuario empiece de nuevo
                 State.fechaInicio = null;
                 State.fechaFin = null;
                 this.updateSelectionClasses();

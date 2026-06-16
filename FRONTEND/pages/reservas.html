@@ -349,9 +349,8 @@
                 tbody.innerHTML = '<tr><td colspan="7" class="mensaje-vacio">No hay reservas.</td></tr>';
             } else {
                 tbody.innerHTML = pagina.map(r => {
-                    const clienteLabel = esAdmin
-                        ? `${r.Nombre||''} ${r.Apellido||''}${r.NroDocumentoCliente ? `<br><small style="color:#64748b">${r.NroDocumentoCliente}</small>` : ''}`
-                        : 'Tu reserva';
+                    const nombreCompleto = `${r.Nombre||''} ${r.Apellido||''}`.trim();
+                    const clienteLabel = `${nombreCompleto || `<em style="color:#94a3b8;font-size:0.82rem;">Sin nombre</em>`}${r.NroDocumentoCliente ? `<br><small style="color:#64748b">${r.NroDocumentoCliente}</small>` : ''}`;
                     return `
                     <tr>
                         <td><strong>#${r.IDReserva}</strong></td>
@@ -747,7 +746,9 @@
                     if (puedeExtender) btnDias.onclick = () => mostrarModalAgregarDias(r.IDReserva, r);
                 }
             } else if (footer) {
-                // Cliente: limpiar botones previos
+                // Cliente: ocultar botones de admin y limpiar botones previos del cliente
+                if (btnAgregar) btnAgregar.style.display = 'none';
+                if (btnDias)    btnDias.style.display    = 'none';
                 document.getElementById('btn-subir-comp-cliente')?.remove();
                 document.getElementById('btn-cliente-svc')?.remove();
                 document.getElementById('btn-cliente-dias')?.remove();
@@ -1108,6 +1109,42 @@
             const inputFecha = document.getElementById('dias-nueva-fecha');
             const preview    = document.getElementById('dias-preview');
 
+            // Cargar fechas bloqueadas para la habitación
+            if (reserva.IDHabitacion) {
+                requestJson(`/reservas/disponibilidad?IDHabitacion=${reserva.IDHabitacion}`).then(bloqueadas => {
+                    if (!Array.isArray(bloqueadas)) return;
+                    // Buscar la primera reserva que empieza DESPUÉS de la fecha fin actual
+                    const futuras = bloqueadas
+                        .filter(b => {
+                            const bStart = (b.FechaInicio || '').split('T')[0];
+                            return bStart > fechaActualFin;
+                        })
+                        .sort((a, b) => {
+                            const aS = (a.FechaInicio || '').split('T')[0];
+                            const bS = (b.FechaInicio || '').split('T')[0];
+                            return aS.localeCompare(bS);
+                        });
+
+                    if (futuras.length > 0) {
+                        const nextStart = (futuras[0].FechaInicio || '').split('T')[0];
+                        // Max: día anterior al inicio del conflicto
+                        const dMax = new Date(nextStart + 'T12:00:00');
+                        dMax.setDate(dMax.getDate() - 1);
+                        const maxFecha = dMax.toISOString().split('T')[0];
+                        const inp = document.getElementById('dias-nueva-fecha');
+                        if (inp) inp.max = maxFecha;
+                        const prev = document.getElementById('dias-preview');
+                        if (prev) {
+                            prev.style.display = 'block';
+                            prev.style.background = '#fef3c7';
+                            prev.style.border = '1.5px solid #fde68a';
+                            prev.style.color = '#92400e';
+                            prev.textContent = `Disponible hasta ${maxFecha} — hay otra reserva desde ${nextStart}`;
+                        }
+                    }
+                }).catch(() => {});
+            }
+
             inputFecha.addEventListener('change', () => {
                 const nv = inputFecha.value;
                 if (!nv || !fechaActualFin) { preview.style.display = 'none'; return; }
@@ -1142,7 +1179,7 @@
                         method: 'PUT',
                         body: { nuevaFechaFin: nv }
                     });
-                    showMsg(`${res.mensaje || 'Reserva extendida correctamente.'}${pedirComprobante ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
+                    showMsg(`${(res && res.mensaje) || 'Reserva extendida correctamente.'}${pedirComprobante ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
                     setTimeout(() => {
                         modal.remove();
                         if (pedirComprobante) {

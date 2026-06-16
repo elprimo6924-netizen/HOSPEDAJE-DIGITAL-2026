@@ -68,8 +68,8 @@ const ReservasService = {
         r.IdEstadoReserva,
         r.id_usuario
         ${compFields},
-        c.Nombre,
-        c.Apellido,
+        COALESCE(c.Nombre,   u.NombreUsuario) AS Nombre,
+        COALESCE(c.Apellido, u.Apellido, '') AS Apellido,
         c.NroDocumento,
         e.NombreEstadoReserva,
         GROUP_CONCAT(DISTINCT p.NombrePaquete  SEPARATOR ', ') AS Paquetes,
@@ -78,6 +78,7 @@ const ReservasService = {
         GROUP_CONCAT(DISTINCT s.IDServicio     SEPARATOR ',')  AS ServiciosIds
       FROM reserva r
       LEFT JOIN clientes          c   ON r.NroDocumentoCliente = c.NroDocumento
+      LEFT JOIN usuarios          u   ON r.id_usuario          = u.IDUsuario
       LEFT JOIN estadosreserva    e   ON r.IdEstadoReserva     = e.IdEstadoReserva
       LEFT JOIN detallereservapaquetes drp ON r.IdReserva      = drp.IDReserva
       LEFT JOIN paquetes          p   ON drp.IDPaquete         = p.IDPaquete

@@ -179,7 +179,8 @@
             padding-right: 42px;
             cursor: pointer;
         }
-        select.lux-input option { background: #0c1828; color: var(--lux-ivory); }
+        select.lux-input option  { background: #0c1828; color: var(--lux-ivory); }
+        select.lux-input optgroup { background: #071020; color: rgba(214,178,94,0.55); font-size: 0.72rem; font-style: normal; letter-spacing: 0.06em; }
 
         /* Toggle contraseña */
         .lux-pw-btn {
@@ -323,9 +324,15 @@
                         </div>
                         <div class="field-wrapper relative">
                             <label for="reg_pais" class="lux-label">País</label>
-                            <input type="text" id="reg_pais"
-                                maxlength="60" autocomplete="country-name"
-                                placeholder="Solo letras" class="lux-input">
+                            <div style="position:relative;">
+                                <select id="reg_pais" autocomplete="country-name" class="lux-input"
+                                    style="appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23d6b25e' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 14px center;padding-right:42px;cursor:pointer;">
+                                    <option value="">— Selecciona tu país —</option>
+                                </select>
+                            </div>
+                            <div id="reg_pais_spinner" style="font-size:0.72rem;color:rgba(214,178,94,0.5);margin-top:4px;display:none;">
+                                <i class="fa-solid fa-spinner fa-spin" style="margin-right:4px;"></i>Cargando países...
+                            </div>
                         </div>
                         <div class="field-wrapper relative md:col-span-2">
                             <label for="reg_direccion" class="lux-label">Dirección</label>
@@ -519,14 +526,7 @@
             });
             document.getElementById('reg_numDoc').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
 
-            // Validación blur: país
-            document.getElementById('reg_pais').addEventListener('blur', function () {
-                if (this.value && typeof validarNombrePersona === 'function') {
-                    const v = validarNombrePersona(this.value, 'País', 60);
-                    if (typeof setFieldState === 'function') setFieldState(this, v.valido ? 'valido' : 'invalido', v.mensaje);
-                }
-            });
-            document.getElementById('reg_pais').addEventListener('focus', function () { if (typeof setFieldState === 'function') setFieldState(this, 'neutro'); });
+            // País es ahora un select — sin validación de texto
 
             // ════════════════════════════════════════════
             // BLOQUEADORES DE CARACTERES EN TIEMPO REAL
@@ -557,7 +557,7 @@
                 });
             }
 
-            ['reg_nombre', 'reg_apellido', 'reg_pais'].forEach(id => {
+            ['reg_nombre', 'reg_apellido'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
                 el.addEventListener('keydown', bloquearNoLetras);
@@ -641,8 +641,48 @@
             if (typeof validarNombrePersona === 'function') {
                 addRealtimeValid('reg_nombre',   v => validarNombrePersona(v, 'Nombre', 50),   2);
                 addRealtimeValid('reg_apellido', v => validarNombrePersona(v, 'Apellido', 50), 2);
-                addRealtimeValid('reg_pais',     v => validarNombrePersona(v, 'País', 60),     2);
             }
+
+            // ── Cargar países desde API REST Countries ──
+            (async () => {
+                const select  = document.getElementById('reg_pais');
+                const spinner = document.getElementById('reg_pais_spinner');
+                if (!select) return;
+                if (spinner) spinner.style.display = 'block';
+                try {
+                    const res  = await fetch('https://restcountries.com/v3.1/all?fields=name,translations');
+                    const data = await res.json();
+                    // Nombre en español si está disponible, si no en inglés
+                    const paises = data
+                        .map(p => p.translations?.spa?.common || p.name?.common || '')
+                        .filter(Boolean)
+                        .sort((a, b) => a.localeCompare(b, 'es'));
+
+                    // Colombia primero
+                    const prioritarios = ['Colombia', 'Venezuela', 'Ecuador', 'Perú', 'México'];
+                    const top = prioritarios.filter(n => paises.includes(n));
+                    const resto = paises.filter(n => !top.includes(n));
+
+                    select.innerHTML = '<option value="">— Selecciona tu país —</option>';
+                    if (top.length) {
+                        const grpTop = document.createElement('optgroup');
+                        grpTop.label = '── Frecuentes ──';
+                        top.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; grpTop.appendChild(o); });
+                        select.appendChild(grpTop);
+                    }
+                    const grpAll = document.createElement('optgroup');
+                    grpAll.label = '── Todos los países ──';
+                    resto.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; grpAll.appendChild(o); });
+                    select.appendChild(grpAll);
+                } catch {
+                    // Fallback con lista básica si la API falla
+                    const fallback = ['Colombia','Venezuela','Ecuador','Perú','México','Argentina','Chile','Brasil','España','Estados Unidos','Panamá','Costa Rica'];
+                    select.innerHTML = '<option value="">— Selecciona tu país —</option>' +
+                        fallback.map(n => `<option value="${n}">${n}</option>`).join('');
+                } finally {
+                    if (spinner) spinner.style.display = 'none';
+                }
+            })();
             if (typeof validarTelefono === 'function') addRealtimeValid('reg_telefono', validarTelefono, 7);
             if (typeof validarEmail    === 'function') addRealtimeValid('reg_email',    validarEmail,    6);
 
@@ -741,7 +781,7 @@
                         Telefono:         document.getElementById("reg_telefono").value.trim() || null,
                         Pais:             document.getElementById("reg_pais").value.trim() || null,
                         Direccion:        document.getElementById("reg_direccion").value.trim() || null,
-                        IDRol: 3,
+                        IDRol: 2,
                     };
 
                     try {
