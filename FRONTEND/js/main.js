@@ -627,6 +627,29 @@ async function initSidebarControls() {
     } else {
         openSidebar(false);
     }
+
+    // Tooltips JS para cuando el sidebar está colapsado
+    // (CSS ::after no funciona porque overflow-x:hidden recorta el tooltip)
+    const tip = document.createElement('div');
+    tip.id = '_sb_tip';
+    tip.style.cssText = 'position:fixed;background:rgba(7,16,22,.95);color:#fff;font-size:.74rem;' +
+        'font-weight:600;letter-spacing:.02em;padding:.42rem .72rem;border-radius:10px;' +
+        'white-space:nowrap;pointer-events:none;z-index:9999;' +
+        'box-shadow:0 10px 22px rgba(0,0,0,.35);opacity:0;transition:opacity .15s ease;';
+    document.body.appendChild(tip);
+
+    sidebar.querySelectorAll('[data-tooltip]').forEach(link => {
+        link.addEventListener('mouseenter', () => {
+            if (sidebar.classList.contains('sidebar-open')) return;
+            const rect = link.getBoundingClientRect();
+            tip.textContent = link.dataset.tooltip;
+            tip.style.left  = (rect.right + 12) + 'px';
+            tip.style.top   = (rect.top + rect.height / 2) + 'px';
+            tip.style.transform = 'translateY(-50%)';
+            tip.style.opacity = '1';
+        });
+        link.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+    });
 }
 
 /* ── Soft Alert ── */

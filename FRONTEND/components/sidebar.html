@@ -278,50 +278,7 @@
         margin: 0 auto;
     }
 
-    #sidebar:not(.sidebar-open) .sidebar-link::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: calc(100% + 14px);
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(7, 16, 22, 0.95);
-        color: #fff;
-        font-size: 0.74rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        padding: 0.45rem 0.7rem;
-        border-radius: 10px;
-        white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        z-index: 2005;
-        box-shadow: 0 10px 22px rgba(0,0,0,.35);
-        transition: opacity .15s ease, transform .15s ease;
-    }
-
-    #sidebar:not(.sidebar-open) .sidebar-link::before {
-        content: '';
-        position: absolute;
-        left: calc(100% + 6px);
-        top: 50%;
-        transform: translateY(-50%);
-        border-width: 6px 6px 6px 0;
-        border-style: solid;
-        border-color: transparent rgba(7, 16, 22, 0.95) transparent transparent;
-        opacity: 0;
-        transition: opacity .15s ease, transform .15s ease;
-        z-index: 2004;
-    }
-
-    #sidebar:not(.sidebar-open) .sidebar-link:hover::after {
-        opacity: 1;
-        transform: translateY(-50%) translateX(4px);
-    }
-
-    #sidebar:not(.sidebar-open) .sidebar-link:hover::before {
-        opacity: 1;
-        transform: translateY(-50%) translateX(2px);
-    }
+    /* Tooltips manejados por JS en main.js (ver función initSidebarControls) */
 
     #sidebar:not(.sidebar-open) .sidebar-nav ul {
         width: 100%;
