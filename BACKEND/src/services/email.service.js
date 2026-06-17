@@ -487,7 +487,7 @@ const EmailService = {
     }
   },
 
-  /* ── Pendiente comprobante — pago con tarjeta (30 minutos) ── */
+  /* ── Pendiente comprobante — pago con tarjeta (5 minutos) ── */
   enviarPendienteComprobante: async ({ clienteNombre, clienteEmail, reservaId, linkSubir, fechaInicio, fechaFin, montoTotal }) => {
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());
     if (!emailValido) {

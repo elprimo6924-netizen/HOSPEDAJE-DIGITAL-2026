@@ -939,7 +939,7 @@ function mostrarAvisoNoDevolucion() {
     });
 }
 
-// ── Modal informativo: reserva con tarjeta — 30 minutos para comprobante ──
+// ── Modal informativo: reserva con tarjeta — 5 minutos para comprobante ──
 function mostrarModalPagoTarjeta(reservaId) {
     document.getElementById('modal-pago-tarjeta')?.remove();
 
@@ -966,7 +966,7 @@ function mostrarModalPagoTarjeta(reservaId) {
             <div style="padding:24px;">
                 <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:18px;text-align:center;">
                     <p style="margin:0 0 6px;color:#78350f;font-weight:800;font-size:0.95rem;">
-                        <i class="fa-solid fa-clock" style="margin-right:6px;"></i>Tienes 30 minutos
+                        <i class="fa-solid fa-clock" style="margin-right:6px;"></i>Tienes 5 minutos
                     </p>
                     <p style="margin:0;color:#92400e;font-size:0.82rem;line-height:1.55;">
                         Para subir el comprobante de pago y confirmar tu reserva.<br>
@@ -1308,7 +1308,7 @@ const ReservaForm = {
                 const _isCliente = _role === 2 || _role === 3 || _role === 0;
 
                 if (metodoPago === 2 && reservaId) {
-                    // Tarjeta (cualquier rol): mostrar aviso de 30 minutos y correo con link
+                    // Tarjeta (cualquier rol): mostrar aviso de 5 minutos y correo con link
                     mostrarModalPagoTarjeta(reservaId);
                 } else if (_isCliente && reservaId) {
                     // Efectivo + cliente: reserva confirmada, no se requiere comprobante
