@@ -5,8 +5,9 @@
 
 require('dotenv').config({ override: true });
 
-const app = require('./src/app');
-const db = require('./src/database/connection');
+const app             = require('./src/app');
+const db              = require('./src/database/connection');
+const ReservasService = require('./src/services/reservas.service');
 const port = process.env.PORT || 3000;
 
 let server;
@@ -45,6 +46,16 @@ const startServer = async () => {
         server = app.listen(port, () => {
             console.log(`Servidor corriendo en http://localhost:${port}`);
         });
+
+        // Cancelar automáticamente reservas expiradas cada 60 segundos
+        setInterval(async () => {
+            try {
+                await ReservasService.syncEstados();
+                console.log('[AutoSync] Estados de reservas sincronizados.');
+            } catch (err) {
+                console.warn('[AutoSync] Error en syncEstados:', err.message);
+            }
+        }, 60 * 1000);
 
         server.on('error', (error) => {
             if (error.code === 'EADDRINUSE') {
