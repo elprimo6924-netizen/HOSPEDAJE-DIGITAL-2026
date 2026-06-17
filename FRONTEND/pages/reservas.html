@@ -848,6 +848,14 @@
             try {
                 servicios = await requestJson('/servicios/activos');
                 if (!Array.isArray(servicios)) servicios = [];
+                const _norm = t => t.toLowerCase()
+                    .replace(/[áàäâ]/g,'a').replace(/[éèëê]/g,'e')
+                    .replace(/[íìïî]/g,'i').replace(/[óòöô]/g,'o')
+                    .replace(/[úùüû]/g,'u');
+                const _excluir = ['wifi', 'lavanderia'];
+                servicios = servicios.filter(s =>
+                    !_excluir.some(x => _norm(s.NombreServicio || '').includes(x))
+                );
             } catch { servicios = []; }
 
             // Estado de cantidades por servicio
