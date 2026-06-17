@@ -368,7 +368,6 @@
                             <div class="crud-reservas-acciones">
                                 <button class="btn-mini btn-mini-ver"     onclick="verDetalle(${r.IDReserva})"         title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
                                 ${esAdmin ? `
-                                <button class="btn-mini btn-mini-editar"  onclick="editarReserva(${r.IDReserva})"      title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
                                 ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva}, '${r.FechaInicio}')" title="Cancelar reserva"><i class="fa-solid fa-ban"></i></button>` : ''}
                                 ` : `
                                 ${![3, 4, 6].includes(r.IdEstadoReserva) ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva}, '${r.FechaInicio}')" title="Cancelar reserva"><i class="fa-solid fa-ban"></i></button>` : ''}
