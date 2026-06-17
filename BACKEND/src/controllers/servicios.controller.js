@@ -28,7 +28,12 @@ const ServiciosController = {
         try {
 
             const [rows] = await db.query(
-                "SELECT * FROM servicio WHERE Estado = 1 ORDER BY NombreServicio ASC"
+                `SELECT * FROM servicio
+                 WHERE Estado = 1
+                   AND LOWER(NombreServicio) NOT LIKE '%wifi%'
+                   AND LOWER(NombreServicio) NOT LIKE '%lavanderia%'
+                   AND LOWER(NombreServicio) NOT LIKE '%lavandería%'
+                 ORDER BY NombreServicio ASC`
             );
 
             res.json(rows);
