@@ -406,10 +406,10 @@ const ReservasService = {
 
     const idReserva = result.insertId;
 
-    // Pago con tarjeta → plazo de 30 minutos para subir comprobante
+    // Pago con tarjeta → plazo de 5 minutos para subir comprobante
     if (Number(MetodoPago) === 2) {
       await db.query(
-        `UPDATE reserva SET FechaLimiteComprobante = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE IdReserva = ?`,
+        `UPDATE reserva SET FechaLimiteComprobante = DATE_ADD(NOW(), INTERVAL 5 MINUTE) WHERE IdReserva = ?`,
         [idReserva]
       );
     }
@@ -627,7 +627,7 @@ const ReservasService = {
        WHERE IdEstadoReserva = 2
          AND FechaFinalizacion < CURDATE()`
     );
-    // Reservas con tarjeta (estado 5) que superaron los 30 min sin comprobante → Cancelada (3)
+    // Reservas con tarjeta (estado 5) que superaron los 5 min sin comprobante → Cancelada (3)
     const rCols = await getReservaCols();
     if (rCols.has('FechaLimiteComprobante')) {
       await db.query(

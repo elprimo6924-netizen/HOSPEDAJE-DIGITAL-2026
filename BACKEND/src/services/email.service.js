@@ -498,18 +498,18 @@ const EmailService = {
       const info = await enviarCorreo({
         from:    process.env.EMAIL_FROM,
         to:      clienteEmail,
-        subject: `⏳ Reserva #${reservaId} pendiente — sube tu comprobante en 30 minutos`,
+        subject: `⏳ Reserva #${reservaId} pendiente — sube tu comprobante en 5 minutos`,
         html: wrap(`
           ${header("Confirmación de reserva pendiente")}
           <div style="padding:30px">
             <h2 style="color:#333">Hola, ${clienteNombre || 'cliente'}</h2>
             <p style="color:#555;line-height:1.6">
               Tu reserva <strong>#${reservaId}</strong> ha sido registrada exitosamente.<br>
-              Para confirmarla, debes subir el <strong>comprobante de pago</strong> dentro de los próximos <strong style="color:#b45309">30 minutos</strong>.
+              Para confirmarla, debes subir el <strong>comprobante de pago</strong> dentro de los próximos <strong style="color:#b45309">5 minutos</strong>.
             </p>
             <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:8px;padding:18px;margin:20px 0;text-align:center">
-              <p style="margin:0 0 6px;color:#78350f;font-weight:700;font-size:15px">⏰ Tiempo límite: 30 minutos</p>
-              <p style="margin:0;color:#92400e;font-size:13px">Si no subes el comprobante antes de que venza el plazo, la reserva será cancelada automáticamente y la habitación quedará disponible nuevamente.</p>
+              <p style="margin:0 0 6px;color:#78350f;font-weight:700;font-size:15px">⏰ Tiempo límite: 5 minutos</p>
+              <p style="margin:0;color:#92400e;font-size:13px">Si no subes el comprobante antes de que venza el plazo (5 minutos), la reserva será cancelada automáticamente y la habitación quedará disponible nuevamente.</p>
             </div>
             <ul style="color:#555;padding-left:20px;line-height:2">
               <li><strong>Reserva:</strong>    #${reservaId}</li>
