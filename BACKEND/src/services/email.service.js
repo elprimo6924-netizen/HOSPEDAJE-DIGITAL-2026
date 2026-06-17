@@ -353,6 +353,140 @@ const EmailService = {
     }
   },
 
+  /* ── Servicios adicionales agregados — cliente ── */
+  enviarServiciosAgregados: async ({
+    clienteNombre,
+    clienteEmail,
+    reservaId,
+    serviciosAgregados = [],
+    costoAdicional,
+    metodoPago,
+    linkSubir,
+  }) => {
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());
+    if (!emailValido) {
+      console.warn(`[Email] Correo inválido para servicios agregados: "${clienteEmail}"`);
+      return false;
+    }
+    const esTransferencia = Number(metodoPago) === 2;
+    const svcList = serviciosAgregados.length
+      ? `<ul style="color:#374151;margin:10px 0;padding-left:20px;line-height:1.9">
+           ${serviciosAgregados.map(s => `<li>${s}</li>`).join('')}
+         </ul>`
+      : '';
+    const bloqueComprobante = esTransferencia ? `
+      <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:8px;
+                  padding:18px;margin:20px 0;text-align:center">
+        <p style="margin:0 0 8px;color:#78350f;font-weight:700;font-size:15px">
+          📎 Acción requerida: sube tu comprobante de pago
+        </p>
+        <p style="margin:0 0 16px;color:#92400e;font-size:13px">
+          Para confirmar la adición de servicios debes adjuntar el desprendible de la transferencia.
+          Un administrador lo revisará y confirmará los cambios.
+        </p>
+        <a href="${linkSubir}"
+           style="display:inline-block;background:${ACCENT};color:#fff;text-decoration:none;
+                  padding:12px 28px;border-radius:8px;font-weight:700;font-size:14px">
+          Subir comprobante de pago
+        </a>
+        <p style="color:#94a3b8;font-size:11px;margin-top:12px">
+          Si el botón no funciona: <span style="color:${ACCENT}">${linkSubir}</span>
+        </p>
+      </div>` : `
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;margin:16px 0">
+        <p style="margin:0;color:#166534;font-size:13px">
+          ✅ Los servicios han sido registrados. Puedes pagarlos en efectivo al momento del check-in.
+        </p>
+      </div>`;
+    try {
+      const info = await enviarCorreo({
+        from:    process.env.EMAIL_FROM,
+        to:      clienteEmail,
+        subject: `Servicios adicionales — Reserva #${reservaId} | Hospedaje Digital`,
+        html: wrap(`
+          ${header("Servicios adicionales añadidos")}
+          <div style="padding:30px">
+            <h2 style="color:#333">Hola, ${clienteNombre || 'cliente'}</h2>
+            <p style="color:#555">Se han registrado los siguientes servicios adicionales en tu reserva <strong>#${reservaId}</strong>:</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:18px;margin:16px 0">
+              <strong style="color:${HEADER_BG}">Servicios añadidos:</strong>
+              ${svcList}
+              ${costoAdicional ? `<p style="margin:8px 0 0;color:#555">
+                <strong>Costo adicional:</strong>
+                <span style="color:${HEADER_BG};font-weight:bold;font-size:16px">
+                  $${Number(costoAdicional).toLocaleString('es-CO')}
+                </span></p>` : ''}
+              <p style="margin:6px 0 0;color:#555">
+                <strong>Método de pago:</strong> ${esTransferencia ? '🏦 Transferencia bancaria' : '💵 Efectivo'}
+              </p>
+            </div>
+            ${bloqueComprobante}
+          </div>
+          ${footer()}
+        `),
+      });
+      console.log(`[Email] Servicios agregados enviado a ${clienteEmail} (ID: ${info.messageId})`);
+      return true;
+    } catch (err) {
+      console.error("[Email] Error en enviarServiciosAgregados:", err.message);
+      return false;
+    }
+  },
+
+  /* ── Notificación admin: servicios adicionales pendientes de verificación ── */
+  notificarAdminServiciosAgregados: async ({
+    clienteNombre,
+    clienteEmail,
+    reservaId,
+    serviciosAgregados = [],
+    costoAdicional,
+  }) => {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.warn("[Email] ADMIN_EMAIL no configurado; se omite notificación admin servicios.");
+      return false;
+    }
+    const svcList = serviciosAgregados.map(s => `<li>${s}</li>`).join('');
+    try {
+      const info = await enviarCorreo({
+        from:    process.env.EMAIL_FROM,
+        to:      adminEmail,
+        subject: `⚠️ Servicios adicionales pendientes de verificación — Reserva #${reservaId}`,
+        html: wrap(`
+          ${header("Verificación de pago requerida")}
+          <div style="padding:30px">
+            <h2 style="color:#333">Servicios adicionales — Reserva #${reservaId}</h2>
+            <p style="color:#555">El cliente <strong>${clienteNombre}</strong> ha agregado servicios adicionales
+               y realizó el pago por <strong>transferencia bancaria</strong>. Se requiere verificación del comprobante.</p>
+            <div style="background:#fff7ed;border:2px solid ${ACCENT};border-radius:8px;padding:20px;margin:20px 0">
+              <ul style="color:#374151;margin:0;padding-left:20px;line-height:2">
+                <li><strong>Cliente:</strong> ${clienteNombre} (${clienteEmail})</li>
+                <li><strong>Reserva:</strong> #${reservaId}</li>
+                <li><strong>Servicios agregados:</strong>
+                  <ul style="margin:4px 0;padding-left:16px">${svcList}</ul>
+                </li>
+                ${costoAdicional ? `<li><strong>Costo adicional:</strong>
+                  <span style="color:${HEADER_BG};font-weight:bold">
+                    $${Number(costoAdicional).toLocaleString('es-CO')}
+                  </span></li>` : ''}
+                <li><strong>Método de pago:</strong> 🏦 Transferencia bancaria</li>
+              </ul>
+            </div>
+            <p style="color:#555;margin-bottom:0">
+              Accede al panel de administración para revisar el comprobante y confirmar la reserva.
+            </p>
+          </div>
+          ${footer()}
+        `),
+      });
+      console.log(`[Email] Notif admin servicios enviada a ${adminEmail} (ID: ${info.messageId})`);
+      return true;
+    } catch (err) {
+      console.error("[Email] Error en notificarAdminServiciosAgregados:", err.message);
+      return false;
+    }
+  },
+
   /* ── Pendiente comprobante — pago con tarjeta (30 minutos) ── */
   enviarPendienteComprobante: async ({ clienteNombre, clienteEmail, reservaId, linkSubir, fechaInicio, fechaFin, montoTotal }) => {
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());

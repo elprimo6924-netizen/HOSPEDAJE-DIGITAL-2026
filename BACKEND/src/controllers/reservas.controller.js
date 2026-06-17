@@ -393,6 +393,8 @@ const agregarServicios = async (req, res) => {
   try {
     const { id } = req.params;
     const { servicios, serviciosIds, metodoPago } = req.body;
+    const esCliente = Number(req.usuario?.rol) !== 1;
+    const esTransferencia = Number(metodoPago) === 2;
 
     let lista;
     if (Array.isArray(servicios) && servicios.length > 0) {
@@ -409,12 +411,81 @@ const agregarServicios = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
-    // Si quien agrega es un cliente, volver a Pendiente Verificación Pago (5)
-    if (Number(req.usuario?.rol) !== 1) {
+    // Solo cambia a Pendiente Verificación Pago (5) si el cliente pagó por transferencia
+    if (esCliente && esTransferencia) {
       await db.query(
         "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
       );
+    }
+
+    // Notificaciones por email cuando es cliente
+    if (esCliente) {
+      setImmediate(async () => {
+        try {
+          const idsServicios = lista.map(s => s.IDServicio);
+          const cantidades   = Object.fromEntries(lista.map(s => [s.IDServicio, s.Cantidad || 1]));
+
+          const [svcRows] = await db.query(
+            `SELECT IDServicio, NombreServicio, PrecioServicio FROM servicio WHERE IDServicio IN (?)`,
+            [idsServicios]
+          );
+
+          const serviciosAgregados = svcRows.map(s => {
+            const cant = cantidades[s.IDServicio] || 1;
+            return cant > 1
+              ? `${s.NombreServicio} x${cant}`
+              : s.NombreServicio;
+          });
+
+          const costoAdicional = svcRows.reduce((sum, s) => {
+            return sum + (Number(s.PrecioServicio) || 0) * (cantidades[s.IDServicio] || 1);
+          }, 0);
+
+          const [[reserva]] = await db.query(
+            `SELECT r.IdReserva,
+                    COALESCE(c.Nombre, u.NombreUsuario, '') AS Nombre,
+                    COALESCE(c.Apellido, u.Apellido, '')    AS Apellido,
+                    COALESCE(c.Email, u.Email, '')          AS Email
+             FROM reserva r
+             LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
+             LEFT JOIN usuarios  u ON r.id_usuario = u.IDUsuario
+             WHERE r.IdReserva = ? LIMIT 1`,
+            [id]
+          );
+
+          if (!reserva?.Email) {
+            console.warn(`[Notif] Sin email para reserva #${id} — se omiten notificaciones`);
+            return;
+          }
+
+          const clienteNombre = `${reserva.Nombre} ${reserva.Apellido}`.trim() || 'cliente';
+          const appUrl  = process.env.APP_URL || 'http://localhost:3000';
+          const linkSubir = `${appUrl}/pages/reservas.html?comprobante=${id}`;
+
+          await EmailService.enviarServiciosAgregados({
+            clienteNombre,
+            clienteEmail: reserva.Email,
+            reservaId: id,
+            serviciosAgregados,
+            costoAdicional,
+            metodoPago,
+            linkSubir,
+          });
+
+          if (esTransferencia) {
+            await EmailService.notificarAdminServiciosAgregados({
+              clienteNombre,
+              clienteEmail: reserva.Email,
+              reservaId: id,
+              serviciosAgregados,
+              costoAdicional,
+            });
+          }
+        } catch (err) {
+          console.error("[Notif] Error al enviar email servicios:", err.message);
+        }
+      });
     }
 
     return res.status(200).json({ mensaje: "Servicios agregados correctamente" });
