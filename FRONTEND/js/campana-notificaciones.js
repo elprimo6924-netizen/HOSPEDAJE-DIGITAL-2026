@@ -56,9 +56,9 @@ function destacarRegistroEnPagina(entidadId, tipo) {
 function getCampanaVisto() {
     try {
         return JSON.parse(localStorage.getItem(CAMPANA_STORAGE_KEY)) || {
-            usuarios: 0, clientes: 0, reservas: 0, comprobantes: 0, timestamp: 0
+            usuarios: 0, clientes: 0, reservas: 0, comprobantes: 0, pendientesPago: 0, timestamp: 0
         };
-    } catch { return { usuarios: 0, clientes: 0, reservas: 0, comprobantes: 0, timestamp: 0 }; }
+    } catch { return { usuarios: 0, clientes: 0, reservas: 0, comprobantes: 0, pendientesPago: 0, timestamp: 0 }; }
 }
 
 function setCampanaVisto(datos) {
@@ -114,11 +114,12 @@ async function obtenerDatosNotificaciones() {
     const esAdmin = getRolActual() === 1;
 
     if (esAdmin) {
-        const [usuarios, clientes, reservas, comprobantes] = await Promise.allSettled([
+        const [usuarios, clientes, reservas, comprobantes, pendientesPago] = await Promise.allSettled([
             fetchConToken(`${base}/usuarios`),
             fetchConToken(`${base}/clientes`),
             fetchConToken(`${base}/reservas`),
             fetchConToken(`${base}/reservas/comprobantes-pendientes`),
+            fetchConToken(`${base}/reservas/pendientes-pago`),
         ]);
         return {
             esAdmin: true,
@@ -130,6 +131,8 @@ async function obtenerDatosNotificaciones() {
                 ? (Array.isArray(reservas.value) ? reservas.value : []) : [],
             comprobantes: comprobantes.status === 'fulfilled'
                 ? (Array.isArray(comprobantes.value) ? comprobantes.value : []) : [],
+            pendientesPago: pendientesPago.status === 'fulfilled'
+                ? (Array.isArray(pendientesPago.value) ? pendientesPago.value : []) : [],
         };
     } else {
         const [reservas] = await Promise.allSettled([
@@ -176,6 +179,13 @@ function buildItemHTML(tipo, item) {
             bg:    'bg-orange-400/10',
             label: '⚡ Verificar pago',
             nombre: `Comprobante reserva #${item.IdReserva || '?'}`
+        },
+        pago_pendiente: {
+            icono: 'fa-clock',
+            color: 'text-yellow-400',
+            bg:    'bg-yellow-400/10',
+            label: '💳 Pago pendiente',
+            nombre: `Reserva #${item.IdReserva || '?'} — ${(`${item.Nombre || ''} ${item.Apellido || ''}`).trim() || 'Cliente'}`
         }
     };
     const cfg      = configs[tipo] || configs.reserva;
@@ -266,21 +276,25 @@ async function actualizarCampana() {
     const esAdmin = datos.esAdmin;
 
     if (esAdmin) {
-        const comprobantes  = datos.comprobantes || [];
-        const totalActual   = datos.usuarios.length + datos.clientes.length +
-                              datos.reservas.length + comprobantes.length;
-        const totalVisto    = (visto.usuarios || 0) + (visto.clientes || 0) +
-                              (visto.reservas || 0) + (visto.comprobantes || 0);
-        // Comprobantes pendientes siempre cuentan como nuevos (requieren acción)
-        const nuevos        = Math.max(0, totalActual - totalVisto) + comprobantes.length;
+        const comprobantes   = datos.comprobantes   || [];
+        const pendientesPago = datos.pendientesPago || [];
+        const totalActual    = datos.usuarios.length + datos.clientes.length +
+                               datos.reservas.length + comprobantes.length + pendientesPago.length;
+        const totalVisto     = (visto.usuarios || 0) + (visto.clientes || 0) +
+                               (visto.reservas || 0) + (visto.comprobantes || 0) + (visto.pendientesPago || 0);
+        // Comprobantes y pagos pendientes siempre cuentan como nuevos (requieren acción)
+        const nuevos         = Math.max(0, totalActual - totalVisto) +
+                               comprobantes.length + pendientesPago.length;
 
         actualizarBadge(badge, nuevos);
         if (pie) pie.textContent = `${totalActual} notificaciones en total`;
 
         if (lista) {
             const items = [
-                // Comprobantes primero — requieren acción urgente
+                // Primero comprobantes — verificar pago subido
                 ...comprobantes.slice(-5).reverse().map(c => buildItemHTML('comprobante', c)),
+                // Luego reservas pendientes de pago (sin comprobante aún)
+                ...pendientesPago.slice(-5).reverse().map(r => buildItemHTML('pago_pendiente', r)),
                 ...datos.usuarios.slice(-3).reverse().map(u => buildItemHTML('usuario', u)),
                 ...datos.clientes.slice(-3).reverse().map(c => buildItemHTML('cliente', c)),
                 ...datos.reservas.slice(-4).reverse().map(r => buildItemHTML('reserva', r)),
@@ -357,10 +371,11 @@ async function marcarComoLeido() {
     catch { datos = { esAdmin: false, usuarios: [], clientes: [], reservas: [] }; }
 
     setCampanaVisto({
-        usuarios:     datos.esAdmin ? datos.usuarios.length : 0,
-        clientes:     datos.esAdmin ? datos.clientes.length : 0,
-        reservas:     datos.reservas.length,
-        comprobantes: datos.esAdmin ? (datos.comprobantes || []).length : 0,
+        usuarios:       datos.esAdmin ? datos.usuarios.length : 0,
+        clientes:       datos.esAdmin ? datos.clientes.length : 0,
+        reservas:       datos.reservas.length,
+        comprobantes:   datos.esAdmin ? (datos.comprobantes   || []).length : 0,
+        pendientesPago: datos.esAdmin ? (datos.pendientesPago || []).length : 0,
     });
 
     const badge = document.getElementById('campana-badge');

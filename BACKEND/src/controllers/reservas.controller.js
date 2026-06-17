@@ -495,6 +495,30 @@ const agregarServicios = async (req, res) => {
   }
 };
 
+const getReservasPendientesPago = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT r.IdReserva,
+              r.FechaReserva,
+              r.Monto_Total,
+              e.NombreEstadoReserva AS estado,
+              COALESCE(c.Nombre, u.NombreUsuario, '') AS Nombre,
+              COALESCE(c.Apellido, u.Apellido, '')    AS Apellido
+       FROM reserva r
+       LEFT JOIN estadosreserva e ON r.IdEstadoReserva = e.IdEstadoReserva
+       LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
+       LEFT JOIN usuarios  u ON r.id_usuario = u.IDUsuario
+       WHERE r.IdEstadoReserva IN (1, 5)
+       ORDER BY r.FechaReserva DESC
+       LIMIT 20`
+    );
+    return res.status(200).json(rows);
+  } catch (error) {
+    console.error("[Reservas] getReservasPendientesPago:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 const getComprobantesPendientes = async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -574,6 +598,7 @@ module.exports = {
   eliminar,
   agregarServicios,
   extenderDias,
+  getReservasPendientesPago,
   subirComprobante,
   verificarComprobante,
   cotizar,
