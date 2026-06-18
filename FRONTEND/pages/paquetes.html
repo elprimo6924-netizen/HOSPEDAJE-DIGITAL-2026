@@ -367,7 +367,7 @@
                             </label>
                         </div>
                         <div class="paq-form-section">
-                            <label>Precio ($) *<input type="number" id="fpaq-precio" required min="0" step="1000" placeholder="350000"></label>
+                            <label>Precio ($) *<input type="number" id="fpaq-precio" required min="0" step="1" placeholder="350000"></label>
                         </div>
                         <div class="paq-form-section">
                             <label>Estado
@@ -1069,6 +1069,13 @@
 
             document.getElementById('btn-nuevo-paquete').addEventListener('click', () => abrirForm());
 
+            // Solo enteros no negativos en el campo precio
+            document.getElementById('fpaq-precio').addEventListener('input', function () {
+                const v = parseInt(this.value, 10);
+                if (this.value !== '' && (isNaN(v) || v < 0)) this.value = 0;
+                else if (!isNaN(v)) this.value = v;
+            });
+
             const cerrarDetalle = () => document.getElementById('modal-detalle-paq').classList.add('hidden');
             const cerrarForm    = () => document.getElementById('modal-form-paq').classList.add('hidden');
             document.getElementById('btn-cerrar-detalle').addEventListener('click', cerrarDetalle);
@@ -1097,7 +1104,11 @@
                 if (!body.NombrePaquete)  { showMsg('El nombre es obligatorio.', 'error'); return; }
                 if (!body.IDHabitacion)   { showMsg('Selecciona una habitación.', 'error'); return; }
                 if (!serviciosIds.length) { showMsg('Selecciona al menos un servicio.', 'error'); return; }
-                if (!body.Precio)         { showMsg('Ingresa un precio válido.', 'error'); return; }
+                if (isNaN(body.Precio) || body.Precio < 0 || !Number.isInteger(body.Precio)) {
+                    showMsg('El precio debe ser un número entero no negativo (ej: 350000).', 'error');
+                    document.getElementById('fpaq-precio').focus();
+                    return;
+                }
 
                 btn.disabled = true;
                 try {

@@ -438,8 +438,8 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
 
         _rfNombreTimer = setTimeout(() => {
             if (_rfRolesCache.includes(val)) {
-                nombreInput.classList.add('rf-warn');
-                _rfSetNombreMsg('warn', `Ya existe un rol con ese nombre. Elige un nombre diferente.`);
+                nombreInput.classList.add('rf-error');
+                _rfSetNombreMsg('error', `Ya existe un rol con ese nombre. Elige un nombre diferente.`);
             } else {
                 _rfSetNombreMsg('ok', 'Nombre disponible.');
             }
@@ -550,10 +550,12 @@ async function saveRol(token, onSave) {
     if (!nombre) {
         nombreInput?.classList.add('rf-error');
         _setMsg(nombreMsg, 'error', 'El nombre del rol es obligatorio.');
+        nombreInput?.focus();
         hayError = true;
     } else if (_rfRolesCache.includes(nombre.toLowerCase())) {
-        nombreInput?.classList.add('rf-warn');
-        _setMsg(nombreMsg, 'warn', 'Ya existe un rol con ese nombre. Elige uno diferente.');
+        nombreInput?.classList.add('rf-error');
+        _setMsg(nombreMsg, 'error', 'Ya existe un rol con ese nombre. Elige uno diferente.');
+        nombreInput?.focus();
         hayError = true;
     }
 
@@ -563,7 +565,17 @@ async function saveRol(token, onSave) {
         hayError = true;
     }
 
-    if (hayError) return;
+    if (hayError) {
+        if (typeof showAlert === 'function') {
+            const msg = !nombre
+                ? 'El nombre del rol es obligatorio.'
+                : _rfRolesCache.includes(nombre.toLowerCase())
+                    ? 'Ya existe un rol con ese nombre. Elige uno diferente.'
+                    : 'Debes seleccionar al menos un permiso.';
+            showAlert(msg, 'error');
+        }
+        return;
+    }
 
     if (btn) {
         btn.disabled = true;
@@ -595,13 +607,17 @@ async function saveRol(token, onSave) {
         if (!res.ok) {
             // 409 = nombre duplicado detectado en backend
             if (res.status === 409) {
-                nombreInput?.classList.add('rf-warn');
+                const nombreInputEl = document.getElementById('_rf_nombre');
+                nombreInputEl?.classList.remove('rf-warn');
+                nombreInputEl?.classList.add('rf-error');
+                nombreInputEl?.focus();
                 const msg = document.getElementById('_rf_nombre_msg');
                 if (msg) {
                     msg.style.display = 'flex';
-                    msg.className = 'rf-field-msg warn';
-                    msg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${resData.error}`;
+                    msg.className = 'rf-field-msg error';
+                    msg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${resData.error}`;
                 }
+                if (typeof showAlert === 'function') showAlert(resData.error, 'error');
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = `<i class="fa-solid fa-${isCreate ? 'plus' : 'floppy-disk'}"></i> ${isCreate ? 'Crear rol' : 'Guardar cambios'}`;

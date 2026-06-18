@@ -68,17 +68,32 @@ const ReservasService = {
         r.IdEstadoReserva,
         r.id_usuario
         ${compFields},
-        COALESCE(c.Nombre,   u.NombreUsuario) AS Nombre,
-        COALESCE(c.Apellido, u.Apellido, '') AS Apellido,
-        c.NroDocumento,
-        e.NombreEstadoReserva,
+        ANY_VALUE(COALESCE(
+          c.Nombre,
+          u.NombreUsuario,
+          (SELECT u2.NombreUsuario FROM usuarios u2
+           WHERE CAST(u2.NumeroDocumento AS CHAR) = CAST(r.NroDocumentoCliente AS CHAR)
+             AND (r.id_usuario IS NULL OR u2.IDUsuario != r.id_usuario)
+           LIMIT 1)
+        )) AS Nombre,
+        ANY_VALUE(COALESCE(
+          c.Apellido,
+          u.Apellido,
+          (SELECT u2.Apellido FROM usuarios u2
+           WHERE CAST(u2.NumeroDocumento AS CHAR) = CAST(r.NroDocumentoCliente AS CHAR)
+             AND (r.id_usuario IS NULL OR u2.IDUsuario != r.id_usuario)
+           LIMIT 1),
+          ''
+        )) AS Apellido,
+        ANY_VALUE(c.NroDocumento) AS NroDocumento,
+        ANY_VALUE(e.NombreEstadoReserva) AS NombreEstadoReserva,
         GROUP_CONCAT(DISTINCT p.NombrePaquete  SEPARATOR ', ') AS Paquetes,
         GROUP_CONCAT(DISTINCT p.IDPaquete      SEPARATOR ',')  AS PaquetesIds,
         GROUP_CONCAT(DISTINCT s.NombreServicio SEPARATOR ', ') AS Servicios,
         GROUP_CONCAT(DISTINCT s.IDServicio     SEPARATOR ',')  AS ServiciosIds
       FROM reserva r
-      LEFT JOIN clientes          c   ON r.NroDocumentoCliente = c.NroDocumento
-      LEFT JOIN usuarios          u   ON r.id_usuario          = u.IDUsuario
+      LEFT JOIN clientes          c   ON CAST(r.NroDocumentoCliente AS CHAR) = CAST(c.NroDocumento AS CHAR)
+      LEFT JOIN usuarios          u   ON r.id_usuario = u.IDUsuario
       LEFT JOIN estadosreserva    e   ON r.IdEstadoReserva     = e.IdEstadoReserva
       LEFT JOIN detallereservapaquetes drp ON r.IdReserva      = drp.IDReserva
       LEFT JOIN paquetes          p   ON drp.IDPaquete         = p.IDPaquete
@@ -108,7 +123,7 @@ const ReservasService = {
               c.Nombre, c.Apellido, e.NombreEstadoReserva
               ${habSelect}
        FROM reserva r
-       LEFT JOIN clientes c ON r.NroDocumentoCliente = c.NroDocumento
+       LEFT JOIN clientes c ON CAST(r.NroDocumentoCliente AS CHAR) = CAST(c.NroDocumento AS CHAR)
        LEFT JOIN estadosreserva e ON r.IdEstadoReserva = e.IdEstadoReserva
        ${habJoin}
        WHERE r.IdReserva = ?`,
@@ -124,15 +139,16 @@ const ReservasService = {
       ApellidoDesdeJoin: reserva.Apellido || null,
     });
 
-    // Fallback 1: buscar en usuarios por NumeroDocumento (cubre reservas creadas por admin)
+    // Fallback 1: buscar en usuarios por NumeroDocumento
+    // Nota: usuarios usa NombreUsuario (no Nombre) — se excluye Nombre del SELECT para evitar error si la columna no existe
     if (!reserva.Nombre && reserva.NroDocumentoCliente) {
       try {
         const [[u]] = await db.query(
-          'SELECT IDUsuario, NombreUsuario, Nombre, Apellido, IDRol FROM usuarios WHERE NumeroDocumento = ? LIMIT 1',
+          'SELECT IDUsuario, NombreUsuario, Apellido, IDRol FROM usuarios WHERE NumeroDocumento = ? LIMIT 1',
           [String(reserva.NroDocumentoCliente).trim()]
         );
         if (u) {
-          reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
+          reserva.Nombre   = u.NombreUsuario || '';
           reserva.Apellido = u.Apellido || '';
         }
         console.log('[obtenerPorId] Fallback1 (por doc):', u ? { IDUsuario: u.IDUsuario, nombre: reserva.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
@@ -140,15 +156,15 @@ const ReservasService = {
         console.error('[obtenerPorId] Fallback1 error:', e.message);
       }
     }
-    // Fallback 2: por id_usuario SOLO si su NumeroDocumento coincide con el de la reserva
+    // Fallback 2: por id_usuario + coincidencia de documento
     if (!reserva.Nombre && reserva.id_usuario && reserva.NroDocumentoCliente) {
       try {
         const [[u]] = await db.query(
-          'SELECT IDUsuario, NombreUsuario, Nombre, Apellido FROM usuarios WHERE IDUsuario = ? AND NumeroDocumento = ? LIMIT 1',
+          'SELECT IDUsuario, NombreUsuario, Apellido FROM usuarios WHERE IDUsuario = ? AND NumeroDocumento = ? LIMIT 1',
           [reserva.id_usuario, String(reserva.NroDocumentoCliente).trim()]
         );
         if (u) {
-          reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
+          reserva.Nombre   = u.NombreUsuario || '';
           reserva.Apellido = u.Apellido || '';
         }
         console.log('[obtenerPorId] Fallback2 (por id+doc):', u ? { nombre: reserva.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
@@ -157,20 +173,35 @@ const ReservasService = {
       }
     }
     // Fallback 3: por id_usuario cuando el usuario NO es admin (IDRol != 1)
-    // Cubre el caso donde el cliente creó la reserva pero su NumeroDocumento no coincide
     if (!reserva.Nombre && reserva.id_usuario) {
       try {
         const [[u]] = await db.query(
-          'SELECT IDUsuario, NombreUsuario, Nombre, Apellido, IDRol FROM usuarios WHERE IDUsuario = ? LIMIT 1',
+          'SELECT IDUsuario, NombreUsuario, Apellido, IDRol FROM usuarios WHERE IDUsuario = ? LIMIT 1',
           [reserva.id_usuario]
         );
         if (u && Number(u.IDRol) !== 1) {
-          reserva.Nombre   = u.Nombre || u.NombreUsuario || '';
+          reserva.Nombre   = u.NombreUsuario || '';
           reserva.Apellido = u.Apellido || '';
         }
         console.log('[obtenerPorId] Fallback3 (por id_usuario):', u ? { IDRol: u.IDRol, nombre: reserva.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
       } catch (e) {
         console.error('[obtenerPorId] Fallback3 error:', e.message);
+      }
+    }
+    // Fallback 4: buscar en clientes directamente por documento (cast a CHAR para evitar mismatch de tipos)
+    if (!reserva.Nombre && reserva.NroDocumentoCliente) {
+      try {
+        const [[c]] = await db.query(
+          'SELECT Nombre, Apellido FROM clientes WHERE CAST(NroDocumento AS CHAR) = CAST(? AS CHAR) LIMIT 1',
+          [String(reserva.NroDocumentoCliente).trim()]
+        );
+        if (c && c.Nombre) {
+          reserva.Nombre   = c.Nombre;
+          reserva.Apellido = c.Apellido || '';
+        }
+        console.log('[obtenerPorId] Fallback4 (clientes directo):', c ? { nombre: c.Nombre || 'VACÍO' } : 'NO ENCONTRADO');
+      } catch (e) {
+        console.error('[obtenerPorId] Fallback4 error:', e.message);
       }
     }
 
@@ -219,8 +250,9 @@ const ReservasService = {
   },
 
   eliminar: async (id) => {
-    await db.query(`DELETE FROM detallereservapaquetes  WHERE IDReserva = ?`, [id]);
-    await db.query(`DELETE FROM detallereservaservicio  WHERE IDReserva = ?`, [id]);
+    await db.query(`DELETE FROM detallereservapaquetes       WHERE IDReserva = ?`, [id]);
+    await db.query(`DELETE FROM detallereservaservicio       WHERE IDReserva = ?`, [id]);
+    await db.query(`DELETE FROM detallereservahabitaciones   WHERE IDReserva = ?`, [id]);
     const [result] = await db.query(`DELETE FROM reserva WHERE IdReserva = ?`, [id]);
     return result.affectedRows > 0;
   },
@@ -243,6 +275,11 @@ const ReservasService = {
       serviciosConHorarios,
     } = reserva;
 
+    // habitacionesIds: array de IDs para multi-room; si no llega, construir desde IDHabitacion
+    let habitacionesIds = Array.isArray(reserva.habitacionesIds) && reserva.habitacionesIds.length > 0
+      ? reserva.habitacionesIds.map(Number)
+      : (IDHabitacion ? [Number(IDHabitacion)] : []);
+
     if (!NroDocumentoCliente) throw new Error("Falta NroDocumentoCliente.");
     if (!FechaInicio || !FechaFinalizacion) throw new Error("Faltan fechas.");
 
@@ -251,7 +288,8 @@ const ReservasService = {
       ? "IDHabitacion"
       : (cols.has("IdHabitacion") ? "IdHabitacion" : null);
 
-    let habitacionId = IDHabitacion ?? null;
+    // habitacionId para la columna legacy en reserva (primera habitación)
+    let habitacionId = habitacionesIds[0] ?? null;
     if (!habitacionId && Array.isArray(paquetesIds) && paquetesIds.length > 0) {
       const [[paq]] = await db.query(
         "SELECT IDHabitacion FROM paquetes WHERE IDPaquete = ? LIMIT 1",
@@ -260,22 +298,22 @@ const ReservasService = {
       habitacionId = paq?.IDHabitacion ?? null;
     }
 
-    // IDHabitacion es opcional si no se seleccionó habitación ni paquete
-    // (en ese caso no se puede hacer validación de conflicto)
-
-    // Validar disponibilidad: no puede haber reserva activa que cruce las mismas fechas
-    if (habitacionCol && habitacionId) {
-      const [[{ conflictos }]] = await db.query(
-        `SELECT COUNT(*) AS conflictos
-         FROM reserva
-         WHERE ${habitacionCol} = ?
-           AND IdEstadoReserva NOT IN (3, 4)
-           AND FechaInicio    <= ?
-           AND FechaFinalizacion >= ?`,
-        [habitacionId, FechaFinalizacion, FechaInicio]
-      );
-      if (conflictos > 0) {
-        throw new Error('La habitación ya tiene una reserva en las fechas seleccionadas. Por favor elige otras fechas.');
+    // Validar disponibilidad para cada habitación seleccionada
+    if (habitacionCol && habitacionesIds.length > 0) {
+      for (const hId of habitacionesIds) {
+        const [[{ conflictos }]] = await db.query(
+          `SELECT COUNT(*) AS conflictos
+           FROM reserva
+           WHERE ${habitacionCol} = ?
+             AND IdEstadoReserva NOT IN (3, 4)
+             AND FechaInicio    <= ?
+             AND FechaFinalizacion >= ?`,
+          [hId, FechaFinalizacion, FechaInicio]
+        );
+        if (conflictos > 0) {
+          const [[hab]] = await db.query("SELECT NombreHabitacion FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [hId]);
+          throw new Error(`La habitación "${hab?.NombreHabitacion || hId}" ya tiene una reserva en las fechas seleccionadas. Por favor elige otras fechas.`);
+        }
       }
     }
 
@@ -317,12 +355,14 @@ const ReservasService = {
 
     let precioBase = 0;
 
-    // Precio habitación directa
-    if (habitacionId && (!Array.isArray(paquetesIds) || !paquetesIds.length)) {
-      const [[hab]] = await db.query(
-        "SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [habitacionId]
-      );
-      precioBase = Number(hab?.Costo || 0) * noches;
+    // Precio habitaciones directas (sin paquetes): suma de todas × noches
+    if (habitacionesIds.length > 0 && (!Array.isArray(paquetesIds) || !paquetesIds.length)) {
+      for (const hId of habitacionesIds) {
+        const [[hab]] = await db.query(
+          "SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [hId]
+        );
+        precioBase += Number(hab?.Costo || 0) * noches;
+      }
     }
 
     // Precio paquetes (tarifa plana)
@@ -424,6 +464,19 @@ const ReservasService = {
       }
     }
 
+    // Registrar cada habitación en detallereservahabitaciones (multi-room)
+    if (habitacionesIds.length > 0 && (!Array.isArray(paquetesIds) || !paquetesIds.length)) {
+      for (const hId of habitacionesIds) {
+        const [[hab]] = await db.query(
+          "SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [hId]
+        );
+        await db.query(
+          `INSERT INTO detallereservahabitaciones (IDReserva, IDHabitacion, Precio, Noches, Estado) VALUES (?, ?, ?, ?, 1)`,
+          [idReserva, hId, Number(hab?.Costo || 0), noches]
+        );
+      }
+    }
+
     const svcList = Array.isArray(serviciosConHorarios) && serviciosConHorarios.length > 0
       ? serviciosConHorarios
       : (Array.isArray(serviciosIds) ? serviciosIds.map(id => ({ id, hora: null })) : []);
@@ -470,6 +523,11 @@ const ReservasService = {
       serviciosIds,
       serviciosConHorarios,
     } = data;
+
+    // habitacionesIds: array para multi-room
+    const habitacionesIds = Array.isArray(data.habitacionesIds) && data.habitacionesIds.length > 0
+      ? data.habitacionesIds.map(Number)
+      : (IDHabitacion ? [Number(IDHabitacion)] : []);
 
     const cols = await getReservaCols();
     const habitacionCol = cols.has("IDHabitacion")
@@ -518,6 +576,21 @@ const ReservasService = {
           `INSERT INTO detallereservapaquetes (IDReserva, IDPaquete, Cantidad, Precio, Estado)
            SELECT ?, ?, 1, Precio, 1 FROM paquetes WHERE IDPaquete = ?`,
           [id, pid, pid]
+        );
+      }
+    }
+
+    // Sync detallereservahabitaciones para multi-room
+    if (habitacionesIds.length > 0 && (!Array.isArray(paquetesIds) || !paquetesIds.length)) {
+      await db.query(`DELETE FROM detallereservahabitaciones WHERE IDReserva = ?`, [id]);
+      const noches = FechaInicio && FechaFinalizacion
+        ? Math.max(1, Math.ceil((new Date(FechaFinalizacion) - new Date(FechaInicio)) / 86400000))
+        : 1;
+      for (const hId of habitacionesIds) {
+        const [[hab]] = await db.query("SELECT Costo FROM habitacion WHERE IDHabitacion = ? LIMIT 1", [hId]);
+        await db.query(
+          `INSERT INTO detallereservahabitaciones (IDReserva, IDHabitacion, Precio, Noches, Estado) VALUES (?, ?, ?, ?, 1)`,
+          [id, hId, Number(hab?.Costo || 0), noches]
         );
       }
     }

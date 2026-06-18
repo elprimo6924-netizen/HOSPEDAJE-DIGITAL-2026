@@ -78,6 +78,11 @@ const PaquetesController = {
 
         try {
 
+            const precio = Number(req.body.Precio);
+            if (req.body.Precio === undefined || req.body.Precio === null || req.body.Precio === '' || isNaN(precio) || precio < 0 || !Number.isInteger(precio)) {
+                return res.status(400).json({ error: "El precio debe ser un número entero no negativo." });
+            }
+
             const data = await PaquetesService.crear(req.body);
 
             res.status(201).json({
@@ -105,6 +110,13 @@ const PaquetesController = {
     actualizar: async (req, res) => {
 
         try {
+
+            if (req.body.Precio !== undefined) {
+                const precio = Number(req.body.Precio);
+                if (isNaN(precio) || precio < 0 || !Number.isInteger(precio)) {
+                    return res.status(400).json({ error: "El precio debe ser un número entero no negativo." });
+                }
+            }
 
             const data = await PaquetesService.actualizar(
                 req.params.id,

@@ -2023,8 +2023,7 @@ function configurarCRUDHabitaciones() {
 
     if (botonNueva && !botonNueva.dataset.crudHabitacionesInicializado) {
         botonNueva.addEventListener('click', () => {
-            limpiarFormularioHabitacionAdmin(false);
-            abrirModalHabitacionAdmin();
+            if (typeof openHabitacionForm === 'function') openHabitacionForm();
         });
         botonNueva.dataset.crudHabitacionesInicializado = 'true';
     }
@@ -2089,8 +2088,8 @@ function configurarCRUDHabitaciones() {
 
             if (accion === 'editar') {
                 const habitacion = habitacionesAdminCargadas.find((item) => String(obtenerIdHabitacion(item)) === String(id));
-                if (habitacion) {
-                    cargarHabitacionEnFormularioAdmin(habitacion);
+                if (habitacion && typeof openHabitacionForm === 'function') {
+                    openHabitacionForm(habitacion);
                 }
                 return;
             }

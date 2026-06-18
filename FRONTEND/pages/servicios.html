@@ -261,7 +261,7 @@
                                     <label for="servicio-admin-costo" class="svc-label">
                                         Costo ($) <span class="svc-req" aria-hidden="true">*</span>
                                     </label>
-                                    <input type="number" id="servicio-admin-costo" required min="0" step="1000"
+                                    <input type="number" id="servicio-admin-costo" required min="0" step="1"
                                            placeholder="Ej. 150000" class="svc-input">
                                     <div class="svc-err" id="err-svc-costo"></div>
                                 </div>
@@ -373,6 +373,14 @@
     <script>
     (function initSvcModalUI() {
         document.addEventListener('DOMContentLoaded', () => {
+
+            /* ══ Solo enteros no negativos en costo ══ */
+            const costoSvc = document.getElementById('servicio-admin-costo');
+            costoSvc?.addEventListener('input', function () {
+                const v = parseInt(this.value, 10);
+                if (this.value !== '' && (isNaN(v) || v < 0)) this.value = 0;
+                else if (!isNaN(v)) this.value = v;
+            });
 
             /* ══ Botón Cancelar → cerrar modal ══ */
             const btnCancelar = document.getElementById('btn-servicio-admin-limpiar');
@@ -497,7 +505,7 @@
                     { id: 'servicio-admin-descripcion',     err: 'err-svc-descripcion', msg: 'La descripción es obligatoria.',                     bad: v => !v.trim() },
                     { id: 'servicio-admin-duracion',        err: 'err-svc-duracion',    msg: 'Ingresa una duración en minutos (número positivo).', bad: v => !v.trim() || Number(v) < 1 },
                     { id: 'servicio-admin-cantidad-maxima', err: 'err-svc-cantidad',    msg: 'Ingresa la cantidad máxima de personas (mín. 1).',    bad: v => !v.trim() || Number(v) < 1 },
-                    { id: 'servicio-admin-costo',           err: 'err-svc-costo',       msg: 'Ingresa un costo válido (número ≥ 0).',              bad: v => v.trim() === '' || Number(v) < 0 },
+                    { id: 'servicio-admin-costo',           err: 'err-svc-costo',       msg: 'El costo debe ser un número entero no negativo (ej: 150000).',  bad: v => v.trim() === '' || Number(v) < 0 || !Number.isInteger(Number(v)) },
                 ];
                 rules.forEach(({ id, err, msg, bad }) => {
                     const el = document.getElementById(id);

@@ -164,23 +164,13 @@ async function obtenerHabitacionPorId(id) {
 }
 
 async function crearHabitacion(habitacion) {
-    apiLogger.log('Creando habitaci�n:', habitacion);
-    try {
-        return await requestJson('/habitaciones', { method: 'POST', body: habitacion });
-    } catch (error) {
-        apiLogger.error('Error al crear habitaci�n:', error.message);
-        return null;
-    }
+    apiLogger.log('Creando habitación:', habitacion);
+    return await requestJson('/habitaciones', { method: 'POST', body: habitacion });
 }
 
 async function actualizarHabitacion(id, habitacion) {
-    apiLogger.log('Actualizando habitaci�n:', id, habitacion);
-    try {
-        return await requestJson(`/habitaciones/${id}`, { method: 'PUT', body: habitacion });
-    } catch (error) {
-        apiLogger.error('Error al actualizar habitaci�n:', error.message);
-        return null;
-    }
+    apiLogger.log('Actualizando habitación:', id, habitacion);
+    return await requestJson(`/habitaciones/${id}`, { method: 'PUT', body: habitacion });
 }
 
 async function eliminarHabitacion(id) {

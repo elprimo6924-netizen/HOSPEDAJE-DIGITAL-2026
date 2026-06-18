@@ -57,9 +57,29 @@ const create = async (req, res) => {
   try {
     const { NombreHabitacion, Descripcion, Costo, Estado, ImagenHabitacion } = req.body;
 
+    if (!NombreHabitacion || !String(NombreHabitacion).trim()) {
+      return res.status(400).json({ error: "El nombre de la habitación es obligatorio" });
+    }
+    if (!Descripcion || !String(Descripcion).trim()) {
+      return res.status(400).json({ error: "La descripción es obligatoria" });
+    }
+    const costoNum = Number(Costo);
+    if (Costo === undefined || Costo === null || Costo === '' || isNaN(costoNum) || costoNum < 0 || !Number.isInteger(costoNum)) {
+      return res.status(400).json({ error: "El costo debe ser un número entero no negativo." });
+    }
+
+    const nombre = String(NombreHabitacion).trim();
+    const [dup] = await db.query(
+      "SELECT IDHabitacion FROM habitacion WHERE LOWER(TRIM(NombreHabitacion)) = LOWER(TRIM(?)) LIMIT 1",
+      [nombre]
+    );
+    if (dup.length > 0) {
+      return res.status(409).json({ error: `Ya existe una habitación con el nombre "${nombre}". Usa un nombre diferente.` });
+    }
+
     await db.query(
       `INSERT INTO habitacion (NombreHabitacion, Descripcion, Costo, Estado, ImagenHabitacion) VALUES (?, ?, ?, ?, ?)`,
-      [NombreHabitacion, Descripcion, Costo, Estado || 1, ImagenHabitacion || null]
+      [nombre, String(Descripcion).trim(), Number(Costo), Estado ?? 1, ImagenHabitacion || null]
     );
 
     res.status(201).json({ mensaje: "Habitación creada correctamente" });
@@ -75,9 +95,29 @@ const update = async (req, res) => {
     const { id } = req.params;
     const { NombreHabitacion, Descripcion, Costo, Estado, ImagenHabitacion } = req.body;
 
+    if (!NombreHabitacion || !String(NombreHabitacion).trim()) {
+      return res.status(400).json({ error: "El nombre de la habitación es obligatorio" });
+    }
+    if (!Descripcion || !String(Descripcion).trim()) {
+      return res.status(400).json({ error: "La descripción es obligatoria" });
+    }
+    const costoNum = Number(Costo);
+    if (Costo === undefined || Costo === null || Costo === '' || isNaN(costoNum) || costoNum < 0 || !Number.isInteger(costoNum)) {
+      return res.status(400).json({ error: "El costo debe ser un número entero no negativo." });
+    }
+
+    const nombre = String(NombreHabitacion).trim();
+    const [dup] = await db.query(
+      "SELECT IDHabitacion FROM habitacion WHERE LOWER(TRIM(NombreHabitacion)) = LOWER(TRIM(?)) AND IDHabitacion != ? LIMIT 1",
+      [nombre, id]
+    );
+    if (dup.length > 0) {
+      return res.status(409).json({ error: `Ya existe otra habitación con el nombre "${nombre}". Usa un nombre diferente.` });
+    }
+
     await db.query(
       `UPDATE habitacion SET NombreHabitacion = ?, Descripcion = ?, Costo = ?, Estado = ?, ImagenHabitacion = ? WHERE IDHabitacion = ?`,
-      [NombreHabitacion, Descripcion, Costo, Estado, ImagenHabitacion ?? null, id]
+      [nombre, String(Descripcion).trim(), Number(Costo), Estado ?? 1, ImagenHabitacion ?? null, id]
     );
 
     res.json({ mensaje: "Habitación actualizada con éxito" });

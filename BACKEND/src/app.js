@@ -121,6 +121,26 @@ const app = express();
     }
 })();
 
+(async () => {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS detallereservahabitaciones (
+                IDDetalle     INT AUTO_INCREMENT PRIMARY KEY,
+                IDReserva     INT NOT NULL,
+                IDHabitacion  INT NOT NULL,
+                Precio        DECIMAL(10,2) NOT NULL DEFAULT 0,
+                Noches        INT NOT NULL DEFAULT 1,
+                Estado        TINYINT(1) NOT NULL DEFAULT 1,
+                INDEX idx_drh_reserva     (IDReserva),
+                INDEX idx_drh_habitacion  (IDHabitacion)
+            )
+        `);
+        console.log('[MIGRATION] Tabla detallereservahabitaciones OK.');
+    } catch (err) {
+        console.error("[MIGRATION] Error en migración detallereservahabitaciones:", err.message);
+    }
+})();
+
 // =============================
 // MIDDLEWARES
 // =============================

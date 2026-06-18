@@ -70,6 +70,11 @@ crear: async (req, res) => {
 
         console.log("BODY:", req.body);
 
+        const costo = Number(req.body.Costo);
+        if (req.body.Costo === undefined || req.body.Costo === null || req.body.Costo === '' || isNaN(costo) || costo < 0 || !Number.isInteger(costo)) {
+            return res.status(400).json({ error: "El costo debe ser un número entero no negativo." });
+        }
+
         const data = await ServiciosService.crear(req.body);
 
         res.status(201).json({
@@ -93,6 +98,13 @@ crear: async (req, res) => {
     actualizar: async (req, res) => {
 
         try {
+
+            if (req.body.Costo !== undefined) {
+                const costo = Number(req.body.Costo);
+                if (isNaN(costo) || costo < 0 || !Number.isInteger(costo)) {
+                    return res.status(400).json({ error: "El costo debe ser un número entero no negativo." });
+                }
+            }
 
             const data = await ServiciosService.actualizar(
                 req.params.id,

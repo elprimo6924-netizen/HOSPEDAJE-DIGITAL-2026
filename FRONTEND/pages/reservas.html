@@ -367,6 +367,7 @@
                         <td>
                             <div class="crud-reservas-acciones">
                                 <button class="btn-mini btn-mini-ver"     onclick="verDetalle(${r.IDReserva})"         title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn-mini" style="background:#f0fdf4;color:#166534;border:1px solid #86efac" onclick="generarComprobante(${r.IDReserva})" title="Generar comprobante de pago"><i class="fa-solid fa-file-invoice-dollar"></i></button>
                                 ${esAdmin ? `
                                 ${r.IdEstadoReserva !== 3 ? `<button class="btn-mini" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a" onclick="cancelarReservaUI(${r.IDReserva}, '${r.FechaInicio}')" title="Cancelar reserva"><i class="fa-solid fa-ban"></i></button>` : ''}
                                 ` : `
@@ -1402,6 +1403,249 @@
                     } catch { mostrarMensaje('Error al eliminar.', 'error'); }
                 }
             });
+        }
+
+        /* ── Comprobante de pago ── */
+        async function generarComprobante(id) {
+            let r;
+            try {
+                r = await requestJson(`/reservas/${id}`);
+            } catch {
+                r = reservasCargadas.find(x => x.IDReserva === id) || null;
+            }
+            if (!r) { mostrarMensaje('No se pudo cargar la reserva.', 'error'); return; }
+
+            const fmt = (v) => `$${Number(v || 0).toLocaleString('es-CO')}`;
+            const fmtFecha = (s) => {
+                if (!s) return '—';
+                const d = new Date(s + (s.includes('T') ? '' : 'T12:00:00'));
+                return d.toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+            };
+
+            const noches = (() => {
+                if (!r.FechaInicio || !r.FechaFinalizacion) return 1;
+                const ms = new Date(r.FechaFinalizacion) - new Date(r.FechaInicio);
+                return Math.max(1, Math.round(ms / 86400000));
+            })();
+
+            const tienePaquetes = (r.paquetes || []).length > 0;
+            const alojamiento = (() => {
+                if (tienePaquetes) return r.paquetes.map(p => p.NombrePaquete).join(', ');
+                if (r.NombreHabitacion) return r.NombreHabitacion;
+                return '—';
+            })();
+            const tipoAloj = tienePaquetes ? 'Paquete' : 'Habitación';
+
+            // Nombre: combina Nombre + Apellido; si vacío usa el caché de la lista
+            const nombreCache = (() => {
+                const cached = reservasCargadas.find(x => x.IDReserva === id);
+                return (`${cached?.Nombre || ''} ${cached?.Apellido || ''}`).trim();
+            })();
+            const nombreCompleto = (`${r.Nombre || ''} ${r.Apellido || ''}`).trim() || nombreCache;
+
+            const serviciosHtml = (r.servicios || []).length > 0
+                ? r.servicios.map(s => `
+                    <tr>
+                        <td style="padding:6px 10px;font-size:.82rem;color:#334155;">${s.NombreServicio}${s.HoraServicio ? ` <span style="color:#94a3b8">(${s.HoraServicio})</span>` : ''}</td>
+                        <td style="padding:6px 10px;font-size:.82rem;color:#334155;text-align:right;">${fmt(s.Precio || s.Costo || s.PrecioUnitario || 0)}</td>
+                    </tr>`).join('')
+                : `<tr><td colspan="2" style="padding:6px 10px;font-size:.82rem;color:#94a3b8;">Sin servicios adicionales</td></tr>`;
+
+            const metodoPago = Number(r.MetodoPago) === 2
+                ? 'Transferencia bancaria'
+                : Number(r.MetodoPago) === 1 ? 'Efectivo' : '—';
+
+            const estadoColor = (() => {
+                const e = Number(r.IdEstadoReserva);
+                if (e === 2) return '#166534';
+                if (e === 3) return '#b91c1c';
+                if (e === 4) return '#166534';
+                return '#92400e';
+            })();
+
+            const fechaEmision = new Date().toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+            const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Comprobante Reserva #${r.IDReserva} — Hospedaje Digital</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
+  .page { max-width: 680px; margin: 32px auto 60px; background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.12); }
+  .header { background: linear-gradient(135deg,#1a2e1a,#2d4a2d); padding: 32px 36px 28px; color: #fff; }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .logo-icon { width: 52px; height: 52px; background: linear-gradient(135deg,#e8743b,#d45a22); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.5rem; }
+  .hotel-name { font-size: 1.35rem; font-weight: 800; letter-spacing: .03em; }
+  .hotel-sub { font-size: .78rem; opacity: .75; margin-top: 3px; }
+  .voucher-title { font-size: 1rem; font-weight: 700; opacity: .9; letter-spacing: .06em; text-transform: uppercase; }
+  .voucher-num { display: inline-block; background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.3); border-radius: 10px; padding: 6px 18px; font-size: 1.55rem; font-weight: 900; letter-spacing: .04em; margin-top: 10px; }
+  .emit-row { font-size: .73rem; opacity: .7; margin-top: 10px; }
+  .body { padding: 28px 36px 36px; }
+  .section { margin-bottom: 22px; }
+  .section-title { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #64748b; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1.5px solid #e2e8f0; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .info-item { padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
+  .info-label { font-size: .72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+  .info-value { font-size: .9rem; color: #0f172a; font-weight: 700; }
+  .info-sub { font-size: .75rem; color: #64748b; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; }
+  .table-head { background: #f8fafc; }
+  .table-head th { padding: 9px 10px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748b; text-align: left; border-bottom: 1.5px solid #e2e8f0; }
+  .table-head th:last-child { text-align: right; }
+  .aloj-row td { padding: 10px 10px; font-size: .88rem; font-weight: 600; color: #1e293b; border-bottom: 1px solid #f1f5f9; }
+  .aloj-row td:last-child { text-align: right; }
+  .totales { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: #475569; padding: 5px 0; }
+  .total-row.discount { color: #16a34a; }
+  .total-row.main { padding-top: 12px; border-top: 2px solid #1a2e1a; margin-top: 6px; }
+  .total-row.main .lbl { font-size: 1rem; font-weight: 800; color: #1a2e1a; }
+  .total-row.main .val { font-size: 1.25rem; font-weight: 900; color: #1a2e1a; }
+  .cop-badge { display: inline-block; background: #1a5c1a; color: #fff; border-radius: 5px; padding: 2px 7px; font-size: .64rem; font-weight: 800; letter-spacing: .06em; vertical-align: middle; margin-left: 6px; }
+  .estado-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 8px; font-size: .82rem; font-weight: 700; }
+  .footer-note { margin-top: 28px; padding: 16px 18px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 10px; font-size: .77rem; color: #64748b; line-height: 1.6; }
+  .print-bar { text-align: center; padding: 20px; background: #f8fafc; border-top: 1.5px solid #e2e8f0; }
+  .btn-print { background: linear-gradient(135deg,#1a2e1a,#2d4a2d); color: #fff; border: none; border-radius: 10px; padding: 11px 32px; font-size: .9rem; font-weight: 700; cursor: pointer; letter-spacing: .03em; }
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; border-radius: 0; box-shadow: none; max-width: 100%; }
+    .print-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-icon">🏨</div>
+      <div>
+        <div class="hotel-name">Hospedaje Digital</div>
+        <div class="hotel-sub">Comprobante oficial de reserva</div>
+      </div>
+    </div>
+    <div class="voucher-title">Comprobante de Pago</div>
+    <div class="voucher-num"># ${r.IDReserva}</div>
+    <div class="emit-row">Emitido el ${fechaEmision}</div>
+  </div>
+
+  <div class="body">
+    <div class="section">
+      <div class="section-title">Información del Cliente</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Nombre completo</div>
+          <div class="info-value">${nombreCompleto || '<span style="color:#94a3b8;font-style:italic;font-size:.82rem;">Sin nombre registrado</span>'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Documento</div>
+          <div class="info-value">${r.NroDocumentoCliente || '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Detalles de la Reserva</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Fecha de inicio</div>
+          <div class="info-value">${fmtFecha(r.FechaInicio)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Fecha de fin</div>
+          <div class="info-value">${fmtFecha(r.FechaFinalizacion)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Duración</div>
+          <div class="info-value">${noches} noche${noches !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Método de pago</div>
+          <div class="info-value">${metodoPago}</div>
+        </div>
+        <div class="info-item" style="grid-column: span 2;">
+          <div class="info-label">Estado</div>
+          <div style="margin-top:4px;">
+            <span class="estado-chip" style="background:${estadoColor}20;color:${estadoColor};border:1px solid ${estadoColor}50;">
+              ${r.NombreEstadoReserva || `Estado ${r.IdEstadoReserva}`}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Alojamiento</div>
+      <table>
+        <thead class="table-head">
+          <tr>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th style="text-align:right;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="aloj-row">
+            <td style="color:#64748b;font-size:.82rem;">${tipoAloj}</td>
+            <td>${alojamiento}</td>
+            <td>${fmt(r.SubTotal)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    ${(r.servicios || []).length > 0 ? `
+    <div class="section">
+      <div class="section-title">Servicios adicionales</div>
+      <table>
+        <thead class="table-head">
+          <tr><th>Servicio</th><th style="text-align:right;">Costo</th></tr>
+        </thead>
+        <tbody>${serviciosHtml}</tbody>
+      </table>
+    </div>` : ''}
+
+    <div class="section">
+      <div class="section-title">Resumen financiero</div>
+      <div class="totales">
+        <div class="total-row">
+          <span class="lbl">Base gravable</span>
+          <span class="val">${fmt(r.SubTotal)}</span>
+        </div>
+        ${Number(r.Descuento) > 0 ? `
+        <div class="total-row discount">
+          <span class="lbl">Descuento</span>
+          <span class="val">− ${fmt(r.Descuento)}</span>
+        </div>` : ''}
+        <div class="total-row">
+          <span class="lbl">IVA incluido</span>
+          <span class="val">${fmt(r.IVA)}</span>
+        </div>
+        <div class="total-row main">
+          <span class="lbl">TOTAL <span class="cop-badge">🇨🇴 COP</span></span>
+          <span class="val">${fmt(r.MontoTotal)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <strong>📋 Nota importante:</strong> Este comprobante es generado automáticamente por el sistema de Hospedaje Digital.
+      Para cualquier consulta sobre su reserva, por favor comuníquese con la administración del hospedaje indicando el número de reserva
+      <strong>#${r.IDReserva}</strong>.
+    </div>
+  </div>
+
+  <div class="print-bar">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir comprobante</button>
+  </div>
+</div>
+</body>
+</html>`;
+
+            const ventana = window.open('', '_blank');
+            if (!ventana) { mostrarMensaje('Permite ventanas emergentes para generar el comprobante.', 'warn'); return; }
+            ventana.document.write(html);
+            ventana.document.close();
         }
 
         /* ── Modal upload comprobante para clientes (acceso desde link de correo) ── */

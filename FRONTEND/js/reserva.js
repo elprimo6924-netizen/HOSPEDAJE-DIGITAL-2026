@@ -11,7 +11,8 @@ const State = {
     fechaInicio: null,
     fechaFin: null,
     modo: 'habitacion', // 'habitacion' | 'paquete'
-    itemSeleccionado: null, // { id, nombre, precio, imagen, tipo }
+    itemSeleccionado: null, // { id, nombre, precio, imagen, tipo } — used for paquete mode
+    habitacionesSeleccionadas: [], // [{ id, nombre, precio }] — used for habitacion mode
     cliente: null,
     serviciosExtras: [], // [{ id, nombre, precio, cantidad, hora }]
     blockedDates: [],
@@ -213,17 +214,15 @@ const ModoReserva = {
     async init() {
         document.getElementById('btn-habitacion').addEventListener('click', () => this.setModo('habitacion'));
         document.getElementById('btn-paquete').addEventListener('click', () => this.setModo('paquete'));
-        
-        // Setup initial selects
-        document.getElementById('select-habitacion').addEventListener('change', (e) => this.handleHabitacionChange(e.target));
-        
         await this.setModo('habitacion');
     },
 
     async setModo(modo) {
         State.modo = modo;
         State.itemSeleccionado = null;
-        State.serviciosExtras = []; // Reset extras
+        State.habitacionesSeleccionadas = [];
+        State.serviciosExtras = [];
+        State.blockedDates = [];
         
         const btnHab = document.getElementById('btn-habitacion');
         const btnPaq = document.getElementById('btn-paquete');
@@ -253,38 +252,68 @@ const ModoReserva = {
     },
 
     async loadHabitaciones() {
-        const sel = document.getElementById('select-habitacion');
-        sel.innerHTML = '<option value="">Cargando habitaciones...</option>';
+        const grid = document.getElementById('grid-habitaciones');
+        if (!grid) return;
+        grid.innerHTML = '<p class="text-gray-400 text-sm col-span-2">Cargando habitaciones...</p>';
         const data = await fetchJson('/habitaciones');
-        if (!data) return;
-        
-        sel.innerHTML = '<option value="">— Selecciona una habitación —</option>';
-        data.filter(h => h.Estado == 1).forEach(h => {
-            const opt = document.createElement('option');
-            opt.value = h.IDHabitacion;
-            opt.dataset.precio = h.Costo;
-            opt.dataset.nombre = h.NombreHabitacion;
-            opt.textContent = `${h.NombreHabitacion} — ${fmt(h.Costo)}/noche`;
-            sel.appendChild(opt);
+        if (!data) { grid.innerHTML = '<p class="text-red-400 text-sm col-span-2">Error al cargar habitaciones</p>'; return; }
+
+        const activas = data.filter(h => h.Estado == 1);
+        if (!activas.length) { grid.innerHTML = '<p class="text-gray-400 text-sm col-span-2">No hay habitaciones disponibles</p>'; return; }
+
+        grid.innerHTML = '';
+        activas.forEach(h => {
+            const div = document.createElement('div');
+            div.className = "border-2 border-stone-200 rounded-2xl p-4 cursor-pointer transition-all duration-200 hover:border-amber-400 hover:shadow-md bg-white habitacion-card";
+            div.dataset.id = h.IDHabitacion;
+            div.onclick = () => ModoReserva.toggleHabitacion(div, h);
+
+            const imgSrc = h.ImagenHabitacion
+                ? (h.ImagenHabitacion.startsWith('http') ? h.ImagenHabitacion : `/img/${h.ImagenHabitacion}`)
+                : null;
+
+            div.innerHTML = `
+                ${imgSrc ? `<img src="${imgSrc}" class="w-full h-24 object-cover rounded-xl mb-3 bg-gray-100" onerror="this.style.display='none'">` : ''}
+                <h3 class="font-semibold text-green-900 text-sm leading-snug">${h.NombreHabitacion}</h3>
+                <p class="text-xs text-stone-400 mt-0.5 mb-2 line-clamp-2">${h.Descripcion || ''}</p>
+                <div class="flex items-center justify-between mt-auto">
+                    <span class="text-sm font-bold text-green-800">${fmt(h.Costo)}<span class="text-xs font-normal text-stone-400">/noche</span></span>
+                    <span class="hab-sel-hint text-xs text-stone-400 italic">+ Agregar</span>
+                </div>`;
+            grid.appendChild(div);
         });
     },
 
-    handleHabitacionChange(selectEl) {
-        const opt = selectEl.options[selectEl.selectedIndex];
-        if (opt.value) {
-            State.itemSeleccionado = {
-                id: opt.value,
-                nombre: opt.dataset.nombre,
-                precio: Number(opt.dataset.precio),
-                tipo: 'habitacion'
-            };
-            this.loadBlockedDates({ IDHabitacion: opt.value });
+    toggleHabitacion(cardEl, h) {
+        const id = String(h.IDHabitacion);
+        const idx = State.habitacionesSeleccionadas.findIndex(x => String(x.id) === id);
+
+        if (idx >= 0) {
+            State.habitacionesSeleccionadas.splice(idx, 1);
+            cardEl.className = "border-2 border-stone-200 rounded-2xl p-4 cursor-pointer transition-all duration-200 hover:border-amber-400 hover:shadow-md bg-white habitacion-card";
+            const hint = cardEl.querySelector('.hab-sel-hint');
+            if (hint) hint.textContent = '+ Agregar';
         } else {
-            State.itemSeleccionado = null;
+            State.habitacionesSeleccionadas.push({ id, nombre: h.NombreHabitacion, precio: Number(h.Costo) });
+            cardEl.className = "border-green-700 bg-green-50 ring-2 ring-green-700 rounded-2xl p-4 cursor-pointer transition-all duration-200 habitacion-card shadow-md";
+            const hint = cardEl.querySelector('.hab-sel-hint');
+            if (hint) hint.textContent = '✓ Seleccionada';
+        }
+
+        this.loadBlockedDatesMultiple();
+        ResumenLateral.actualizar();
+    },
+
+    async loadBlockedDatesMultiple() {
+        const ids = State.habitacionesSeleccionadas.map(h => h.id);
+        if (!ids.length) {
             State.blockedDates = [];
             CalendarioPicker.render();
+            return;
         }
-        ResumenLateral.actualizar();
+        const results = await Promise.all(ids.map(id => fetchJson(`/reservas/disponibilidad?IDHabitacion=${id}`)));
+        State.blockedDates = results.flatMap(r => Array.isArray(r) ? r : []);
+        CalendarioPicker.render();
     },
 
     async loadBlockedDates({ IDHabitacion, IDPaquete } = {}) {
@@ -792,34 +821,63 @@ const ResumenLateral = {
         const fechasEl = document.getElementById('resumen-fechas');
         
         let precioBase = 0;
-        if (State.itemSeleccionado) {
-            titleEl.textContent = State.itemSeleccionado.nombre;
-            if (State.modo === 'habitacion') {
-                precioBase = State.itemSeleccionado.precio * Math.max(1, noches);
-                imgWrap.classList.add('hidden');
-            } else {
-                precioBase = State.itemSeleccionado.precio;
-                imgWrap.classList.add('hidden'); // sin imagen en resumen para paquetes
-                // RES1: Show package included room/service in summary
-                let detailEl = document.getElementById('resumen-paq-detail');
+
+        // Limpiar detalles previos de ambos modos
+        const _paqDetail = document.getElementById('resumen-paq-detail');
+        const _habDetail = document.getElementById('resumen-hab-detail');
+
+        if (State.modo === 'habitacion') {
+            imgWrap.classList.add('hidden');
+            if (_paqDetail) _paqDetail.innerHTML = '';
+            const selCount = State.habitacionesSeleccionadas.length;
+            if (selCount > 0) {
+                precioBase = State.habitacionesSeleccionadas.reduce((s, h) => s + h.precio, 0) * Math.max(1, noches);
+                titleEl.textContent = selCount === 1
+                    ? State.habitacionesSeleccionadas[0].nombre
+                    : `${selCount} habitaciones`;
+
+                // Detalle multi-habitación
+                let detailEl = _habDetail;
                 if (!detailEl) {
                     detailEl = document.createElement('div');
-                    detailEl.id = 'resumen-paq-detail';
+                    detailEl.id = 'resumen-hab-detail';
                     detailEl.className = 'text-xs text-gray-500 mb-4 space-y-0.5';
                     titleEl.insertAdjacentElement('afterend', detailEl);
                 }
-                const hab = State.itemSeleccionado.habitacion;
-                const svc = State.itemSeleccionado.servicio;
-                detailEl.innerHTML = [
-                    hab ? `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bed text-green-600 text-[10px]"></i>${hab}</div>` : '',
-                    svc ? `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bell-concierge text-amber-500 text-[10px]"></i>Incluye: ${svc}</div>` : '',
-                ].join('');
+                detailEl.innerHTML = selCount > 1
+                    ? State.habitacionesSeleccionadas
+                        .map(h => `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bed text-green-600 text-[10px]"></i>${h.nombre} — ${fmt(h.precio)}/noche</div>`)
+                        .join('')
+                    : '';
+            } else {
+                titleEl.textContent = 'Sin selección';
+                if (_habDetail) _habDetail.innerHTML = '';
             }
+        } else if (State.itemSeleccionado) {
+            titleEl.textContent = State.itemSeleccionado.nombre;
+            precioBase = State.itemSeleccionado.precio;
+            imgWrap.classList.add('hidden');
+            if (_habDetail) _habDetail.innerHTML = '';
+
+            // Detalle del paquete (habitación incluida, servicio incluido)
+            let detailEl = _paqDetail;
+            if (!detailEl) {
+                detailEl = document.createElement('div');
+                detailEl.id = 'resumen-paq-detail';
+                detailEl.className = 'text-xs text-gray-500 mb-4 space-y-0.5';
+                titleEl.insertAdjacentElement('afterend', detailEl);
+            }
+            const hab = State.itemSeleccionado.habitacion;
+            const svc = State.itemSeleccionado.servicio;
+            detailEl.innerHTML = [
+                hab ? `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bed text-green-600 text-[10px]"></i>${hab}</div>` : '',
+                svc ? `<div class="flex items-center gap-1.5"><i class="fa-solid fa-bell-concierge text-amber-500 text-[10px]"></i>Incluye: ${svc}</div>` : '',
+            ].join('');
         } else {
             titleEl.textContent = 'Sin selección';
             imgWrap.classList.add('hidden');
-            const detailEl = document.getElementById('resumen-paq-detail');
-            if (detailEl) detailEl.innerHTML = '';
+            if (_paqDetail) _paqDetail.innerHTML = '';
+            if (_habDetail) _habDetail.innerHTML = '';
         }
 
         if (State.fechaInicio) {
@@ -859,8 +917,12 @@ const FormValidator = {
             UI.showToast("Selecciona las fechas de estancia completas", "error");
             return false;
         }
-        if (!State.itemSeleccionado) {
-            UI.showToast(`Selecciona un ${State.modo === 'habitacion' ? 'habitación' : 'paquete'}`, "error");
+        if (State.modo === 'habitacion' && State.habitacionesSeleccionadas.length === 0) {
+            UI.showToast("Selecciona al menos una habitación", "error");
+            return false;
+        }
+        if (State.modo === 'paquete' && !State.itemSeleccionado) {
+            UI.showToast("Selecciona un paquete", "error");
             return false;
         }
         if (!State.cliente) {
@@ -1247,7 +1309,12 @@ const ReservaForm = {
         ModoReserva.init();
         BuscadorCliente.init();
 
-        document.getElementById('descuento')?.addEventListener('input', () => ResumenLateral.actualizar());
+        document.getElementById('descuento')?.addEventListener('input', function () {
+            const v = parseInt(this.value, 10);
+            if (this.value !== '' && (isNaN(v) || v < 0)) this.value = 0;
+            else if (!isNaN(v)) this.value = v;
+            ResumenLateral.actualizar();
+        });
 
         // Sincronizar estado oculto con método de pago
         document.getElementById('metodo-pago')?.addEventListener('change', function () {
@@ -1270,7 +1337,7 @@ const ReservaForm = {
 
             const noches = Math.max(1, Math.round((State.fechaFin - State.fechaInicio) / 86400000));
             const costoBase = State.modo === 'habitacion'
-                ? State.itemSeleccionado.precio * noches
+                ? State.habitacionesSeleccionadas.reduce((s, h) => s + h.precio, 0) * noches
                 : State.itemSeleccionado.precio;
             const costoSvc     = State.serviciosExtras.reduce((a, s) => a + (s.precio * (s.cantidad || 1)), 0);
             // IVA INCLUIDO: el backend recalculará estos valores; los enviamos como referencia
@@ -1288,7 +1355,8 @@ const ReservaForm = {
                 SubTotal: baseGravable,
                 IVA: ivaDesglose,
                 MontoTotal: totalConIva,
-                IDHabitacion: State.modo === 'habitacion' ? State.itemSeleccionado.id : null,
+                IDHabitacion: State.modo === 'habitacion' ? (State.habitacionesSeleccionadas[0]?.id ?? null) : null,
+                habitacionesIds: State.modo === 'habitacion' ? State.habitacionesSeleccionadas.map(h => Number(h.id)) : [],
                 paquetesIds: State.modo === 'paquete' ? [Number(State.itemSeleccionado.id)] : [],
                 serviciosIds: State.serviciosExtras.map(s => Number(s.id)),
                 serviciosConHorarios: State.serviciosExtras.map(s => ({ id: Number(s.id), hora: s.hora || null })),
