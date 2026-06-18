@@ -47,6 +47,7 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
             const raw  = Array.isArray(data) ? data : (data.data || []);
             _rfRolesCache = raw
                 .filter(r => mode === 'edit' ? Number(r.IDRol) !== Number(currentRolId) : true)
+                .filter(r => Number(r.IsActive) !== 0 && String(r.Estado || '').toLowerCase() !== 'inactivo')
                 .map(r => (r.Nombre || r.NombreRol || '').trim().toLowerCase())
                 .filter(Boolean);
         }
