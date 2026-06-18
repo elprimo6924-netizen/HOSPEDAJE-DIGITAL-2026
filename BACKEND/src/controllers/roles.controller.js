@@ -101,8 +101,16 @@ exports.create = async (req, res) => {
     try {
         const { Nombre, Estado, IsActive, Permisos } = req.body;
 
-        if (!Nombre) {
+        if (!Nombre || !Nombre.trim()) {
             return res.status(400).json({ error: "El nombre del rol es obligatorio" });
+        }
+
+        const [duplicate] = await db.query(
+            "SELECT IDRol FROM roles WHERE LOWER(TRIM(Nombre)) = LOWER(TRIM(?)) LIMIT 1",
+            [Nombre.trim()]
+        );
+        if (duplicate.length > 0) {
+            return res.status(409).json({ error: `Ya existe un rol con el nombre "${Nombre.trim()}". Usa un nombre diferente.` });
         }
 
         if (!Array.isArray(Permisos) || Permisos.length === 0) {
@@ -136,8 +144,15 @@ exports.update = async (req, res) => {
         const valores = [];
 
         if (req.body.Nombre !== undefined && req.body.Nombre !== "") {
+            const [dup] = await db.query(
+                "SELECT IDRol FROM roles WHERE LOWER(TRIM(Nombre)) = LOWER(TRIM(?)) AND IDRol != ? LIMIT 1",
+                [req.body.Nombre.trim(), rolId]
+            );
+            if (dup.length > 0) {
+                return res.status(409).json({ error: `Ya existe otro rol con el nombre "${req.body.Nombre.trim()}".` });
+            }
             campos.push("Nombre = ?");
-            valores.push(req.body.Nombre);
+            valores.push(req.body.Nombre.trim());
         }
 
         if (req.body.Estado !== undefined && req.body.Estado !== "") {
