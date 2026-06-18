@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (action === "edit") {
         const session = window.getStoredSession();
         const usuarioData = await window.apiRequest(`/usuarios/${id}`);
-        await openUsuarioForm("edit", usuarioData, session.token, loadUsuarios);
+        await openUsuarioForm("edit", usuarioData, session.token, loadUsuarios, allUsers);
       }
     } catch (error) {
       if (typeof showAlert === 'function') showAlert(error.message || 'No se pudo completar la acción.', 'error');
@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   createButton?.addEventListener("click", async () => {
     const session = getStoredSession();
     if (session && session.token) {
-      await openUsuarioForm("create", null, session.token, loadUsuarios);
+      await openUsuarioForm("create", null, session.token, loadUsuarios, allUsers);
     } else {
       if (typeof showAlert === 'function') showAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'warning');
       setTimeout(() => { window.location.href = "../login.html"; }, 1500);

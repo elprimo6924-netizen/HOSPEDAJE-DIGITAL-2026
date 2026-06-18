@@ -1,7 +1,9 @@
 let currentMode = 'create';
 let currentUsuarioId = null;
+let _ufExistingUsers = [];
 
-async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSave) {
+async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSave, existingUsers = []) {
+    _ufExistingUsers = Array.isArray(existingUsers) ? existingUsers : [];
     if (mode === 'edit' && (usuarioData?.IDUsuario === 1 || usuarioData?.id === 1)) {
         if (typeof showAlert === 'function') showAlert('El Super Administrador no puede ser editado.', 'warning');
         return;
@@ -549,6 +551,46 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
         });
     }
 
+    // ── Validación duplicados en tiempo real ─────────────────────────────
+    const _ufCheckDup = (input, fieldId, errClass, getValue, findFn, msg) => {
+        input?.addEventListener('blur', () => {
+            const val = getValue(input);
+            if (!val) return;
+            overlay.querySelectorAll('.' + errClass).forEach(el => el.remove());
+            input.classList.remove('uf-error');
+            if (findFn(val)) {
+                input.classList.add('uf-error');
+                const errEl = document.createElement('span');
+                errEl.className = `uf-err-msg _uf_err ${errClass}`;
+                errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${msg}`;
+                const fld = overlay.querySelector(`#${fieldId}`);
+                (fld || input.closest('.uf-field'))?.appendChild(errEl);
+            }
+        });
+    };
+
+    _ufCheckDup(
+        overlay.querySelector('[name="Email"]'),
+        '_uf_fld_Email', '_uf_dup_email',
+        el => el.value.trim().toLowerCase(),
+        val => _ufExistingUsers.some(u =>
+            (u.Email || '').toLowerCase() === val &&
+            String(u.IDUsuario) !== String(currentUsuarioId)
+        ),
+        'Este correo ya está registrado. Usa uno diferente.'
+    );
+
+    _ufCheckDup(
+        overlay.querySelector('[name="NumeroDocumento"]'),
+        '_uf_fld_NumeroDocumento', '_uf_dup_doc',
+        el => el.value.trim(),
+        val => _ufExistingUsers.some(u =>
+            String(u.NumeroDocumento || '') === val &&
+            String(u.IDUsuario) !== String(currentUsuarioId)
+        ),
+        'Este número de documento ya está registrado.'
+    );
+
     // ── Eventos de cierre ────────────────────────────────────────────────
     const close = () => closeUsuarioForm();
     overlay.querySelector('#_uf_cancel').addEventListener('click', close);
@@ -583,6 +625,24 @@ function _ufValidar(data, isCreate) {
                                errs.Contrasena       = 'Debe tener mínimo 8 caracteres';
     }
     if (!data.IDRol)           errs.IDRol            = 'Selecciona un rol para el usuario';
+
+    if (data.Email) {
+        const emailLow = data.Email.toLowerCase();
+        const dupEmail = _ufExistingUsers.find(u =>
+            (u.Email || '').toLowerCase() === emailLow &&
+            String(u.IDUsuario) !== String(currentUsuarioId)
+        );
+        if (dupEmail) errs.Email = 'Este correo ya está registrado. Usa uno diferente.';
+    }
+
+    if (data.NumeroDocumento) {
+        const dupDoc = _ufExistingUsers.find(u =>
+            String(u.NumeroDocumento || '') === String(data.NumeroDocumento) &&
+            String(u.IDUsuario) !== String(currentUsuarioId)
+        );
+        if (dupDoc) errs.NumeroDocumento = 'Este número de documento ya está registrado.';
+    }
+
     return errs;
 }
 

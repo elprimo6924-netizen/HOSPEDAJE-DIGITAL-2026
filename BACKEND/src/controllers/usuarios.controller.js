@@ -129,6 +129,24 @@ exports.create = async (req, res) => {
             return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
         }
 
+        const [[dupEmail]] = await db.query(
+            "SELECT IDUsuario FROM usuarios WHERE Email = ? LIMIT 1",
+            [Email]
+        );
+        if (dupEmail) {
+            return res.status(409).json({ error: `Ya existe un usuario con el correo "${Email}". Usa un correo diferente.` });
+        }
+
+        if (NumeroDocumento) {
+            const [[dupDoc]] = await db.query(
+                "SELECT IDUsuario FROM usuarios WHERE NumeroDocumento = ? LIMIT 1",
+                [NumeroDocumento]
+            );
+            if (dupDoc) {
+                return res.status(409).json({ error: `Ya existe un usuario con el número de documento "${NumeroDocumento}". Verifica los datos.` });
+            }
+        }
+
         const hashPass = await bcrypt.hash(Contrasena, 10);
         const rolFinal = IDRol || 2;
         const activoFinal = IsActive === false ? 0 : 1;
@@ -196,6 +214,26 @@ exports.update = async (req, res) => {
             "IDRol",
             "IsActive",
         ];
+
+        if (req.body.Email) {
+            const [[dupEmail]] = await db.query(
+                "SELECT IDUsuario FROM usuarios WHERE Email = ? AND IDUsuario != ? LIMIT 1",
+                [req.body.Email, usuarioId]
+            );
+            if (dupEmail) {
+                return res.status(409).json({ error: `Ya existe otro usuario con el correo "${req.body.Email}". Usa un correo diferente.` });
+            }
+        }
+
+        if (req.body.NumeroDocumento) {
+            const [[dupDoc]] = await db.query(
+                "SELECT IDUsuario FROM usuarios WHERE NumeroDocumento = ? AND IDUsuario != ? LIMIT 1",
+                [req.body.NumeroDocumento, usuarioId]
+            );
+            if (dupDoc) {
+                return res.status(409).json({ error: `Ya existe otro usuario con el número de documento "${req.body.NumeroDocumento}".` });
+            }
+        }
 
         const asignaciones = [];
         const valores = [];
