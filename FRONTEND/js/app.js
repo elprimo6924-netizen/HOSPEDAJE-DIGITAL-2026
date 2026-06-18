@@ -600,7 +600,7 @@ const construirPayloadCliente = ({ forzarEstado = null } = {}) => {
         Email: campoEmail?.value?.trim(),
         Telefono: campoTelefono?.value?.trim() || null,
         Estado: forzarEstado !== null ? Number(forzarEstado) : Number(campoEstado?.value ?? 1),
-        IDRol: 3
+        IDRol: 2
     };
 
     const passVal = campoContrasena?.value?.trim();

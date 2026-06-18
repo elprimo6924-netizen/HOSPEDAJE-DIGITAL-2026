@@ -172,7 +172,7 @@ exports.create = async (req, res) => {
     const [result] = await db.query(
       `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [NroDocumento, Nombre, Apellido, Direccion || null, Email, Telefono || null, Estado || 1, IDRol || 3]
+      [NroDocumento, Nombre, Apellido, Direccion || null, Email, Telefono || null, Estado || 1, IDRol || 2]
     );
 
     /* C4: Crear usuario asociado con rol Cliente si se proporcionó contraseña */
@@ -300,7 +300,7 @@ exports.update = async (req, res) => {
       `UPDATE clientes
        SET Nombre = ?, Apellido = ?, Direccion = ?, Email = ?, Telefono = ?, Estado = ?, IDRol = ?
        WHERE NroDocumento = ?`,
-      [Nombre, Apellido, Direccion || null, Email, Telefono || null, Estado || 1, IDRol || 3, id]
+      [Nombre, Apellido, Direccion || null, Email, Telefono || null, Estado || 1, IDRol || 2, id]
     );
 
     res.json({ mensaje: "Cliente actualizado" });
