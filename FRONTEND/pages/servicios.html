@@ -218,8 +218,9 @@
                                 <div class="svc-col-full">
                                     <label for="servicio-admin-nombre" class="svc-label">
                                         Nombre del servicio <span class="svc-req" aria-hidden="true">*</span>
+                                        <span id="cnt-svc-nombre" style="float:right;font-size:.72rem;font-weight:400;color:#94a3b8">0 / 30</span>
                                     </label>
-                                    <input type="text" id="servicio-admin-nombre" required maxlength="100"
+                                    <input type="text" id="servicio-admin-nombre" required maxlength="30"
                                            placeholder="Ej. Masaje relajante" class="svc-input"
                                            autocomplete="off">
                                     <div class="svc-err" id="err-svc-nombre"></div>
@@ -229,10 +230,11 @@
                                 <div class="svc-col-full">
                                     <label for="servicio-admin-descripcion" class="svc-label">
                                         Descripción <span class="svc-req" aria-hidden="true">*</span>
+                                        <span id="cnt-svc-desc" style="float:right;font-size:.72rem;font-weight:400;color:#94a3b8">0 / 50</span>
                                     </label>
-                                    <textarea id="servicio-admin-descripcion" required maxlength="500" rows="3"
+                                    <textarea id="servicio-admin-descripcion" required maxlength="50" rows="2"
                                               placeholder="Describe el servicio en pocas palabras"
-                                              class="svc-input" style="resize:vertical;min-height:88px"></textarea>
+                                              class="svc-input" style="resize:none"></textarea>
                                     <div class="svc-err" id="err-svc-descripcion"></div>
                                 </div>
 
@@ -241,7 +243,7 @@
                                     <label for="servicio-admin-duracion" class="svc-label">
                                         Duración (minutos) <span class="svc-req" aria-hidden="true">*</span>
                                     </label>
-                                    <input type="number" id="servicio-admin-duracion" required min="1"
+                                    <input type="number" id="servicio-admin-duracion" required min="1" max="1440" step="1"
                                            placeholder="Ej. 60" class="svc-input">
                                     <div class="svc-err" id="err-svc-duracion"></div>
                                 </div>
@@ -251,7 +253,7 @@
                                     <label for="servicio-admin-cantidad-maxima" class="svc-label">
                                         Máx. personas <span class="svc-req" aria-hidden="true">*</span>
                                     </label>
-                                    <input type="number" id="servicio-admin-cantidad-maxima" required min="1"
+                                    <input type="number" id="servicio-admin-cantidad-maxima" required min="1" max="9999" step="1"
                                            placeholder="Ej. 4" class="svc-input">
                                     <div class="svc-err" id="err-svc-cantidad"></div>
                                 </div>
@@ -261,7 +263,7 @@
                                     <label for="servicio-admin-costo" class="svc-label">
                                         Costo ($) <span class="svc-req" aria-hidden="true">*</span>
                                     </label>
-                                    <input type="number" id="servicio-admin-costo" required min="0" step="1"
+                                    <input type="number" id="servicio-admin-costo" required min="0" max="99999999" step="1"
                                            placeholder="Ej. 150000" class="svc-input">
                                     <div class="svc-err" id="err-svc-costo"></div>
                                 </div>
@@ -489,6 +491,34 @@
             function clearAllErrs()   { Object.values(ERR_MAP).forEach(clearErr); clearErr('err-svc-imagen'); }
             function clearAllMarks()  { Object.keys(ERR_MAP).forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('svc-field-error'); }); }
 
+            /* ── Contadores de caracteres ── */
+            const _cntNombre = document.getElementById('cnt-svc-nombre');
+            const _cntDesc   = document.getElementById('cnt-svc-desc');
+            const _inpNombre = document.getElementById('servicio-admin-nombre');
+            const _inpDesc   = document.getElementById('servicio-admin-descripcion');
+            function _actualizarContador(input, counter, max) {
+                if (!input || !counter) return;
+                const n = input.value.length;
+                counter.textContent = `${n} / ${max}`;
+                counter.style.color = n >= max ? '#ef4444' : (n >= max * 0.85 ? '#f97316' : '#94a3b8');
+            }
+            _inpNombre?.addEventListener('input', () => _actualizarContador(_inpNombre, _cntNombre, 30));
+            _inpDesc?.addEventListener('input',   () => _actualizarContador(_inpDesc,   _cntDesc,   50));
+
+            /* Bloquear decimales y negativos en campos numéricos */
+            ['servicio-admin-duracion', 'servicio-admin-cantidad-maxima', 'servicio-admin-costo'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('keydown', e => {
+                    if (['-', '+', 'e', 'E', '.', ','].includes(e.key)) e.preventDefault();
+                });
+                el.addEventListener('input', () => {
+                    const v = Math.floor(Math.abs(Number(el.value)));
+                    if (el.value !== '' && (isNaN(v) || v < 0)) el.value = '';
+                    else if (el.value !== '') el.value = v;
+                });
+            });
+
             /* Limpiar error del campo al escribir */
             Object.entries(ERR_MAP).forEach(([inputId, errId]) => {
                 const el = document.getElementById(inputId);
@@ -501,11 +531,26 @@
                 clearAllMarks();
                 let firstErr = null;
                 const rules = [
-                    { id: 'servicio-admin-nombre',          err: 'err-svc-nombre',      msg: 'El nombre del servicio es obligatorio.',             bad: v => !v.trim() },
-                    { id: 'servicio-admin-descripcion',     err: 'err-svc-descripcion', msg: 'La descripción es obligatoria.',                     bad: v => !v.trim() },
-                    { id: 'servicio-admin-duracion',        err: 'err-svc-duracion',    msg: 'Ingresa una duración en minutos (número positivo).', bad: v => !v.trim() || Number(v) < 1 },
-                    { id: 'servicio-admin-cantidad-maxima', err: 'err-svc-cantidad',    msg: 'Ingresa la cantidad máxima de personas (mín. 1).',    bad: v => !v.trim() || Number(v) < 1 },
-                    { id: 'servicio-admin-costo',           err: 'err-svc-costo',       msg: 'El costo debe ser un número entero no negativo (ej: 150000).',  bad: v => v.trim() === '' || Number(v) < 0 || !Number.isInteger(Number(v)) },
+                    { id: 'servicio-admin-nombre',
+                      err: 'err-svc-nombre',
+                      msg: 'El nombre es obligatorio (máx. 30 caracteres).',
+                      bad: v => !v.trim() || v.trim().length > 30 },
+                    { id: 'servicio-admin-descripcion',
+                      err: 'err-svc-descripcion',
+                      msg: 'La descripción es obligatoria (máx. 50 caracteres).',
+                      bad: v => !v.trim() || v.trim().length > 50 },
+                    { id: 'servicio-admin-duracion',
+                      err: 'err-svc-duracion',
+                      msg: 'Ingresa una duración en minutos (entero positivo, máx. 1440).',
+                      bad: v => !v.trim() || !Number.isInteger(Number(v)) || Number(v) < 1 || Number(v) > 1440 },
+                    { id: 'servicio-admin-cantidad-maxima',
+                      err: 'err-svc-cantidad',
+                      msg: 'Ingresa la cantidad máxima de personas (entero ≥ 1).',
+                      bad: v => !v.trim() || !Number.isInteger(Number(v)) || Number(v) < 1 },
+                    { id: 'servicio-admin-costo',
+                      err: 'err-svc-costo',
+                      msg: 'El costo debe ser un entero no negativo (ej: 150000).',
+                      bad: v => v.trim() === '' || !Number.isInteger(Number(v)) || Number(v) < 0 },
                 ];
                 rules.forEach(({ id, err, msg, bad }) => {
                     const el = document.getElementById(id);
@@ -561,9 +606,19 @@
             const btnNuevo = document.getElementById('btn-nuevo-servicio-admin');
             if (btnNuevo) {
                 btnNuevo.addEventListener('click', () => {
-                    setTimeout(() => { clearAllErrs(); clearAllMarks(); clearImageState(); }, 30);
+                    setTimeout(() => {
+                        clearAllErrs(); clearAllMarks(); clearImageState();
+                        _actualizarContador(_inpNombre, _cntNombre, 30);
+                        _actualizarContador(_inpDesc,   _cntDesc,   50);
+                    }, 30);
                 });
             }
+
+            /* Actualizar contadores al cargar datos en edición */
+            document.addEventListener('servicio-cargado-en-form', () => {
+                _actualizarContador(_inpNombre, _cntNombre, 30);
+                _actualizarContador(_inpDesc,   _cntDesc,   50);
+            });
         });
     })();
     </script>
