@@ -712,6 +712,12 @@ async function saveUsuario(token, onSave) {
     data.IsActive  = document.getElementById('_uf_active')?.checked ? 1 : 0;
     if (data.IDRol) data.IDRol = Number(data.IDRol);
 
+    // Los campos disabled no aparecen en FormData — recuperarlos del DOM
+    if (currentClienteDoc && !data.NumeroDocumento) {
+        const docEl = form.querySelector('[name="NumeroDocumento"]');
+        data.NumeroDocumento = docEl?.value || currentClienteDoc;
+    }
+
     // Validar en cliente
     const errs = _ufValidar(data, isCreate);
     if (Object.keys(errs).length > 0) {
