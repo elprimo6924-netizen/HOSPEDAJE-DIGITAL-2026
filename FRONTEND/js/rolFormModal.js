@@ -2,7 +2,7 @@
 
 let currentModeRol = 'create';
 let currentRolId   = null;
-let _rfRolesCache  = []; // nombres de roles existentes para validar duplicados
+let _rfRolesCache  = []; // { nombre: string (lowercase), activo: boolean }
 
 const PERMISOS_DISPONIBLES = [
     { id: 1, label: 'Dashboard',    icon: 'fa-chart-line'     },
@@ -47,9 +47,11 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
             const raw  = Array.isArray(data) ? data : (data.data || []);
             _rfRolesCache = raw
                 .filter(r => mode === 'edit' ? Number(r.IDRol) !== Number(currentRolId) : true)
-                .filter(r => Number(r.IsActive) !== 0 && String(r.Estado || '').toLowerCase() !== 'inactivo')
-                .map(r => (r.Nombre || r.NombreRol || '').trim().toLowerCase())
-                .filter(Boolean);
+                .map(r => ({
+                    nombre: (r.Nombre || r.NombreRol || '').trim().toLowerCase(),
+                    activo: Number(r.IsActive) === 1 && String(r.Estado || '').toLowerCase() !== 'inactivo'
+                }))
+                .filter(r => r.nombre);
         }
     } catch { _rfRolesCache = []; }
 
@@ -438,9 +440,13 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
         if (!val) return;
 
         _rfNombreTimer = setTimeout(() => {
-            if (_rfRolesCache.includes(val)) {
+            const dup = _rfRolesCache.find(r => r.nombre === val);
+            if (dup) {
                 nombreInput.classList.add('rf-error');
-                _rfSetNombreMsg('error', `Ya existe un rol con ese nombre. Elige un nombre diferente.`);
+                const msg = dup.activo
+                    ? 'Ya existe un rol con ese nombre. Elige un nombre diferente.'
+                    : 'Este rol ya existe pero está desactivado. Actívalo desde la lista en lugar de crear uno nuevo.';
+                _rfSetNombreMsg('error', msg);
             } else {
                 _rfSetNombreMsg('ok', 'Nombre disponible.');
             }
@@ -553,11 +559,17 @@ async function saveRol(token, onSave) {
         _setMsg(nombreMsg, 'error', 'El nombre del rol es obligatorio.');
         nombreInput?.focus();
         hayError = true;
-    } else if (_rfRolesCache.includes(nombre.toLowerCase())) {
-        nombreInput?.classList.add('rf-error');
-        _setMsg(nombreMsg, 'error', 'Ya existe un rol con ese nombre. Elige uno diferente.');
-        nombreInput?.focus();
-        hayError = true;
+    } else {
+        const dup = _rfRolesCache.find(r => r.nombre === nombre.toLowerCase());
+        if (dup) {
+            nombreInput?.classList.add('rf-error');
+            const msg = dup.activo
+                ? 'Ya existe un rol con ese nombre. Elige uno diferente.'
+                : 'Este rol ya existe pero está desactivado. Actívalo desde la lista en lugar de crear uno nuevo.';
+            _setMsg(nombreMsg, 'error', msg);
+            nombreInput?.focus();
+            hayError = true;
+        }
     }
 
     const permsWarn = document.getElementById('_rf_perms_warn');
@@ -568,10 +580,13 @@ async function saveRol(token, onSave) {
 
     if (hayError) {
         if (typeof showAlert === 'function') {
+            const dup = _rfRolesCache.find(r => r.nombre === nombre.toLowerCase());
             const msg = !nombre
                 ? 'El nombre del rol es obligatorio.'
-                : _rfRolesCache.includes(nombre.toLowerCase())
-                    ? 'Ya existe un rol con ese nombre. Elige uno diferente.'
+                : dup
+                    ? (dup.activo
+                        ? 'Ya existe un rol con ese nombre. Elige uno diferente.'
+                        : 'Este rol ya existe pero está desactivado. Actívalo desde la lista.')
                     : 'Debes seleccionar al menos un permiso.';
             showAlert(msg, 'error');
         }
