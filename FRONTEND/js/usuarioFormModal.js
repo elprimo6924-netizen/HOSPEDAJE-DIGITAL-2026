@@ -1,9 +1,13 @@
 let currentMode = 'create';
 let currentUsuarioId = null;
+let currentClienteDoc = null;
 let _ufExistingUsers = [];
 
 async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSave, existingUsers = []) {
     _ufExistingUsers = Array.isArray(existingUsers) ? existingUsers : [];
+    currentClienteDoc = (mode === 'edit' && usuarioData?._fuente === 'cliente')
+        ? String(usuarioData._clienteDoc || '')
+        : null;
     if (mode === 'edit' && (usuarioData?.IDUsuario === 1 || usuarioData?.id === 1)) {
         if (typeof showAlert === 'function') showAlert('El Super Administrador no puede ser editado.', 'warning');
         return;
@@ -534,11 +538,25 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
     // ── Pre-rellenar en modo edición ─────────────────────────────────────
     if (mode === 'edit' && usuarioData) {
         const form = overlay.querySelector('#_uf_form');
-        Object.keys(usuarioData).forEach(key => {
+
+        // Para registros solo-cliente: mapear campos del cliente al formulario
+        const dataParaForm = currentClienteDoc ? {
+            NombreUsuario:   usuarioData.NombreUsuario || usuarioData.Nombre || '',
+            Apellido:        usuarioData.Apellido || '',
+            Email:           usuarioData.Email || '',
+            Telefono:        usuarioData.Telefono || '',
+            Direccion:       usuarioData.Direccion || '',
+            NumeroDocumento: usuarioData.NumeroDocumento || currentClienteDoc,
+            TipoDocumento:   usuarioData.TipoDocumento || 'CC',
+            IDRol:           2,
+            IsActive:        usuarioData.IsActive ?? 1,
+        } : usuarioData;
+
+        Object.keys(dataParaForm).forEach(key => {
             const el = form.elements[key];
             if (!el) return;
             if (el.type === 'checkbox') {
-                el.checked = Number(usuarioData[key]) === 1;
+                el.checked = Number(dataParaForm[key]) === 1;
                 if (key === 'IsActive') {
                     const on = el.checked;
                     activeLbl.textContent = on ? 'Activo' : 'Inactivo';
@@ -546,9 +564,15 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
                     activeDot.className   = `uf-toggle-dot ${on ? 'on' : 'off'}`;
                 }
             } else {
-                el.value = usuarioData[key] ?? '';
+                el.value = dataParaForm[key] ?? '';
             }
         });
+
+        // Deshabilitar documento para solo-clientes (es el identificador único)
+        if (currentClienteDoc) {
+            const docInput = form.elements['NumeroDocumento'];
+            if (docInput) { docInput.disabled = true; docInput.title = 'El número de documento no puede modificarse'; }
+        }
     }
 
     // ── Validación duplicados en tiempo real ─────────────────────────────
@@ -708,15 +732,34 @@ async function saveUsuario(token, onSave) {
         const apiUrl = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : null)
                     || window.CONFIG?.API_URL
                     || 'http://localhost:3000/api';
-        const method = isCreate ? 'POST' : 'PUT';
-        const url    = isCreate
-            ? `${apiUrl}/usuarios`
-            : `${apiUrl}/usuarios/${currentUsuarioId}`;
+
+        let method, url, body;
+
+        if (currentClienteDoc) {
+            // Guardar en API de clientes
+            method = 'PUT';
+            url    = `${apiUrl}/clientes/${currentClienteDoc}`;
+            body   = {
+                Nombre:    data.NombreUsuario || '',
+                Apellido:  data.Apellido || '',
+                Email:     data.Email || '',
+                Telefono:  data.Telefono || null,
+                Direccion: data.Direccion || null,
+                Estado:    data.IsActive ?? 1,
+                IDRol:     2,
+            };
+        } else {
+            method = isCreate ? 'POST' : 'PUT';
+            url    = isCreate
+                ? `${apiUrl}/usuarios`
+                : `${apiUrl}/usuarios/${currentUsuarioId}`;
+            body   = data;
+        }
 
         const res     = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(data)
+            body: JSON.stringify(body)
         });
         const resData = await res.json();
 
@@ -724,8 +767,9 @@ async function saveUsuario(token, onSave) {
             throw new Error(resData.message || resData.error || resData.detalle || 'Error en la operación');
         }
 
+        const label = currentClienteDoc ? 'Cliente' : 'Usuario';
         if (typeof showAlert === 'function') {
-            showAlert(`Usuario ${isCreate ? 'creado' : 'actualizado'} exitosamente`, 'success');
+            showAlert(`${label} ${isCreate ? 'creado' : 'actualizado'} exitosamente`, 'success');
         }
         closeUsuarioForm();
         if (onSave) onSave();

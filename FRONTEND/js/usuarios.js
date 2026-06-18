@@ -117,35 +117,37 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 </td>
                 <td class="p-4 text-center">
-                    ${esSoloCliente
-                      ? `<span class="text-xs text-slate-400 italic">—</span>`
-                      : `<label class="switch">
-                             <input type="checkbox" ${isActive ? "checked" : ""} data-action="toggle" data-id="${item.IDUsuario}" ${isProtected ? 'disabled' : ''}>
-                             <span class="slider ${isProtected ? 'opacity-50 cursor-not-allowed' : ''}"></span>
-                         </label>`
-                    }
+                    <label class="switch">
+                        <input type="checkbox" ${isActive ? "checked" : ""}
+                               data-action="toggle"
+                               data-id="${item.IDUsuario ?? ''}"
+                               data-cliente-doc="${item._clienteDoc || ''}"
+                               ${isProtected ? 'disabled' : ''}>
+                        <span class="slider ${isProtected ? 'opacity-50 cursor-not-allowed' : ''}"></span>
+                    </label>
                 </td>
                 <td class="p-4">
                     <div class="flex justify-center gap-1.5">
                         <button class="usr-btn usr-btn-ver"
                                 data-action="view" data-id="${item.IDUsuario ?? ''}"
                                 data-cliente-doc="${item._clienteDoc || ''}"
-                                title="Ver detalle" aria-label="Ver detalle del usuario">
+                                title="Ver detalle" aria-label="Ver detalle">
                             <i class="fa-solid fa-eye"></i>
                         </button>
-                        ${esSoloCliente ? '' : `
                         <button class="usr-btn usr-btn-edit"
-                                data-action="edit" data-id="${item.IDUsuario}"
+                                data-action="edit" data-id="${item.IDUsuario ?? ''}"
+                                data-cliente-doc="${item._clienteDoc || ''}"
                                 title="${isProtected ? 'No editable — SuperAdministrador' : 'Editar'}"
                                 ${isProtected ? 'disabled' : ''}>
                             <i class="fa-solid fa-pencil"></i>
                         </button>
                         <button class="usr-btn usr-btn-del"
-                                data-action="delete" data-id="${item.IDUsuario}"
+                                data-action="delete" data-id="${item.IDUsuario ?? ''}"
+                                data-cliente-doc="${item._clienteDoc || ''}"
                                 title="${isProtected ? 'No eliminable — SuperAdministrador' : 'Eliminar'}"
                                 ${isProtected ? 'disabled' : ''}>
                             <i class="fa-solid fa-trash-can"></i>
-                        </button>`}
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -216,10 +218,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const { action, id } = button.dataset;
+    const clienteDoc = button.dataset.clienteDoc || '';
+    const esSoloCliente = clienteDoc && !id;
 
-    // Ver detalle — disponible para todos los usuarios sin restricción
+    // Ver detalle — disponible para todos
     if (action === "view") {
-      const clienteDoc = button.dataset.clienteDoc;
       const item = clienteDoc
         ? allUsers.find(u => u._fuente === 'cliente' && u._clienteDoc === clienteDoc)
         : allUsers.find(u => String(u.IDUsuario) === String(id));
@@ -228,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Bloquear acciones sobre el SuperAdministrador
-    if (Number(id) === SUPER_ADMIN_ID) {
+    if (!esSoloCliente && Number(id) === SUPER_ADMIN_ID) {
       if (typeof showAlert === 'function') showAlert('El SuperAdministrador no puede ser modificado.', 'warning');
       event.preventDefault();
       return;
@@ -236,27 +239,65 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       if (action === "delete") {
-        if (!confirm("¿Eliminar este usuario?")) return;
-        await window.apiRequest(`/usuarios/${id}`, { method: "DELETE" });
-        if (typeof showAlert === 'function') showAlert('Usuario eliminado correctamente.', 'success');
+        if (esSoloCliente) {
+          if (!confirm("¿Eliminar este cliente?")) return;
+          await window.apiRequest(`/clientes/${clienteDoc}`, { method: "DELETE" });
+          if (typeof showAlert === 'function') showAlert('Cliente eliminado correctamente.', 'success');
+        } else {
+          if (!confirm("¿Eliminar este usuario?")) return;
+          await window.apiRequest(`/usuarios/${id}`, { method: "DELETE" });
+          if (typeof showAlert === 'function') showAlert('Usuario eliminado correctamente.', 'success');
+        }
         await loadUsuarios();
-      }
-
-      if (action === "toggle") {
-        const newState = button.checked;
-        await window.apiRequest(`/usuarios/${id}/status`, {
-          method: "PATCH",
-          body: { isActive: newState },
-        });
       }
 
       if (action === "edit") {
         const session = window.getStoredSession();
-        const usuarioData = await window.apiRequest(`/usuarios/${id}`);
-        await openUsuarioForm("edit", usuarioData, session.token, loadUsuarios, allUsers);
+        if (esSoloCliente) {
+          const clienteData = allUsers.find(u => u._fuente === 'cliente' && u._clienteDoc === clienteDoc);
+          await openUsuarioForm("edit", clienteData, session.token, loadUsuarios, allUsers);
+        } else {
+          const usuarioData = await window.apiRequest(`/usuarios/${id}`);
+          await openUsuarioForm("edit", usuarioData, session.token, loadUsuarios, allUsers);
+        }
       }
     } catch (error) {
       if (typeof showAlert === 'function') showAlert(error.message || 'No se pudo completar la acción.', 'error');
+      await loadUsuarios();
+    }
+  });
+
+  // Toggle estado — separado porque usa evento "change" en checkbox
+  tbody?.addEventListener("change", async (event) => {
+    const checkbox = event.target.closest('input[data-action="toggle"]');
+    if (!checkbox) return;
+    if (checkbox.disabled) { event.preventDefault(); return; }
+
+    const toggleId       = checkbox.dataset.id || '';
+    const toggleDocCliente = checkbox.dataset.clienteDoc || '';
+    const toggleEsCliente  = toggleDocCliente && !toggleId;
+    const newState = checkbox.checked;
+
+    if (!toggleEsCliente && Number(toggleId) === SUPER_ADMIN_ID) {
+      if (typeof showAlert === 'function') showAlert('El SuperAdministrador no puede ser modificado.', 'warning');
+      await loadUsuarios();
+      return;
+    }
+
+    try {
+      if (toggleEsCliente) {
+        await window.apiRequest(`/clientes/${toggleDocCliente}/estado`, {
+          method: "PATCH",
+          body: { Estado: newState ? 1 : 0 },
+        });
+      } else {
+        await window.apiRequest(`/usuarios/${toggleId}/status`, {
+          method: "PATCH",
+          body: { isActive: newState },
+        });
+      }
+    } catch (error) {
+      if (typeof showAlert === 'function') showAlert('No se pudo cambiar el estado.', 'error');
       await loadUsuarios();
     }
   });
