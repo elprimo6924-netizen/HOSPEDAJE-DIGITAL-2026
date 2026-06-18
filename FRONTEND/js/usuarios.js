@@ -371,6 +371,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="usr-det-lbl">País</div>
         <div class="usr-det-val">${fmtVal(item.Pais)}</div>
       </div>
+      <div class="usr-det-item s2">
+        <div class="usr-det-lbl">Correo electrónico</div>
+        <div class="usr-det-val">${fmtVal(item.Email)}</div>
+      </div>
       <div class="usr-det-item">
         <div class="usr-det-lbl">Rol</div>
         <div class="usr-det-val">${fmtVal(item.NombreRol)}</div>
