@@ -83,6 +83,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 .join("")
             : `<option value="">Cargando roles...</option>`;
 
+        const esSoloCliente = item._fuente === 'cliente';
+
         // Badge de SuperAdministrador
         const superAdminBadge = isProtected
           ? `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200" title="Este usuario es el SuperAdministrador del sistema">
@@ -90,33 +92,48 @@ document.addEventListener("DOMContentLoaded", async () => {
              </span>`
           : '';
 
+        // Badge de solo cliente (registrado en clientes, sin cuenta de acceso)
+        const clienteBadge = esSoloCliente
+          ? `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200" title="Registrado como cliente, sin cuenta de usuario">
+               <i class="fa-solid fa-user-tag mr-1"></i>Solo cliente
+             </span>`
+          : '';
+
         return `
-            <tr class="hover:bg-slate-50 transition-colors ${isProtected ? 'bg-amber-50/30' : ''}">
+            <tr class="hover:bg-slate-50 transition-colors ${isProtected ? 'bg-amber-50/30' : ''} ${esSoloCliente ? 'bg-blue-50/20' : ''}">
                 <td class="p-4">
                     <div class="font-bold text-slate-800 flex items-center flex-wrap gap-1">
-                      ${nombreMostrar}${superAdminBadge}
+                      ${nombreMostrar}${superAdminBadge}${clienteBadge}
                     </div>
                     <div class="text-xs text-slate-500">${emailMostrar}</div>
                 </td>
                 <td class="p-4 text-center">
-                    <select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-hospedaje-green outline-none text-slate-700 ${isProtected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
-                            data-action="change-role" data-id="${item.IDUsuario}" ${isProtected ? 'disabled' : ''}>
-                        ${opcionesRoles}
-                    </select>
+                    ${esSoloCliente
+                      ? `<span class="text-xs text-slate-400 italic">Sin acceso</span>`
+                      : `<select class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-hospedaje-green outline-none text-slate-700 ${isProtected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
+                                data-action="change-role" data-id="${item.IDUsuario}" ${isProtected ? 'disabled' : ''}>
+                             ${opcionesRoles}
+                         </select>`
+                    }
                 </td>
                 <td class="p-4 text-center">
-                    <label class="switch">
-                        <input type="checkbox" ${isActive ? "checked" : ""} data-action="toggle" data-id="${item.IDUsuario}" ${isProtected ? 'disabled' : ''}>
-                        <span class="slider ${isProtected ? 'opacity-50 cursor-not-allowed' : ''}"></span>
-                    </label>
+                    ${esSoloCliente
+                      ? `<span class="text-xs text-slate-400 italic">—</span>`
+                      : `<label class="switch">
+                             <input type="checkbox" ${isActive ? "checked" : ""} data-action="toggle" data-id="${item.IDUsuario}" ${isProtected ? 'disabled' : ''}>
+                             <span class="slider ${isProtected ? 'opacity-50 cursor-not-allowed' : ''}"></span>
+                         </label>`
+                    }
                 </td>
                 <td class="p-4">
                     <div class="flex justify-center gap-1.5">
                         <button class="usr-btn usr-btn-ver"
-                                data-action="view" data-id="${item.IDUsuario}"
+                                data-action="view" data-id="${item.IDUsuario ?? ''}"
+                                data-cliente-doc="${item._clienteDoc || ''}"
                                 title="Ver detalle" aria-label="Ver detalle del usuario">
                             <i class="fa-solid fa-eye"></i>
                         </button>
+                        ${esSoloCliente ? '' : `
                         <button class="usr-btn usr-btn-edit"
                                 data-action="edit" data-id="${item.IDUsuario}"
                                 title="${isProtected ? 'No editable — SuperAdministrador' : 'Editar'}"
@@ -128,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 title="${isProtected ? 'No eliminable — SuperAdministrador' : 'Eliminar'}"
                                 ${isProtected ? 'disabled' : ''}>
                             <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        </button>`}
                     </div>
                 </td>
             </tr>
@@ -202,7 +219,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Ver detalle — disponible para todos los usuarios sin restricción
     if (action === "view") {
-      const item = allUsers.find(u => String(u.IDUsuario) === String(id));
+      const clienteDoc = button.dataset.clienteDoc;
+      const item = clienteDoc
+        ? allUsers.find(u => u._fuente === 'cliente' && u._clienteDoc === clienteDoc)
+        : allUsers.find(u => String(u.IDUsuario) === String(id));
       if (item) mostrarDetalleUsuario(item);
       return;
     }

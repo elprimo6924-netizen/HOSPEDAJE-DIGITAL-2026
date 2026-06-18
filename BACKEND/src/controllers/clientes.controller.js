@@ -53,15 +53,36 @@ exports.getAll = async (req, res) => {
       return res.json(rows);
     }
 
-    let sql = "SELECT * FROM clientes";
-    let params = [];
-
     if (documento) {
-      sql += " WHERE NroDocumento = ?";
-      params = [documento];
+      const [rows] = await db.query("SELECT * FROM clientes WHERE NroDocumento = ?", [documento]);
+      return res.json(rows);
     }
 
-    const [rows] = await db.query(sql, params);
+    // Incluir también usuarios con IDRol=2 que no tienen registro en clientes
+    const [rows] = await db.query(`
+      SELECT CAST(NroDocumento AS CHAR) AS NroDocumento, Nombre, Apellido,
+             Email, Telefono, Direccion, Estado, IDRol
+      FROM clientes
+
+      UNION
+
+      SELECT CAST(u.NumeroDocumento AS CHAR), u.NombreUsuario, u.Apellido,
+             u.Email, u.Telefono, u.Direccion, u.IsActive, u.IDRol
+      FROM usuarios u
+      WHERE u.IDRol = 2
+        AND u.NumeroDocumento IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM clientes c
+          WHERE CAST(c.NroDocumento AS CHAR) = CAST(u.NumeroDocumento AS CHAR)
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM clientes c
+          WHERE c.Email = u.Email
+        )
+
+      ORDER BY Nombre ASC
+    `);
+
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo clientes", detalle: error.message });

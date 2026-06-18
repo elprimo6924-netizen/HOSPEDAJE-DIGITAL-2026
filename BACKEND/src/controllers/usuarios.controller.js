@@ -85,7 +85,53 @@ exports.list = async (req, res) => {
         sql += " ORDER BY u.IDUsuario DESC";
 
         const [rows] = await db.query(sql, params);
-        res.json(rows.map(mapUsuario));
+        const usuariosMapeados = rows.map(u => ({ ...mapUsuario(u), _fuente: 'usuario' }));
+
+        // Incluir clientes que no tienen cuenta de usuario (por email o documento)
+        const [clientesRows] = await db.query(`
+            SELECT c.NroDocumento, c.Nombre, c.Apellido, c.Email, c.Telefono, c.Direccion, c.Estado
+            FROM clientes c
+            WHERE NOT EXISTS (
+                SELECT 1 FROM usuarios u
+                WHERE u.Email = c.Email
+                   OR (u.NumeroDocumento IS NOT NULL
+                       AND CAST(u.NumeroDocumento AS CHAR) = CAST(c.NroDocumento AS CHAR))
+            )
+        `);
+
+        let clientesMapeados = clientesRows.map(c => ({
+            IDUsuario:              null,
+            NombreUsuario:          c.Nombre || '',
+            Apellido:               c.Apellido || '',
+            Email:                  c.Email || '',
+            TipoDocumento:          'CC',
+            NumeroDocumento:        String(c.NroDocumento || ''),
+            Telefono:               c.Telefono || null,
+            Pais:                   null,
+            Direccion:              c.Direccion || null,
+            IDRol:                  2,
+            IsActive:               c.Estado,
+            requiereCambioPassword: 0,
+            fecha_registro:         null,
+            rol:                    { id: 2, nombre: 'Cliente', estado: 'Activo', activo: 1 },
+            NombreRol:              'Cliente',
+            EstadoRol:              'Activo',
+            RolActivo:              1,
+            _fuente:                'cliente',
+            _clienteDoc:            String(c.NroDocumento || ''),
+        }));
+
+        if (q) {
+            const like = q.toLowerCase();
+            clientesMapeados = clientesMapeados.filter(c =>
+                (c.NombreUsuario || '').toLowerCase().includes(like) ||
+                (c.Apellido || '').toLowerCase().includes(like) ||
+                (c.Email || '').toLowerCase().includes(like) ||
+                String(c.NumeroDocumento || '').toLowerCase().includes(like)
+            );
+        }
+
+        res.json([...usuariosMapeados, ...clientesMapeados]);
     } catch (error) {
         res.status(500).json({ error: "Error al listar usuarios", detalle: error.message });
     }
@@ -170,11 +216,11 @@ exports.create = async (req, res) => {
             ]
         );
 
-        // U1: Si el rol es Cliente (3) y tiene NumeroDocumento, sincronizar con tabla cliente
-        if (rolFinal === 3 && NumeroDocumento) {
+        // U1: Si el rol es Cliente (IDRol=2) y tiene NumeroDocumento, sincronizar con tabla clientes
+        if (rolFinal === 2 && NumeroDocumento) {
             await db.query(
                 `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 3)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 2)
                  ON DUPLICATE KEY UPDATE
                    Nombre = VALUES(Nombre),
                    Apellido = VALUES(Apellido),
