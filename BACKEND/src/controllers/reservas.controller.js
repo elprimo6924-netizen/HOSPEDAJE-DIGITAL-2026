@@ -86,14 +86,10 @@ const crear = async (req, res) => {
     if (usuarioCols.has("Nombre")) userNombreParts.push("u.Nombre");
     if (usuarioCols.has("NombreUsuario")) userNombreParts.push("u.NombreUsuario");
 
-    const userNombreExpr = userNombreParts.length
-      ? `MAX(COALESCE(${userNombreParts.join(", ")}))`
-      : "NULL";
-    const userApellidoExpr  = usuarioCols.has("Apellido") ? "MAX(u.Apellido)" : "NULL";
-    const userEmailExpr     = usuarioCols.has("Email")    ? "MAX(u.Email)"    : "NULL";
-    const userTelefonoExpr  = usuarioCols.has("Telefono") ? "MAX(u.Telefono)" : "NULL";
-    // JOIN por id_usuario (siempre fiable) en vez de NumeroDocumento (puede no coincidir)
-    const userJoin = "LEFT JOIN usuarios u ON r.id_usuario = u.IDUsuario";
+    const userNombreExpr   = userNombreParts.length ? `MAX(COALESCE(${userNombreParts.join(", ")}))` : "NULL";
+    const userApellidoExpr = usuarioCols.has("Apellido") ? "MAX(u.Apellido)" : "NULL";
+    const userEmailExpr    = usuarioCols.has("Email")    ? "MAX(u.Email)"    : "NULL";
+    const userTelefonoExpr = usuarioCols.has("Telefono") ? "MAX(u.Telefono)" : "NULL";
 
     // Notificaciones en segundo plano — no bloquean la respuesta
     db.query(
@@ -102,17 +98,21 @@ const crear = async (req, res) => {
               COALESCE(MAX(c.Apellido), ${userApellidoExpr}, '') AS Apellido,
               COALESCE(MAX(c.Email), ${userEmailExpr}) AS Email,
               COALESCE(MAX(c.Telefono), ${userTelefonoExpr}) AS Telefono,
-              GROUP_CONCAT(DISTINCT COALESCE(h.NombreHabitacion,'') SEPARATOR ', ') AS habitacion,
+              COALESCE(
+                NULLIF(GROUP_CONCAT(DISTINCT COALESCE(hp.NombreHabitacion,'') SEPARATOR ', '),''),
+                MAX(hd.NombreHabitacion)
+              ) AS habitacion,
               GROUP_CONCAT(DISTINCT p.NombrePaquete  ORDER BY p.NombrePaquete SEPARATOR '|') AS paquetes_str,
               GROUP_CONCAT(DISTINCT s.NombreServicio ORDER BY s.NombreServicio SEPARATOR '|') AS servicios_str
       FROM reserva r
-      LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
-      ${userJoin}
+      LEFT JOIN clientes c   ON r.NroDocumentoCliente = c.NroDocumento
+      LEFT JOIN usuarios u   ON r.id_usuario = u.IDUsuario
+      LEFT JOIN habitacion hd ON r.IDHabitacion = hd.IDHabitacion
       LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
-      LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
-      LEFT JOIN habitacion h ON p.IDHabitacion = h.IDHabitacion
+      LEFT JOIN paquetes p   ON drp.IDPaquete = p.IDPaquete
+      LEFT JOIN habitacion hp ON p.IDHabitacion = hp.IDHabitacion
       LEFT JOIN detallereservaservicio drs ON r.IdReserva = drs.IDReserva
-      LEFT JOIN servicio s  ON drs.IDServicio = s.IDServicio
+      LEFT JOIN servicio s   ON drs.IDServicio = s.IDServicio
       WHERE r.IdReserva = ? LIMIT 1`,
       [idReserva]
     ).then(([rows]) => {
@@ -121,32 +121,39 @@ const crear = async (req, res) => {
         return;
       }
       const c = rows[0];
-      console.log(`[Notif] Reserva #${idReserva} | Email: ${c.Email || 'NULL'} | MetodoPago: ${metodoPago}`);
+      console.log(`[Notif] Reserva #${idReserva} | Cliente: ${c.Nombre} ${c.Apellido} | Email: ${c.Email || 'NULL'} | MetodoPago: ${metodoPago}`);
 
       if (!c.Email) {
-        console.warn(`[Notif] Email nulo para reserva #${idReserva} — no se enviará correo`);
-        return;
+        console.warn(`[Notif] Email nulo para reserva #${idReserva} — no se enviará correo al cliente`);
       }
 
       const notifPayload = {
         clienteNombre: `${c.Nombre ?? ""} ${c.Apellido ?? ""}`.trim(),
-        reservaId: idReserva,
-        habitacion: c.habitacion || 'Reserva confirmada',
-        fechaInicio: req.body.FechaInicio,
-        fechaFin: req.body.FechaFinalizacion,
-        montoTotal: req.body.MontoTotal,
-        paquetes: c.paquetes_str ? c.paquetes_str.split('|').filter(Boolean) : [],
-        servicios: c.servicios_str ? c.servicios_str.split('|').filter(Boolean) : [],
+        clienteEmail:  c.Email || null,
+        reservaId:     idReserva,
+        habitacion:    c.habitacion || 'Reserva confirmada',
+        fechaInicio:   req.body.FechaInicio,
+        fechaFin:      req.body.FechaFinalizacion,
+        montoTotal:    req.body.MontoTotal,
+        paquetes:      c.paquetes_str ? c.paquetes_str.split('|').filter(Boolean) : [],
+        servicios:     c.servicios_str ? c.servicios_str.split('|').filter(Boolean) : [],
       };
+
+      // Notificación al admin siempre
+      EmailService.notificarAdminNuevaReserva(notifPayload)
+        .then(ok => console.log(`[Notif] notificarAdminNuevaReserva → ${ok ? 'OK' : 'FALLÓ'}`))
+        .catch(err => console.error(`[Notif] Error notificarAdminNuevaReserva:`, err.message));
+
+      if (!c.Email) return;
 
       if (metodoPago === 2) {
         const appUrl = process.env.APP_URL || 'http://localhost:3000';
         const linkSubir = `${appUrl}/pages/reservas.html?comprobante=${idReserva}`;
-        EmailService.enviarPendienteComprobante({ ...notifPayload, clienteEmail: c.Email, linkSubir })
+        EmailService.enviarPendienteComprobante({ ...notifPayload, linkSubir })
           .then(ok => console.log(`[Notif] enviarPendienteComprobante → ${ok ? 'OK' : 'FALLÓ'}`))
           .catch(err => console.error(`[Notif] Error enviarPendienteComprobante:`, err.message));
       } else {
-        EmailService.enviarConfirmacionReserva({ ...notifPayload, clienteEmail: c.Email })
+        EmailService.enviarConfirmacionReserva(notifPayload)
           .then(ok => console.log(`[Notif] enviarConfirmacionReserva → ${ok ? 'OK' : 'FALLÓ'}`))
           .catch(err => console.error(`[Notif] Error enviarConfirmacionReserva:`, err.message));
         WhatsappService.enviarConfirmacionReserva({ ...notifPayload, clienteTelefono: c.Telefono })
@@ -216,10 +223,53 @@ const obtenerMisReservas = async (req, res) => {
 
 const cancelar = async (req, res) => {
   try {
-    const id = req.params.id; // ✅ viene de /:id/cancelar
-    const ok = await ReservasService.cancelar(id);
+    const id = req.params.id;
 
+    // Obtener datos antes de cancelar para el email
+    const usuarioCols = await getUsuariosCols();
+    const userNombreParts = [];
+    if (usuarioCols.has("Nombre")) userNombreParts.push("u.Nombre");
+    if (usuarioCols.has("NombreUsuario")) userNombreParts.push("u.NombreUsuario");
+    const userNombreExpr   = userNombreParts.length ? `COALESCE(${userNombreParts.join(", ")})` : "NULL";
+    const userApellidoExpr = usuarioCols.has("Apellido") ? "u.Apellido" : "NULL";
+    const userEmailExpr    = usuarioCols.has("Email")    ? "u.Email"    : "NULL";
+
+    const [[reservaData]] = await db.query(
+      `SELECT
+        COALESCE(c.Nombre, ${userNombreExpr}, '') AS Nombre,
+        COALESCE(c.Apellido, ${userApellidoExpr}, '') AS Apellido,
+        COALESCE(c.Email, ${userEmailExpr}) AS Email,
+        COALESCE(hd.NombreHabitacion, hp.NombreHabitacion, 'Reserva') AS habitacion,
+        r.FechaInicio, r.FechaFinalizacion, r.MontoTotal
+      FROM reserva r
+      LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
+      LEFT JOIN usuarios u  ON r.id_usuario = u.IDUsuario
+      LEFT JOIN habitacion hd ON r.IDHabitacion = hd.IDHabitacion
+      LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
+      LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
+      LEFT JOIN habitacion hp ON p.IDHabitacion = hp.IDHabitacion
+      WHERE r.IdReserva = ? LIMIT 1`,
+      [id]
+    );
+
+    const ok = await ReservasService.cancelar(id);
     if (!ok) return res.status(404).json({ error: "Reserva no encontrada" });
+
+    // Notificar al cliente en segundo plano
+    if (reservaData?.Email) {
+      EmailService.enviarCancelacionReserva({
+        clienteNombre:     `${reservaData.Nombre} ${reservaData.Apellido}`.trim(),
+        clienteEmail:      reservaData.Email,
+        reservaId:         id,
+        habitacion:        reservaData.habitacion,
+        fechaInicio:       reservaData.FechaInicio,
+        fechaFin:          reservaData.FechaFinalizacion,
+        montoTotal:        reservaData.MontoTotal,
+        motivoCancelacion: req.body?.motivo || "",
+      }).then(ok => console.log(`[Notif] enviarCancelacionReserva #${id} → ${ok ? 'OK' : 'FALLÓ'}`))
+        .catch(err => console.error(`[Notif] Error cancelación:`, err.message));
+    }
+
     return res.status(200).json({ mensaje: "Reserva cancelada" });
   } catch (error) {
     console.error("RESERVAS ERROR:", error);
