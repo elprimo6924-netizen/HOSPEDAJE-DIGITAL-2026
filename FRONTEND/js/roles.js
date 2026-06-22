@@ -94,9 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const response = await window.apiRequest(endpoint);
             const roles = response.data || response;
-            const visibles = Array.isArray(roles)
-                ? roles.filter((rol) => Number(rol.IsActive) === 1 || rol.Estado === 'Activo')
-                : [];
+            const visibles = Array.isArray(roles) ? roles : [];
             renderRows(visibles);
         } catch (error) {
             tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-red-500">Error: ${error.message}</td></tr>`;
