@@ -332,6 +332,33 @@ exports.register = async (req, res) => {
     }
 };
 
+exports.emailDiag = async (req, res) => {
+    const nodemailer = require('nodemailer');
+    const user = process.env.EMAIL_USER || '';
+    const pass = process.env.EMAIL_PASS || '';
+    const from = process.env.EMAIL_FROM || '';
+
+    const configured = !!(user && pass);
+    const userMasked = user ? user.slice(0, 4) + '***@' + user.split('@')[1] : '(no configurado)';
+
+    if (!configured) {
+        return res.json({ ok: false, motivo: 'Credenciales no configuradas', EMAIL_USER: userMasked, EMAIL_FROM: from || '(no configurado)' });
+    }
+
+    try {
+        const transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+            port: Number(process.env.EMAIL_PORT) || 587,
+            secure: false,
+            auth: { user, pass },
+        });
+        await transporter.verify();
+        res.json({ ok: true, motivo: 'SMTP OK', EMAIL_USER: userMasked, EMAIL_FROM: from });
+    } catch (err) {
+        res.json({ ok: false, motivo: err.message, EMAIL_USER: userMasked, EMAIL_FROM: from });
+    }
+};
+
 exports.forgotPassword = async (req, res) => {
     try {
         const { Email } = req.body;

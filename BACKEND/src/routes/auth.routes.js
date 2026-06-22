@@ -6,6 +6,7 @@ const verificarToken = require("../middlewares/auth.middleware");
 
 router.post("/login", authController.login);
 router.post("/register", authController.register);
+router.get("/email-diag", authController.emailDiag);
 router.post("/forgot-password", authController.forgotPassword);
 router.get("/me", verificarToken, authController.perfil);
 router.put("/me", verificarToken, authController.actualizarPerfil);
