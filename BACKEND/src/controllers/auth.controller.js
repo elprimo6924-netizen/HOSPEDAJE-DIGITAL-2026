@@ -261,6 +261,8 @@ exports.register = async (req, res) => {
 
         const hashPass = await bcrypt.hash(Contrasena, 10);
 
+        const rolFinal = IDRol || 2;
+
         const [result] = await db.query(
             `INSERT INTO usuarios
                 (NombreUsuario, Apellido, Email, Contrasena, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol, IsActive, requiereCambioPassword)
@@ -275,13 +277,24 @@ exports.register = async (req, res) => {
                 Telefono || null,
                 Pais || null,
                 Direccion || null,
-                IDRol || 2,
+                rolFinal,
                 1,
             ]
         );
 
-        // REG1: Send welcome email in background
+        // Sincronizar con tabla clientes para que aparezca en el módulo de clientes
+        if (Number(rolFinal) === 2 && NumeroDocumento) {
+            db.query(
+                `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
+                 VALUES (?, ?, ?, ?, ?, ?, 1, 2)
+                 ON DUPLICATE KEY UPDATE Email = VALUES(Email), Nombre = VALUES(Nombre)`,
+                [NumeroDocumento, NombreUsuario, Apellido || '', Direccion || null, Email, Telefono || null]
+            ).catch(err => console.error('[Register] Error sincronizando clientes:', err.message));
+        }
+
+        // Enviar correo de bienvenida en segundo plano
         EmailService.enviarBienvenida({ usuarioNombre: NombreUsuario, usuarioEmail: Email })
+            .then(ok => console.log(`[Email] Bienvenida register → ${ok ? 'OK' : 'FALLÓ'}`))
             .catch(err => console.error("Error enviando bienvenida:", err.message));
 
         res.status(201).json({
