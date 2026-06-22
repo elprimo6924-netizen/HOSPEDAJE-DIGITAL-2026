@@ -21,12 +21,24 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
         : (rolData != null ? rolData : null);
 
     // Si es edición y solo recibimos el ID, cargamos los datos del rol
+    const _redirigirSiExpiro = (res) => {
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            const enPages = window.location.pathname.includes('/pages/');
+            window.location.href = enPages ? '../login.html' : 'login.html';
+            return true;
+        }
+        return false;
+    };
+
     if (mode === 'edit' && currentRolId && (!rolData || typeof rolData !== 'object')) {
         try {
             const apiUrl = window.CONFIG?.API_URL || 'http://localhost:3000/api';
             const res    = await fetch(`${apiUrl}/roles/${currentRolId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            if (_redirigirSiExpiro(res)) return;
             if (!res.ok) throw new Error('No se pudo cargar el rol');
             rolData = await res.json();
             rolData = rolData.data || rolData;
@@ -42,6 +54,7 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
         const res    = await fetch(`${apiUrl}/roles`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (_redirigirSiExpiro(res)) return;
         if (res.ok) {
             const data = await res.json();
             const raw  = Array.isArray(data) ? data : (data.data || []);
@@ -618,6 +631,15 @@ async function saveRol(token, onSave) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(data),
         });
+
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            const enPages = window.location.pathname.includes('/pages/');
+            window.location.href = enPages ? '../login.html' : 'login.html';
+            return;
+        }
+
         const resData = await res.json();
 
         if (!res.ok) {

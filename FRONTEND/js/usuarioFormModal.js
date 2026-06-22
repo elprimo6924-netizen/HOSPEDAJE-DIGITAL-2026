@@ -771,6 +771,14 @@ async function saveUsuario(token, onSave) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(body)
         });
+
+        if (res.status === 401) {
+            localStorage.removeItem('token'); localStorage.removeItem('user');
+            const enPages = window.location.pathname.includes('/pages/');
+            window.location.href = enPages ? '../login.html' : 'login.html';
+            return;
+        }
+
         const resData = await res.json();
 
         if (!res.ok) {

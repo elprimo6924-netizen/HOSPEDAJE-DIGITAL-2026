@@ -495,6 +495,13 @@ async function _hfSave() {
             })
         });
 
+        if (res.status === 401) {
+            localStorage.removeItem('token'); localStorage.removeItem('user');
+            const enPages = window.location.pathname.includes('/pages/');
+            window.location.href = enPages ? '../login.html' : 'login.html';
+            return;
+        }
+
         const resData = await res.json().catch(() => ({}));
 
         if (!res.ok) {
