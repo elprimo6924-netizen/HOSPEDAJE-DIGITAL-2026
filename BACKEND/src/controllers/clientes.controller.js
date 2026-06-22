@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
+const EmailService = require("../services/email.service");
 const {
   ADMIN_ROLE_ID,
   CLIENTE_ROLE_ID,
@@ -191,6 +192,14 @@ exports.create = async (req, res) => {
       return res.status(400).json({ error: "NroDocumento, Nombre y Email son obligatorios." });
     }
 
+    if (!Telefono || !String(Telefono).trim()) {
+      return res.status(400).json({ error: "El teléfono es obligatorio." });
+    }
+
+    if (!Direccion || !String(Direccion).trim()) {
+      return res.status(400).json({ error: "La dirección es obligatoria." });
+    }
+
     const [result] = await db.query(
       `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -299,6 +308,12 @@ exports.create = async (req, res) => {
           );
         }
       }
+    }
+
+    // Enviar email de bienvenida en segundo plano
+    if (Email) {
+      EmailService.enviarBienvenida({ usuarioNombre: Nombre, usuarioEmail: Email })
+        .catch(err => console.error("[Email] Error bienvenida cliente:", err.message));
     }
 
     res.status(201).json({ mensaje: "Cliente creado", data: result });

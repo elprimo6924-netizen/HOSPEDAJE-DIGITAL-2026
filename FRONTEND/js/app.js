@@ -658,6 +658,18 @@ async function guardarClienteAdmin(evento) {
         return;
     }
 
+    if (!payload.Telefono) {
+        mostrarMensajeClienteAdmin('El teléfono es obligatorio.', 'error');
+        document.getElementById('cliente-admin-telefono')?.focus();
+        return;
+    }
+
+    if (!payload.Direccion) {
+        mostrarMensajeClienteAdmin('La dirección es obligatoria.', 'error');
+        document.getElementById('cliente-admin-direccion')?.focus();
+        return;
+    }
+
     if (!idActual && existeClienteConDocumento(payload.NroDocumento)) {
         mostrarMensajeClienteAdmin('Ya existe un cliente con ese número de documento.', 'error');
         return;
