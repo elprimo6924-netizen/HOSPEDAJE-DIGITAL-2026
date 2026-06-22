@@ -473,7 +473,10 @@ async function _hfSave() {
     }
 
     try {
-        const apiUrl = window.CONFIG?.API_URL || 'http://localhost:3000/api';
+        const apiUrl = window.API_URL
+                    || (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : null)
+                    || (typeof CONFIG !== 'undefined' ? CONFIG.API_URL : null)
+                    || 'http://localhost:3000/api';
         const token  = localStorage.getItem('token') || '';
         const url    = isCreate
             ? `${apiUrl}/habitaciones`

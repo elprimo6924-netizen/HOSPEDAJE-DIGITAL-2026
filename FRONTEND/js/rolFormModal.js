@@ -21,26 +21,9 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
         : (rolData != null ? rolData : null);
 
     // Si es edición y solo recibimos el ID, cargamos los datos del rol
-    const _redirigirSiExpiro = (res) => {
-        if (res.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            const enPages = window.location.pathname.includes('/pages/');
-            window.location.href = enPages ? '../login.html' : 'login.html';
-            return true;
-        }
-        return false;
-    };
-
     if (mode === 'edit' && currentRolId && (!rolData || typeof rolData !== 'object')) {
         try {
-            const apiUrl = window.CONFIG?.API_URL || 'http://localhost:3000/api';
-            const res    = await fetch(`${apiUrl}/roles/${currentRolId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (_redirigirSiExpiro(res)) return;
-            if (!res.ok) throw new Error('No se pudo cargar el rol');
-            rolData = await res.json();
+            rolData = await window.apiRequest(`/roles/${currentRolId}`);
             rolData = rolData.data || rolData;
         } catch {
             if (typeof showAlert === 'function') showAlert('Error al cargar datos del rol', 'error');
@@ -50,22 +33,15 @@ async function openRolForm(mode = 'create', rolData = null, token, isProtected =
 
     // Cargar lista de roles para validación de duplicados
     try {
-        const apiUrl = window.CONFIG?.API_URL || 'http://localhost:3000/api';
-        const res    = await fetch(`${apiUrl}/roles`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (_redirigirSiExpiro(res)) return;
-        if (res.ok) {
-            const data = await res.json();
-            const raw  = Array.isArray(data) ? data : (data.data || []);
-            _rfRolesCache = raw
-                .filter(r => mode === 'edit' ? Number(r.IDRol) !== Number(currentRolId) : true)
-                .map(r => ({
-                    nombre: (r.Nombre || r.NombreRol || '').trim().toLowerCase(),
-                    activo: Number(r.IsActive) === 1 && String(r.Estado || '').toLowerCase() !== 'inactivo'
-                }))
-                .filter(r => r.nombre);
-        }
+        const data = await window.apiRequest('/roles');
+        const raw  = Array.isArray(data) ? data : (data.data || []);
+        _rfRolesCache = raw
+            .filter(r => mode === 'edit' ? Number(r.IDRol) !== Number(currentRolId) : true)
+            .map(r => ({
+                nombre: (r.Nombre || r.NombreRol || '').trim().toLowerCase(),
+                activo: Number(r.IsActive) === 1 && String(r.Estado || '').toLowerCase() !== 'inactivo'
+            }))
+            .filter(r => r.nombre);
     } catch { _rfRolesCache = []; }
 
     // ── Inyectar estilos una sola vez ───────────────────────────────────
@@ -622,48 +598,10 @@ async function saveRol(token, onSave) {
             Permisos: permisos,
         };
 
-        const apiUrl = window.CONFIG?.API_URL || 'http://localhost:3000/api';
-        const url    = isCreate ? `${apiUrl}/roles` : `${apiUrl}/roles/${currentRolId}`;
-        const method = isCreate ? 'POST' : 'PUT';
+        const endpoint = isCreate ? '/roles' : `/roles/${currentRolId}`;
+        const method   = isCreate ? 'POST' : 'PUT';
 
-        const res     = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify(data),
-        });
-
-        if (res.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            const enPages = window.location.pathname.includes('/pages/');
-            window.location.href = enPages ? '../login.html' : 'login.html';
-            return;
-        }
-
-        const resData = await res.json();
-
-        if (!res.ok) {
-            // 409 = nombre duplicado detectado en backend
-            if (res.status === 409) {
-                const nombreInputEl = document.getElementById('_rf_nombre');
-                nombreInputEl?.classList.remove('rf-warn');
-                nombreInputEl?.classList.add('rf-error');
-                nombreInputEl?.focus();
-                const msg = document.getElementById('_rf_nombre_msg');
-                if (msg) {
-                    msg.style.display = 'flex';
-                    msg.className = 'rf-field-msg error';
-                    msg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${resData.error}`;
-                }
-                if (typeof showAlert === 'function') showAlert(resData.error, 'error');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i class="fa-solid fa-${isCreate ? 'plus' : 'floppy-disk'}"></i> ${isCreate ? 'Crear rol' : 'Guardar cambios'}`;
-                }
-                return;
-            }
-            throw new Error(resData.message || resData.error || resData.detalle || 'Error en la operación');
-        }
+        await window.apiRequest(endpoint, { method, body: data });
 
         if (typeof showAlert === 'function') {
             showAlert(`Rol ${isCreate ? 'creado' : 'actualizado'} exitosamente`, 'success');
@@ -672,7 +610,19 @@ async function saveRol(token, onSave) {
         if (onSave) onSave();
 
     } catch (error) {
-        if (typeof showAlert === 'function') showAlert(error.message, 'error');
+        // Mostrar error en el campo de nombre si el mensaje es de validación/duplicado
+        const errMsg = error.message || 'Error en la operación';
+        const nombreInputEl = document.getElementById('_rf_nombre');
+        const nombreMsgEl   = document.getElementById('_rf_nombre_msg');
+        if (nombreInputEl && nombreMsgEl && errMsg && !errMsg.includes('permiso')) {
+            nombreInputEl.classList.remove('rf-warn');
+            nombreInputEl.classList.add('rf-error');
+            nombreInputEl.focus();
+            nombreMsgEl.style.display = 'flex';
+            nombreMsgEl.className = 'rf-field-msg error';
+            nombreMsgEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${errMsg}`;
+        }
+        if (typeof showAlert === 'function') showAlert(errMsg, 'error');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-${isCreate ? 'plus' : 'floppy-disk'}"></i> ${isCreate ? 'Crear rol' : 'Guardar cambios'}`;
