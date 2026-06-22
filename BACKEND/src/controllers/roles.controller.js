@@ -196,17 +196,18 @@ exports.remove = async (req, res) => {
         }
 
         const [[{ total }]] = await db.query(
-            "SELECT COUNT(*) AS total FROM usuarios WHERE IDRol = ? AND IsActive = 1",
+            "SELECT COUNT(*) AS total FROM usuarios WHERE IDRol = ?",
             [rolId]
         );
         if (total > 0) {
             return res.status(409).json({
-                error: `No se puede desactivar este rol porque tiene ${total} usuario(s) activo(s) asignado(s). Reasigna o desactiva los usuarios primero.`
+                error: `No se puede eliminar este rol porque tiene ${total} usuario(s) asignado(s). Reasigna los usuarios primero.`
             });
         }
 
-        await db.query("UPDATE roles SET IsActive = 0, Estado = 'Inactivo' WHERE IDRol = ?", [rolId]);
-        res.json({ mensaje: "Rol desactivado" });
+        await db.query("DELETE FROM rolespermisos WHERE IDRol = ?", [rolId]);
+        await db.query("DELETE FROM roles WHERE IDRol = ?", [rolId]);
+        res.json({ mensaje: "Rol eliminado" });
     } catch (error) {
         res.status(500).json({ error: "Error al eliminar rol", detalle: error.message });
     }

@@ -138,8 +138,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (action === "delete") {
                 if (typeof confirmarAccion === 'function') {
                     confirmarAccion({
-                        titulo: '¿Eliminar rol?',
-                        mensaje: `El rol "${rolName}" será desactivado y no podrá usarse para nuevos usuarios.`,
+                        titulo: '¿Eliminar rol permanentemente?',
+                        mensaje: `El rol "${rolName}" será eliminado de forma permanente. Esta acción no se puede deshacer.`,
                         textoConfirmar: 'Eliminar',
                         tipo: 'danger',
                         onConfirmar: async () => {
@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         }
                     });
                 } else {
-                    if (!confirm("¿Eliminar este rol?")) return;
+                    if (!confirm(`¿Eliminar permanentemente el rol "${rolName}"? Esta acción no se puede deshacer.`)) return;
                     await window.apiRequest(`/roles/${id}`, { method: "DELETE" });
                     if (typeof showAlert === 'function') showAlert('Rol eliminado correctamente.', 'success');
                     await loadRoles();
