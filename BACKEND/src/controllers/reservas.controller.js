@@ -61,7 +61,16 @@ const crear = async (req, res) => {
       payload.NroDocumentoCliente = numeroDocumento;
       payload.id_usuario = userId;
     } else {
-      payload.id_usuario = payload.id_usuario ?? userId;
+      if (!payload.id_usuario && payload.NroDocumentoCliente) {
+        // Intentar asociar el usuario registrado con ese documento para que el email de notificación llegue al cliente
+        const [[clienteUser]] = await db.query(
+          "SELECT IDUsuario FROM usuarios WHERE CAST(NumeroDocumento AS CHAR) = CAST(? AS CHAR) AND IDRol = ? LIMIT 1",
+          [payload.NroDocumentoCliente, CLIENTE_ROLE_ID]
+        );
+        payload.id_usuario = clienteUser?.IDUsuario ?? userId;
+      } else {
+        payload.id_usuario = payload.id_usuario ?? userId;
+      }
     }
 
     // Estado automático basado en método de pago (aplica a todos los roles)

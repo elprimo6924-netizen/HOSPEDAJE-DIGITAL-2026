@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
+const EmailService = require("../services/email.service");
 
 let usuariosColsPromise = null;
 
@@ -216,8 +217,14 @@ exports.create = async (req, res) => {
             ]
         );
 
+        // Enviar email de bienvenida en segundo plano
+        if (Email) {
+            EmailService.enviarBienvenida({ usuarioNombre: NombreUsuario, usuarioEmail: Email })
+                .catch(err => console.error("[Email] Error enviando bienvenida al crear usuario:", err.message));
+        }
+
         // U1: Si el rol es Cliente (IDRol=2) y tiene NumeroDocumento, sincronizar con tabla clientes
-        if (rolFinal === 2 && NumeroDocumento) {
+        if (Number(rolFinal) === 2 && NumeroDocumento) {
             await db.query(
                 `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
                  VALUES (?, ?, ?, ?, ?, ?, ?, 2)
