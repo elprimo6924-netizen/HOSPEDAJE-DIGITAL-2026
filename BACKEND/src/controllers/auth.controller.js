@@ -241,6 +241,14 @@ exports.register = async (req, res) => {
             return res.status(400).json({ error: 'NombreUsuario, Email y Contrasena son obligatorios' });
         }
 
+        if (!Telefono || !String(Telefono).trim()) {
+            return res.status(400).json({ error: 'El teléfono es obligatorio' });
+        }
+
+        if (!Direccion || !String(Direccion).trim()) {
+            return res.status(400).json({ error: 'La dirección es obligatoria' });
+        }
+
         // Verificar si ya existe un usuario con el mismo email o número de documento
         const [existing] = await db.query(
             'SELECT IDUsuario FROM usuarios WHERE Email = ? OR NumeroDocumento = ? LIMIT 1',

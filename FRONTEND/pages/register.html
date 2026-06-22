@@ -317,9 +317,9 @@
                                 placeholder="Solo letras" class="lux-input">
                         </div>
                         <div class="field-wrapper relative">
-                            <label for="reg_telefono" class="lux-label">Teléfono</label>
+                            <label for="reg_telefono" class="lux-label">Teléfono <span style="color:#e07020">*</span></label>
                             <input type="text" id="reg_telefono"
-                                maxlength="15" inputmode="tel" autocomplete="tel"
+                                maxlength="15" inputmode="tel" autocomplete="tel" required
                                 placeholder="Solo dígitos (7–15)" class="lux-input">
                         </div>
                         <div class="field-wrapper relative">
@@ -335,9 +335,9 @@
                             </div>
                         </div>
                         <div class="field-wrapper relative md:col-span-2">
-                            <label for="reg_direccion" class="lux-label">Dirección</label>
+                            <label for="reg_direccion" class="lux-label">Dirección <span style="color:#e07020">*</span></label>
                             <input type="text" id="reg_direccion"
-                                maxlength="150" autocomplete="street-address"
+                                maxlength="150" autocomplete="street-address" required
                                 placeholder="Ingrese su dirección completa" class="lux-input">
                         </div>
                     </div>
@@ -767,6 +767,21 @@
                         return;
                     }
 
+                    const telefono  = document.getElementById("reg_telefono").value.trim();
+                    const direccion = document.getElementById("reg_direccion").value.trim();
+                    if (!telefono) {
+                        registerError.classList.remove("hidden");
+                        registerError.textContent = "El teléfono es obligatorio";
+                        document.getElementById("reg_telefono").focus();
+                        return;
+                    }
+                    if (!direccion) {
+                        registerError.classList.remove("hidden");
+                        registerError.textContent = "La dirección es obligatoria";
+                        document.getElementById("reg_direccion").focus();
+                        return;
+                    }
+
                     registerBtn.disabled = true;
                     registerBtnText.textContent = 'Registrando...';
                     registerBtnIcon.className = 'fa-solid fa-spinner fa-spin';
@@ -778,9 +793,9 @@
                         Email:            email,
                         TipoDocumento:    tipoDoc,
                         NumeroDocumento:  numDoc,
-                        Telefono:         document.getElementById("reg_telefono").value.trim() || null,
+                        Telefono:         telefono,
                         Pais:             document.getElementById("reg_pais").value.trim() || null,
-                        Direccion:        document.getElementById("reg_direccion").value.trim() || null,
+                        Direccion:        direccion,
                         IDRol: 2,
                     };
 

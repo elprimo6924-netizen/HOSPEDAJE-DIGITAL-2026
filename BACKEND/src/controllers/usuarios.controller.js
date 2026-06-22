@@ -172,6 +172,14 @@ exports.create = async (req, res) => {
             return res.status(400).json({ error: "NombreUsuario, Email y Contrasena son obligatorios" });
         }
 
+        if (!Telefono || !String(Telefono).trim()) {
+            return res.status(400).json({ error: "El teléfono es obligatorio" });
+        }
+
+        if (!Direccion || !String(Direccion).trim()) {
+            return res.status(400).json({ error: "La dirección es obligatoria" });
+        }
+
         if (Contrasena.length < 8) {
             return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
         }

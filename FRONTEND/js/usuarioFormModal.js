@@ -327,7 +327,7 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
                                 </div>
                             </div>
                             <div class="uf-field">
-                                <label class="uf-label">Teléfono</label>
+                                <label class="uf-label">Teléfono <span style="color:#ef4444">*</span></label>
                                 <div class="uf-input-wrap">
                                     <i class="fa-solid fa-phone uf-pre"></i>
                                     <input type="tel" name="Telefono"
@@ -347,7 +347,7 @@ async function openUsuarioForm(mode = 'create', usuarioData = null, token, onSav
                                 </div>
                             </div>
                             <div class="uf-field uf-span2">
-                                <label class="uf-label">Dirección</label>
+                                <label class="uf-label">Dirección <span style="color:#ef4444">*</span></label>
                                 <div class="uf-input-wrap">
                                     <i class="fa-solid fa-location-dot uf-pre"></i>
                                     <input type="text" name="Direccion"
@@ -649,6 +649,10 @@ function _ufValidar(data, isCreate) {
                                errs.Contrasena       = 'Debe tener mínimo 8 caracteres';
     }
     if (!data.IDRol)           errs.IDRol            = 'Selecciona un rol para el usuario';
+    if (!data.Telefono || !String(data.Telefono).trim())
+                               errs.Telefono         = 'El teléfono es obligatorio';
+    if (!data.Direccion || !String(data.Direccion).trim())
+                               errs.Direccion        = 'La dirección es obligatoria';
 
     if (data.Email) {
         const emailLow = data.Email.toLowerCase();
