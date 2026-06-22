@@ -195,6 +195,16 @@ exports.remove = async (req, res) => {
             return res.status(403).json({ error: "No se puede eliminar un rol protegido" });
         }
 
+        const [[{ total }]] = await db.query(
+            "SELECT COUNT(*) AS total FROM usuarios WHERE IDRol = ? AND IsActive = 1",
+            [rolId]
+        );
+        if (total > 0) {
+            return res.status(409).json({
+                error: `No se puede desactivar este rol porque tiene ${total} usuario(s) activo(s) asignado(s). Reasigna o desactiva los usuarios primero.`
+            });
+        }
+
         await db.query("UPDATE roles SET IsActive = 0, Estado = 'Inactivo' WHERE IDRol = ?", [rolId]);
         res.json({ mensaje: "Rol desactivado" });
     } catch (error) {
@@ -213,6 +223,18 @@ exports.toggleStatus = async (req, res) => {
 
         if (typeof isActive !== "boolean") {
             return res.status(400).json({ error: "El campo isActive debe ser booleano" });
+        }
+
+        if (!isActive) {
+            const [[{ total }]] = await db.query(
+                "SELECT COUNT(*) AS total FROM usuarios WHERE IDRol = ? AND IsActive = 1",
+                [rolId]
+            );
+            if (total > 0) {
+                return res.status(409).json({
+                    error: `No se puede desactivar este rol porque tiene ${total} usuario(s) activo(s) asignado(s). Reasigna o desactiva los usuarios primero.`
+                });
+            }
         }
 
         await db.query(

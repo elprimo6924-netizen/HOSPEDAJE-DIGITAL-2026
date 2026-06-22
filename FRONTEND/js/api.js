@@ -174,13 +174,8 @@ async function actualizarHabitacion(id, habitacion) {
 }
 
 async function eliminarHabitacion(id) {
-    apiLogger.log('Eliminando habitaci�n:', id);
-    try {
-        return await requestJson(`/habitaciones/${id}`, { method: 'DELETE', allowNoContent: true });
-    } catch (error) {
-        apiLogger.error('Error al eliminar habitaci�n:', error.message);
-        return null;
-    }
+    apiLogger.log('Eliminando habitacion:', id);
+    return await requestJson(`/habitaciones/${id}`, { method: 'DELETE', allowNoContent: true });
 }
 
 
@@ -301,11 +296,6 @@ async function actualizarCliente(id, cliente) {
 
 async function eliminarCliente(id) {
     apiLogger.log('Eliminando cliente:', id);
-    try {
-        return await requestJson(`/clientes/${id}`, { method: 'DELETE' });
-    } catch (error) {
-        apiLogger.error('Error al eliminar cliente:', error.message);
-        return null;
-    }
+    return await requestJson(`/clientes/${id}`, { method: 'DELETE' });
 }
 

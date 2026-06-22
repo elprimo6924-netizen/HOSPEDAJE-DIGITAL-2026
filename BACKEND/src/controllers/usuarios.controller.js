@@ -322,6 +322,18 @@ exports.remove = async (req, res) => {
             return res.status(403).json({ error: "No se puede eliminar al Super Usuario" });
         }
 
+        const [[{ total }]] = await db.query(
+            `SELECT COUNT(*) AS total FROM reserva r
+             INNER JOIN usuarios u ON CAST(u.NumeroDocumento AS CHAR) = CAST(r.NroDocumentoCliente AS CHAR)
+             WHERE u.IDUsuario = ?`,
+            [usuarioId]
+        );
+        if (total > 0) {
+            return res.status(409).json({
+                error: "No se puede eliminar este usuario porque tiene reservas registradas en el sistema."
+            });
+        }
+
         await db.query("DELETE FROM usuarios WHERE IDUsuario = ?", [usuarioId]);
         res.json({ mensaje: "Usuario eliminado" });
     } catch (error) {
@@ -340,6 +352,20 @@ exports.toggleStatus = async (req, res) => {
 
         if (typeof isActive !== "boolean") {
             return res.status(400).json({ error: "El campo isActive debe ser booleano" });
+        }
+
+        if (!isActive) {
+            const [[{ total }]] = await db.query(
+                `SELECT COUNT(*) AS total FROM reserva r
+                 INNER JOIN usuarios u ON CAST(u.NumeroDocumento AS CHAR) = CAST(r.NroDocumentoCliente AS CHAR)
+                 WHERE u.IDUsuario = ? AND r.IdEstadoReserva IN (1,2,5,6)`,
+                [usuarioId]
+            );
+            if (total > 0) {
+                return res.status(409).json({
+                    error: "No se puede desactivar este usuario porque tiene reservas activas o pendientes."
+                });
+            }
         }
 
         await db.query("UPDATE usuarios SET IsActive = ? WHERE IDUsuario = ?", [isActive ? 1 : 0, usuarioId]);

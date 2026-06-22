@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       }
     } catch (error) {
-      if (typeof showAlert === 'function') showAlert('No se pudo cambiar el estado.', 'error');
+      if (typeof showAlert === 'function') showAlert(error.message || 'No se pudo cambiar el estado.', 'error');
       await loadUsuarios();
     }
   });

@@ -115,6 +115,18 @@ const update = async (req, res) => {
       return res.status(409).json({ error: `Ya existe otra habitación con el nombre "${nombre}". Usa un nombre diferente.` });
     }
 
+    if (Number(Estado) === 0) {
+      const [[{ total }]] = await db.query(
+        "SELECT COUNT(*) AS total FROM reserva WHERE IDHabitacion = ? AND IdEstadoReserva IN (1,2,5,6)",
+        [id]
+      );
+      if (total > 0) {
+        return res.status(409).json({
+          error: "No se puede desactivar esta habitación porque tiene reservas activas o pendientes."
+        });
+      }
+    }
+
     await db.query(
       `UPDATE habitacion SET NombreHabitacion = ?, Descripcion = ?, Costo = ?, Estado = ?, ImagenHabitacion = ? WHERE IDHabitacion = ?`,
       [nombre, String(Descripcion).trim(), Number(Costo), Estado ?? 1, ImagenHabitacion ?? null, id]
@@ -132,14 +144,24 @@ const remove = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [[{ total }]] = await db.query(
-      `SELECT COUNT(*) AS total
+    const [[{ totalDirecto }]] = await db.query(
+      "SELECT COUNT(*) AS totalDirecto FROM reserva WHERE IDHabitacion = ?",
+      [id]
+    );
+    if (totalDirecto > 0) {
+      return res.status(409).json({
+        error: "No se puede eliminar esta habitación porque tiene reservas asociadas."
+      });
+    }
+
+    const [[{ totalPaquete }]] = await db.query(
+      `SELECT COUNT(*) AS totalPaquete
        FROM detallereservapaquetes drp
        JOIN paquetes p ON drp.IDPaquete = p.IDPaquete
        WHERE p.IDHabitacion = ?`,
       [id]
     );
-    if (total > 0) {
+    if (totalPaquete > 0) {
       return res.status(409).json({
         error: "No se puede eliminar esta habitación porque tiene reservas asociadas."
       });
@@ -161,6 +183,18 @@ const toggleEstado = async (req, res) => {
 
     if (Estado === undefined || Estado === null) {
       return res.status(400).json({ error: "Campo Estado es requerido" });
+    }
+
+    if (Number(Estado) === 0) {
+      const [[{ total }]] = await db.query(
+        "SELECT COUNT(*) AS total FROM reserva WHERE IDHabitacion = ? AND IdEstadoReserva IN (1,2,5,6)",
+        [id]
+      );
+      if (total > 0) {
+        return res.status(409).json({
+          error: "No se puede desactivar esta habitación porque tiene reservas activas o pendientes."
+        });
+      }
     }
 
     await db.query("UPDATE habitacion SET Estado = ? WHERE IDHabitacion = ?", [Estado, id]);

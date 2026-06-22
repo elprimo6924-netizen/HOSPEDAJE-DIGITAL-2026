@@ -317,6 +317,18 @@ exports.update = async (req, res) => {
     const id = req.params.id; // NroDocumento
     const { Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol } = req.body;
 
+    if (Number(Estado) === 0) {
+      const [[{ total }]] = await db.query(
+        "SELECT COUNT(*) AS total FROM reserva WHERE NroDocumentoCliente = ? AND IdEstadoReserva IN (1,2,5,6)",
+        [id]
+      );
+      if (total > 0) {
+        return res.status(409).json({
+          error: "No se puede desactivar este cliente porque tiene reservas activas o pendientes."
+        });
+      }
+    }
+
     await db.query(
       `UPDATE clientes
        SET Nombre = ?, Apellido = ?, Direccion = ?, Email = ?, Telefono = ?, Estado = ?, IDRol = ?
@@ -360,6 +372,18 @@ exports.toggleEstado = async (req, res) => {
 
     if (Estado === undefined || Estado === null) {
       return res.status(400).json({ error: "Campo Estado es requerido" });
+    }
+
+    if (Number(Estado) === 0) {
+      const [[{ total }]] = await db.query(
+        "SELECT COUNT(*) AS total FROM reserva WHERE NroDocumentoCliente = ? AND IdEstadoReserva IN (1,2,5,6)",
+        [id]
+      );
+      if (total > 0) {
+        return res.status(409).json({
+          error: "No se puede desactivar este cliente porque tiene reservas activas o pendientes."
+        });
+      }
     }
 
     await db.query("UPDATE clientes SET Estado = ? WHERE NroDocumento = ?", [Estado, id]);
