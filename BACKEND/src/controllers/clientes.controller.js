@@ -71,6 +71,7 @@ exports.getAll = async (req, res) => {
       FROM usuarios u
       WHERE u.IDRol = 2
         AND u.NumeroDocumento IS NOT NULL
+        AND u.IsActive = 1
         AND NOT EXISTS (
           SELECT 1 FROM clientes c
           WHERE CAST(c.NroDocumento AS CHAR) = CAST(u.NumeroDocumento AS CHAR)
@@ -358,6 +359,11 @@ exports.remove = async (req, res) => {
     }
 
     await db.query("DELETE FROM clientes WHERE NroDocumento = ?", [id]);
+    // Desactivar también el usuario vinculado para que no reaparezca en el UNION del listado
+    await db.query(
+      "UPDATE usuarios SET IsActive = 0 WHERE CAST(NumeroDocumento AS CHAR) = CAST(? AS CHAR) AND IDRol = 2",
+      [id]
+    );
     res.json({ mensaje: "Cliente eliminado" });
   } catch (error) {
     res.status(500).json({ error: "Error eliminando cliente", detalle: error.message });
