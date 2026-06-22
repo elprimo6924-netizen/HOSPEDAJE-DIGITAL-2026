@@ -284,12 +284,24 @@ exports.register = async (req, res) => {
 
         // Sincronizar con tabla clientes para que aparezca en el módulo de clientes
         if (Number(rolFinal) === 2 && NumeroDocumento) {
-            db.query(
-                `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
-                 VALUES (?, ?, ?, ?, ?, ?, 1, 2)
-                 ON DUPLICATE KEY UPDATE Email = VALUES(Email), Nombre = VALUES(Nombre)`,
-                [NumeroDocumento, NombreUsuario, Apellido || '', Direccion || null, Email, Telefono || null]
-            ).catch(err => console.error('[Register] Error sincronizando clientes:', err.message));
+            (async () => {
+                try {
+                    // Eliminar registro huérfano con mismo email pero diferente documento
+                    await db.query(
+                        'DELETE FROM clientes WHERE Email = ? AND CAST(NroDocumento AS CHAR) != CAST(? AS CHAR)',
+                        [Email, NumeroDocumento]
+                    );
+                    await db.query(
+                        `INSERT INTO clientes (NroDocumento, Nombre, Apellido, Direccion, Email, Telefono, Estado, IDRol)
+                         VALUES (?, ?, ?, ?, ?, ?, 1, 2)
+                         ON DUPLICATE KEY UPDATE Nombre = VALUES(Nombre), Apellido = VALUES(Apellido), Email = VALUES(Email)`,
+                        [NumeroDocumento, NombreUsuario, Apellido || '', Direccion || null, Email, Telefono || null]
+                    );
+                    console.log(`[Register] Cliente sincronizado: ${NumeroDocumento}`);
+                } catch (err) {
+                    console.error('[Register] Error sincronizando clientes:', err.message);
+                }
+            })();
         }
 
         // Enviar correo de bienvenida en segundo plano
