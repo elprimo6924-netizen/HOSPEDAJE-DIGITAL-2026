@@ -185,6 +185,23 @@ const app = express();
     }
 })();
 
+// Migración: EstadoCargosAdicionales en reserva (estado independiente de los cargos post-reserva)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const [[row]] = await db.query(
+            'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+            [dbName, 'reserva', 'EstadoCargosAdicionales']
+        );
+        if (row.c === 0) {
+            await db.query('ALTER TABLE reserva ADD COLUMN EstadoCargosAdicionales INT NULL DEFAULT NULL');
+            console.log('[MIGRATION] Columna EstadoCargosAdicionales agregada a reserva.');
+        }
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración EstadoCargosAdicionales:', err.message);
+    }
+})();
+
 // Auto-sync de estados cada 60 s: cancela reservas con comprobante vencido, cierra estancias completadas
 setInterval(async () => {
     try {

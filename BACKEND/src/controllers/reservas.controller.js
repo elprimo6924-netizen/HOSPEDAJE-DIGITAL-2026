@@ -454,6 +454,14 @@ const verificarComprobante = async (req, res) => {
     const nuevoEstado = await ReservasService.verificarComprobante(id, accion, nota);
     if (!nuevoEstado) return res.status(404).json({ error: "Reserva no encontrada." });
 
+    // Al aprobar comprobante → confirmar también EstadoCargosAdicionales si estaba pendiente
+    if (accion === "aprobar") {
+      await db.query(
+        "UPDATE reserva SET EstadoCargosAdicionales = 2 WHERE IdReserva = ? AND EstadoCargosAdicionales = 5",
+        [id]
+      );
+    }
+
     // Notificación al aprobar (background, no bloquea la respuesta)
     if (accion === "aprobar") {
       db.query(
@@ -510,10 +518,16 @@ const agregarServicios = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
-    // Cambiar a Pendiente Verificación Pago (5) cuando el pago es por transferencia
+    // Actualizar estado principal y EstadoCargosAdicionales según método de pago
+    const estadoCargoAdic = esTransferencia ? 5 : 2; // 5=Pendiente verificación, 2=Confirmado
     if (esTransferencia) {
       await db.query(
-        "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET IdEstadoReserva = 5, EstadoCargosAdicionales = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        [id]
+      );
+    } else if (Number(metodoPago) === 1) {
+      await db.query(
+        "UPDATE reserva SET EstadoCargosAdicionales = 2 WHERE IdReserva = ?",
         [id]
       );
     }
@@ -676,16 +690,15 @@ const extenderDias = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
-    // Cambiar a Pendiente Verificación Pago (5) cuando el pago es por transferencia
+    // Actualizar estado principal y EstadoCargosAdicionales según método de pago
     if (esTransferencia) {
       await db.query(
-        "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET IdEstadoReserva = 5, EstadoCargosAdicionales = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
       );
-    } else if (Number(req.usuario?.rol) !== 1) {
-      // Si es cliente (no admin) también vuelve a Pendiente independientemente del método
+    } else if (Number(metodoPago) === 1) {
       await db.query(
-        "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET EstadoCargosAdicionales = 2 WHERE IdReserva = ?",
         [id]
       );
     }

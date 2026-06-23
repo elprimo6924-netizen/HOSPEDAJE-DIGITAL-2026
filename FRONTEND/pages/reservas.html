@@ -278,6 +278,18 @@
                 : 'otro';
             return `<span class="badge-estado ${cssClass}">${label}</span>`;
         }
+        function badgeCargos(estadoId) {
+            if (estadoId === null || estadoId === undefined) {
+                return '<span style="color:#94a3b8;font-size:.8rem;font-style:italic;">No aplica</span>';
+            }
+            const map = { 2:'Confirmado', 5:'Pendiente verificación', 3:'Cancelado', 1:'Pendiente' };
+            const label = map[estadoId] || `Estado ${estadoId}`;
+            const cssClass = estadoId === 2 ? 'activa'
+                : estadoId === 3           ? 'cancelada'
+                : estadoId === 5           ? 'pendiente-pago'
+                : 'otro';
+            return `<span class="badge-estado ${cssClass}">${label}</span>`;
+        }
         const formatFecha = f => f ? new Date(f).toLocaleDateString('es-CO') : '-';
         const formatMonto = m => '$' + Number(m||0).toLocaleString('es-CO');
 
@@ -358,11 +370,7 @@
                         <td>${formatFecha(r.FechaInicio)}</td>
                         <td>${formatFecha(r.FechaFinalizacion)}</td>
                         <td><strong>${formatMonto(r.MontoTotal)}</strong></td>
-                        <td>
-                            ${r.TieneCargosAdicionales
-                                ? badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)
-                                : '<span style="color:#94a3b8;font-size:.8rem;font-style:italic;">Sin cargos</span>'}
-                        </td>
+                        <td>${badgeCargos(r.TieneCargosAdicionales ? r.EstadoCargosAdicionales : null)}</td>
                         <td>
                             ${badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)}
                             ${r.ComprobantePago && r.ComprobanteEstado === 'pendiente'
