@@ -932,6 +932,13 @@
                             <option value="1">💵 Efectivo</option>
                             <option value="2">🏦 Transferencia</option>
                         </select>
+                        <div id="svc-aviso-transferencia"
+                             style="display:none;margin-top:8px;padding:8px 12px;background:#fffbeb;
+                                    border:1.5px solid #fde68a;border-radius:8px;font-size:0.79rem;
+                                    color:#92400e;font-weight:600;">
+                            <i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>
+                            La reserva volverá a estado <strong>Pendiente</strong> para que subas el comprobante de pago.
+                        </div>
                     </div>
 
                     <div id="svc-modal-msg" style="display:none;margin-top:10px;padding:10px 14px;
@@ -1001,6 +1008,11 @@
             };
 
             document.getElementById('svc-modal-cancelar').onclick = () => modal.remove();
+
+            document.getElementById('svc-metodo-pago').addEventListener('change', function() {
+                const aviso = document.getElementById('svc-aviso-transferencia');
+                if (aviso) aviso.style.display = this.value === '2' ? 'block' : 'none';
+            });
 
             document.getElementById('svc-modal-confirmar').onclick = async () => {
                 const lista = servicios
@@ -1093,6 +1105,27 @@
                          background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:9px;
                          font-size:0.83rem;color:#3730a3;font-weight:600;"></div>
 
+                    <!-- Método de pago -->
+                    <div style="margin-top:14px;">
+                        <label style="font-size:0.82rem;font-weight:600;color:#475569;display:block;margin-bottom:6px;">
+                            Método de pago para los días adicionales
+                        </label>
+                        <select id="dias-metodo-pago"
+                            style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;
+                                   font-size:0.85rem;color:#1e293b;background:#fff;outline:none;cursor:pointer;">
+                            <option value="1">💵 Efectivo</option>
+                            <option value="2">🏦 Transferencia</option>
+                        </select>
+                    </div>
+
+                    <div id="dias-aviso-transferencia"
+                         style="display:none;margin-top:8px;padding:8px 12px;background:#fffbeb;
+                                border:1.5px solid #fde68a;border-radius:8px;font-size:0.79rem;
+                                color:#92400e;font-weight:600;">
+                        <i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>
+                        La reserva volverá a estado <strong>Pendiente</strong> para que subas el comprobante de pago.
+                    </div>
+
                     <div id="dias-msg" style="display:none;margin-top:10px;padding:10px 14px;
                          border-radius:8px;font-size:0.82rem;font-weight:600;"></div>
 
@@ -1176,21 +1209,29 @@
                 el.textContent = txt;
             };
 
+            // Mostrar aviso cuando se elige transferencia
+            document.getElementById('dias-metodo-pago').addEventListener('change', function() {
+                const aviso = document.getElementById('dias-aviso-transferencia');
+                if (aviso) aviso.style.display = this.value === '2' ? 'block' : 'none';
+            });
+
             document.getElementById('dias-confirmar').onclick = async () => {
                 const nv = inputFecha.value;
                 if (!nv) { showMsg('Selecciona la nueva fecha de finalización.', false); return; }
+                const metodoPago = Number(document.getElementById('dias-metodo-pago').value);
                 const btn = document.getElementById('dias-confirmar');
                 btn.disabled = true;
                 btn.textContent = 'Guardando...';
                 try {
                     const res = await requestJson(`/reservas/${reservaId}/extender-dias`, {
                         method: 'PUT',
-                        body: { nuevaFechaFin: nv }
+                        body: { nuevaFechaFin: nv, metodoPago }
                     });
-                    showMsg(`${(res && res.mensaje) || 'Reserva extendida correctamente.'}${pedirComprobante ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
+                    const esTransf = metodoPago === 2;
+                    showMsg(`${(res && res.mensaje) || 'Reserva extendida correctamente.'}${esTransf ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
                     setTimeout(() => {
                         modal.remove();
-                        if (pedirComprobante) {
+                        if (esTransf) {
                             document.getElementById('modal-reserva-detalle')?.classList.add('hidden');
                             abrirModalSubirComprobante(reservaId);
                         } else {

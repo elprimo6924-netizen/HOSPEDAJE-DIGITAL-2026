@@ -510,8 +510,8 @@ const agregarServicios = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
-    // Solo cambia a Pendiente Verificación Pago (5) si el cliente pagó por transferencia
-    if (esCliente && esTransferencia) {
+    // Cambiar a Pendiente Verificación Pago (5) cuando el pago es por transferencia
+    if (esTransferencia) {
       await db.query(
         "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
@@ -663,14 +663,27 @@ const getDisponibilidad = async (req, res) => {
 const extenderDias = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nuevaFechaFin } = req.body;
+    const { nuevaFechaFin, metodoPago } = req.body;
     if (!nuevaFechaFin) return res.status(400).json({ error: "Indica la nueva fecha de finalización" });
 
     const result = await ReservasService.extenderDias(id, nuevaFechaFin);
     if (!result.ok) return res.status(400).json({ error: result.error });
 
-    // Si quien extiende es un cliente, volver a Pendiente Verificación Pago (5)
-    if (Number(req.usuario?.rol) !== 1) {
+    const esTransferencia = Number(metodoPago) === 2;
+
+    // Guardar método de pago si se envió
+    if (metodoPago !== undefined && metodoPago !== null) {
+      await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
+    }
+
+    // Cambiar a Pendiente Verificación Pago (5) cuando el pago es por transferencia
+    if (esTransferencia) {
+      await db.query(
+        "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        [id]
+      );
+    } else if (Number(req.usuario?.rol) !== 1) {
+      // Si es cliente (no admin) también vuelve a Pendiente independientemente del método
       await db.query(
         "UPDATE reserva SET IdEstadoReserva = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]

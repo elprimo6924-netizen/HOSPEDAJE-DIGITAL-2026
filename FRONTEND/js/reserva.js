@@ -880,10 +880,15 @@ const ResumenLateral = {
             if (_habDetail) _habDetail.innerHTML = '';
         }
 
-        if (State.fechaInicio) {
-            fechasEl.textContent = `${State.fechaInicio.toLocaleDateString()}  ${State.fechaFin ? State.fechaFin.toLocaleDateString() : '?'}  ${noches} noche(s)`;
+        if (State.fechaInicio && State.fechaFin) {
+            fechasEl.innerHTML = `
+                ${State.fechaInicio.toLocaleDateString()} → ${State.fechaFin.toLocaleDateString()}
+                <span style="margin-left:6px;background:#1a5c1a;color:#fff;border-radius:5px;
+                             padding:1px 7px;font-size:.7rem;font-weight:800;">${noches} noche${noches !== 1 ? 's' : ''}</span>`;
+        } else if (State.fechaInicio) {
+            fechasEl.textContent = `Desde ${State.fechaInicio.toLocaleDateString()} — selecciona fecha fin`;
         } else {
-            fechasEl.textContent = 'Fechas no seleccionadas';
+            fechasEl.textContent = 'Selecciona las fechas de estadía';
         }
 
         // Servicios extras
