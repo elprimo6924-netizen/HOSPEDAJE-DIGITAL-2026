@@ -570,6 +570,17 @@
                 };
             })();
 
+            const noches = (() => {
+                if (!r.FechaInicio || !r.FechaFinalizacion) return 1;
+                const ms = new Date(r.FechaFinalizacion) - new Date(r.FechaInicio);
+                return Math.max(1, Math.round(ms / 86400000));
+            })();
+
+            const totalServicios = (r.servicios || []).reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
+            // costoExtraDias: lo que se sumó a MontoTotal por extensiones de días (SubTotal+IVA = MontoTotal original sin extensiones)
+            const costoExtraDias = Math.max(0, (r.MontoTotal || 0) - (r.SubTotal || 0) - (r.IVA || 0));
+            const costoAlojamiento = Math.max(0, (r.MontoTotal || 0) - totalServicios - costoExtraDias);
+
             const tieneServicios = (r.servicios || []).length > 0 || !!r.Servicios;
 
             const campos = [
@@ -583,16 +594,56 @@
                 })() : 'Tu reserva'],
                 ['Fecha inicio',  formatFecha(r.FechaInicio)],
                 ['Fecha fin',     formatFecha(r.FechaFinalizacion)],
-                ['Base gravable', formatMonto(r.SubTotal)],
-                ['Descuento',     formatMonto(r.Descuento)],
-                ['IVA incluido',  formatMonto(r.IVA)],
-                ['Total',         `<strong style="font-size:1.05rem;color:#0f172a;">${formatMonto(r.MontoTotal)}</strong>`],
-                ['Estado reserva',badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)],
+                ['Duración',      `${noches} noche${noches !== 1 ? 's' : ''}`],
+                ['Estado reserva', badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)],
                 ['Método de pago', Number(r.MetodoPago) === 2
                     ? '<i class="fa-solid fa-arrow-right-arrow-left" style="color:#1d4ed8;margin-right:5px;"></i>Transferencia'
                     : '<i class="fa-solid fa-money-bill-wave" style="color:#16a34a;margin-right:5px;"></i>Efectivo'],
                 ['Tipo Alojamiento', alojamientoHtml],
             ];
+
+            // Bloque desglose financiero full-width
+            const desgloseFinancieroHtml = (() => {
+                const fila = (label, valor, opts = {}) => {
+                    const colorVal = opts.color || '#1e293b';
+                    const bold     = opts.bold   ? 'font-weight:800;font-size:.92rem;' : 'font-weight:600;font-size:.82rem;';
+                    const bg       = opts.bg     ? `background:${opts.bg};border-radius:8px;padding:10px 14px;` : 'padding:6px 4px;';
+                    return `<div style="display:flex;justify-content:space-between;align-items:center;${bg}border-bottom:1px solid #f1f5f9;">
+                        <span style="font-size:.82rem;color:${opts.labelColor||'#475569'};font-weight:${opts.bold?'700':'500'};">${label}</span>
+                        <span style="${bold}color:${colorVal};">${valor}</span>
+                    </div>`;
+                };
+                const sep = `<div style="border-top:1.5px dashed #e2e8f0;margin:8px 0;"></div>`;
+
+                const filaAloj  = fila('🏨 Alojamiento', formatMonto(costoAlojamiento));
+                const filaExtra = costoExtraDias > 0
+                    ? fila('📅 Días adicionales', formatMonto(costoExtraDias), { color:'#7c3aed', labelColor:'#7c3aed' })
+                    : '';
+                const filaSvc   = totalServicios > 0
+                    ? fila('🛎️ Servicios adicionales', formatMonto(totalServicios), { color:'#0369a1', labelColor:'#0369a1' })
+                    : '';
+                const filaDesc  = Number(r.Descuento) > 0
+                    ? fila('🏷️ Descuento', `− ${formatMonto(r.Descuento)}`, { color:'#16a34a', labelColor:'#16a34a' })
+                    : '';
+                const filaBase  = fila('Base gravable', formatMonto(r.SubTotal), { labelColor:'#94a3b8' });
+                const filaIva   = fila('IVA (19%) incluido', formatMonto(r.IVA), { labelColor:'#94a3b8' });
+                const filaTotal = fila('TOTAL', formatMonto(r.MontoTotal), {
+                    bold: true, color:'#1a3020', labelColor:'#1a3020',
+                    bg:'linear-gradient(90deg,#f0fdf4,#dcfce7)'
+                });
+
+                return `<div style="grid-column:1/-1;background:#fffdf7;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-top:2px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                        <i class="fa-solid fa-receipt" style="color:#d97706;font-size:.9rem;"></i>
+                        <span style="font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#92400e;">Desglose financiero</span>
+                    </div>
+                    ${filaAloj}${filaExtra}${filaSvc}${filaDesc}
+                    ${sep}
+                    ${filaBase}${filaIva}
+                    ${sep}
+                    ${filaTotal}
+                </div>`;
+            })();
 
             // Bloque itemizado de servicios adicionales (full-width)
             const serviciosDetalleHtml = (r.servicios && r.servicios.length > 0)
@@ -738,7 +789,7 @@
                 </div>`;
 
             contenido.innerHTML = bannerHtml + campos.map(([l,v]) =>
-                `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('') + serviciosDetalleHtml + comprobanteHtml;
+                `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('') + desgloseFinancieroHtml + serviciosDetalleHtml + comprobanteHtml;
 
             // Footer: botones aprobar/rechazar + agregar servicio + agregar días
             const footer     = document.getElementById('detalle-modal-footer');
