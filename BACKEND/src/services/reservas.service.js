@@ -229,9 +229,10 @@ const ReservasService = {
     }
 
     const svcCols = await getDetalleServicioCols();
-    const horaField = svcCols.has('HoraServicio') ? ', drs.HoraServicio' : '';
+    const horaField  = svcCols.has('HoraServicio') ? ', drs.HoraServicio' : '';
+    const cantField  = svcCols.has('Cantidad')     ? ', drs.Cantidad'     : '';
     const [servicios] = await db.query(
-      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}
+      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}${cantField}
        FROM detallereservaservicio drs
        JOIN servicio s ON drs.IDServicio = s.IDServicio
        WHERE drs.IDReserva = ?`,

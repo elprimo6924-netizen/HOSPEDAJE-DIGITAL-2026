@@ -585,8 +585,46 @@
                     ? '<i class="fa-solid fa-arrow-right-arrow-left" style="color:#1d4ed8;margin-right:5px;"></i>Transferencia'
                     : '<i class="fa-solid fa-money-bill-wave" style="color:#16a34a;margin-right:5px;"></i>Efectivo'],
                 ['Tipo Alojamiento', alojamientoHtml],
-                ...(tieneServicios ? [['Servicios', svcHtml]] : []),
             ];
+
+            // Bloque itemizado de servicios adicionales (full-width)
+            const serviciosDetalleHtml = (r.servicios && r.servicios.length > 0)
+                ? (() => {
+                    const totalSvcs = r.servicios.reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
+                    const filas = r.servicios.map(s => {
+                        const cant    = Number(s.Cantidad) || 1;
+                        const precio  = Number(s.Precio)   || 0;
+                        return `<tr style="border-bottom:1px solid #e0f2fe;">
+                            <td style="padding:7px 8px;font-size:.82rem;color:#1e293b;font-weight:600;">${s.NombreServicio}${s.HoraServicio ? ` <span style="color:#94a3b8;font-size:.73rem;">(${s.HoraServicio})</span>` : ''}</td>
+                            <td style="padding:7px 8px;font-size:.82rem;color:#475569;text-align:center;">${cant}</td>
+                            <td style="padding:7px 8px;font-size:.82rem;color:#475569;text-align:right;">${formatMonto(precio)}</td>
+                            <td style="padding:7px 8px;font-size:.83rem;color:#0f172a;font-weight:700;text-align:right;">${formatMonto(precio * cant)}</td>
+                        </tr>`;
+                    }).join('');
+                    const totalFila = r.servicios.length > 1
+                        ? `<tr style="background:#dbeafe;"><td colspan="3" style="padding:7px 8px;font-size:.78rem;color:#1d4ed8;font-weight:800;text-align:right;border-radius:0 0 0 8px;">Total servicios:</td><td style="padding:7px 8px;font-size:.88rem;color:#1d4ed8;font-weight:900;text-align:right;border-radius:0 0 8px 0;">${formatMonto(totalSvcs)}</td></tr>`
+                        : '';
+                    return `<div style="grid-column:1/-1;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:14px 16px;margin-top:2px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                            <i class="fa-solid fa-concierge-bell" style="color:#0284c7;font-size:.9rem;"></i>
+                            <span style="font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#0369a1;">Servicios adicionales</span>
+                        </div>
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="border-bottom:1.5px solid #bae6fd;">
+                                    <th style="text-align:left;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Servicio</th>
+                                    <th style="text-align:center;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;width:55px;">Cant.</th>
+                                    <th style="text-align:right;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Precio unit.</th>
+                                    <th style="text-align:right;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>${filas}</tbody>
+                            ${totalFila ? `<tfoot>${totalFila}</tfoot>` : ''}
+                        </table>
+                    </div>`;
+                })()
+                : '';
+
             // Bloque comprobante de pago
             const apiBase = (typeof CONFIG !== 'undefined' && CONFIG.API_URL)
                 ? CONFIG.API_URL.replace('/api', '')
@@ -693,7 +731,7 @@
                 </div>`;
 
             contenido.innerHTML = bannerHtml + campos.map(([l,v]) =>
-                `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('') + comprobanteHtml;
+                `<div class="detalle-item"><span>${l}</span><strong>${v}</strong></div>`).join('') + serviciosDetalleHtml + comprobanteHtml;
 
             // Footer: botones aprobar/rechazar + agregar servicio + agregar días
             const footer     = document.getElementById('detalle-modal-footer');
@@ -1484,13 +1522,19 @@
             })();
             const nombreCompleto = (`${r.Nombre || ''} ${r.Apellido || ''}`).trim() || nombreCache;
 
+            const totalServicios = (r.servicios || []).reduce((acc, s) => acc + (Number(s.Precio || 0) * (Number(s.Cantidad) || 1)), 0);
             const serviciosHtml = (r.servicios || []).length > 0
-                ? r.servicios.map(s => `
-                    <tr>
+                ? r.servicios.map(s => {
+                    const cant    = Number(s.Cantidad) || 1;
+                    const precio  = Number(s.Precio || s.Costo || s.PrecioUnitario || 0);
+                    return `<tr>
                         <td style="padding:6px 10px;font-size:.82rem;color:#334155;">${s.NombreServicio}${s.HoraServicio ? ` <span style="color:#94a3b8">(${s.HoraServicio})</span>` : ''}</td>
-                        <td style="padding:6px 10px;font-size:.82rem;color:#334155;text-align:right;">${fmt(s.Precio || s.Costo || s.PrecioUnitario || 0)}</td>
-                    </tr>`).join('')
-                : `<tr><td colspan="2" style="padding:6px 10px;font-size:.82rem;color:#94a3b8;">Sin servicios adicionales</td></tr>`;
+                        <td style="padding:6px 10px;font-size:.82rem;color:#475569;text-align:center;">${cant}</td>
+                        <td style="padding:6px 10px;font-size:.82rem;color:#475569;text-align:right;">${fmt(precio)}</td>
+                        <td style="padding:6px 10px;font-size:.82rem;color:#1e293b;font-weight:700;text-align:right;">${fmt(precio * cant)}</td>
+                    </tr>`;
+                }).join('')
+                : `<tr><td colspan="4" style="padding:6px 10px;font-size:.82rem;color:#94a3b8;">Sin servicios adicionales</td></tr>`;
 
             const metodoPago = Number(r.MetodoPago) === 2
                 ? 'Transferencia bancaria'
@@ -1640,9 +1684,20 @@
       <div class="section-title">Servicios adicionales</div>
       <table>
         <thead class="table-head">
-          <tr><th>Servicio</th><th style="text-align:right;">Costo</th></tr>
+          <tr>
+            <th>Servicio</th>
+            <th style="text-align:center;width:55px;">Cant.</th>
+            <th style="text-align:right;">Precio unit.</th>
+            <th style="text-align:right;">Subtotal</th>
+          </tr>
         </thead>
         <tbody>${serviciosHtml}</tbody>
+        ${r.servicios.length > 1 ? `<tfoot>
+          <tr style="background:#f1f5f9;">
+            <td colspan="3" style="padding:8px 10px;font-size:.8rem;color:#475569;font-weight:700;text-align:right;border-top:1.5px solid #e2e8f0;">Total servicios:</td>
+            <td style="padding:8px 10px;font-size:.88rem;color:#1e293b;font-weight:800;text-align:right;border-top:1.5px solid #e2e8f0;">${fmt(totalServicios)}</td>
+          </tr>
+        </tfoot>` : ''}
       </table>
     </div>` : ''}
 
