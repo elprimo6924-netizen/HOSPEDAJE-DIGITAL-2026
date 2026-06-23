@@ -508,6 +508,89 @@ const EmailService = {
     }
   },
 
+  /* ── Formulario pre check-in ── */
+  enviarFormularioCheckin: async ({ clienteNombre, clienteEmail, reservaId, habitacion, fechaInicio, fechaFin, checkinLink }) => {
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());
+    if (!emailValido) return false;
+    const fmtFecha = (f) => f ? new Date(f).toLocaleDateString('es-CO', { dateStyle: 'long' }) : '';
+    try {
+      const info = await enviarCorreo({
+        from:    process.env.EMAIL_FROM,
+        to:      clienteEmail,
+        subject: `✅ Reserva #${reservaId} confirmada — Completa tu pre check-in`,
+        html: wrap(`
+          ${header("¡Tu reserva está confirmada!")}
+          <div style="padding:30px">
+            <h2 style="color:#333">¡Hola, ${clienteNombre}!</h2>
+            <p style="color:#555;line-height:1.6">Tu reserva ha sido confirmada. Para garantizarte la mejor experiencia, completa tu <strong>pre check-in</strong> indicándonos cuántas personas te acompañan y tu hora estimada de llegada.</p>
+            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:18px;margin:20px 0">
+              <table style="width:100%;border-collapse:collapse">
+                <tr><td style="color:#777;padding:6px 0;width:40%">Reserva:</td><td style="color:#333;font-weight:700">#${reservaId}</td></tr>
+                ${habitacion ? `<tr><td style="color:#777;padding:6px 0">Alojamiento:</td><td style="color:#333">${habitacion}</td></tr>` : ''}
+                <tr><td style="color:#777;padding:6px 0">Entrada:</td><td style="color:#333">${fmtFecha(fechaInicio)}</td></tr>
+                <tr><td style="color:#777;padding:6px 0">Salida:</td><td style="color:#333">${fmtFecha(fechaFin)}</td></tr>
+              </table>
+            </div>
+            <div style="text-align:center;margin:28px 0">
+              <a href="${checkinLink}" style="display:inline-block;background:${HEADER_BG};color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(26,67,50,.35)">
+                👥 Completar Pre Check-in
+              </a>
+            </div>
+            <p style="color:#94a3b8;font-size:12px;text-align:center">Si el botón no funciona: <span style="color:${ACCENT}">${checkinLink}</span></p>
+          </div>
+          ${footer()}
+        `),
+      });
+      console.log(`[Email] Formulario check-in enviado a ${clienteEmail} (ID: ${info.messageId})`);
+      return true;
+    } catch (err) {
+      console.error('[Email] Error en enviarFormularioCheckin:', err.message);
+      return false;
+    }
+  },
+
+  /* ── Fin de estadía ── */
+  enviarFinDeEstadia: async ({ clienteNombre, clienteEmail, reservaId, habitacion, fechaInicio, fechaFin, montoTotal }) => {
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());
+    if (!emailValido) return false;
+    const fmtFecha = (f) => f ? new Date(f).toLocaleDateString('es-CO', { dateStyle: 'long' }) : '';
+    try {
+      const info = await enviarCorreo({
+        from:    process.env.EMAIL_FROM,
+        to:      clienteEmail,
+        subject: `🏡 Gracias por tu estadía — Reserva #${reservaId} | Hospedaje Digital`,
+        html: wrap(`
+          ${header("¡Gracias por hospedarte con nosotros!")}
+          <div style="padding:30px">
+            <h2 style="color:#333">Hasta pronto, ${clienteNombre}!</h2>
+            <p style="color:#555;line-height:1.6">Ha sido un placer tenerte. Esperamos que tu estadía haya superado tus expectativas.</p>
+            <div style="background:#f5f5f5;border-radius:8px;padding:20px;margin:20px 0">
+              <h3 style="color:${HEADER_BG};margin-top:0">Resumen de tu estadía</h3>
+              <table style="width:100%;border-collapse:collapse">
+                <tr><td style="color:#777;padding:6px 0;width:40%">Reserva:</td><td style="color:#333;font-weight:700">#${reservaId}</td></tr>
+                ${habitacion ? `<tr><td style="color:#777;padding:6px 0">Alojamiento:</td><td style="color:#333">${habitacion}</td></tr>` : ''}
+                <tr><td style="color:#777;padding:6px 0">Entrada:</td><td style="color:#333">${fmtFecha(fechaInicio)}</td></tr>
+                <tr><td style="color:#777;padding:6px 0">Salida:</td><td style="color:#333">${fmtFecha(fechaFin)}</td></tr>
+                ${montoTotal ? `<tr style="border-top:1px solid #ddd"><td style="color:#777;padding:10px 0 6px;font-weight:bold">Total pagado:</td><td style="color:${HEADER_BG};font-weight:bold;font-size:16px">$${Number(montoTotal).toLocaleString('es-CO')}</td></tr>` : ''}
+              </table>
+            </div>
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:18px;margin:20px 0;text-align:center">
+              <p style="margin:0 0 8px;color:#9a3412;font-weight:700">⭐ ¿Cómo fue tu experiencia?</p>
+              <p style="margin:0;color:#7c2d12;font-size:13px">Tu opinión nos ayuda a mejorar. ¡Nos encantaría saber qué te pareció!</p>
+            </div>
+            <p style="color:#555;text-align:center;margin-bottom:0">¡Esperamos verte pronto de nuevo en <strong>Hospedaje Digital</strong>!</p>
+          </div>
+          ${footer()}
+        `),
+      });
+      console.log(`[Email] Fin de estadía enviado a ${clienteEmail} (ID: ${info.messageId})`);
+      return true;
+    } catch (err) {
+      console.error('[Email] Error en enviarFinDeEstadia:', err.message);
+      return false;
+    }
+  },
+
   /* ── Pendiente comprobante — pago con tarjeta (5 minutos) ── */
   enviarPendienteComprobante: async ({ clienteNombre, clienteEmail, reservaId, linkSubir, fechaInicio, fechaFin, montoTotal }) => {
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteEmail?.trim());

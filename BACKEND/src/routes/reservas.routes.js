@@ -37,4 +37,8 @@ router.put("/:id/extender-dias", requireReservaOwnerOrAdmin, reservasController.
 // Eliminar reserva (borra el registro de la BD)
 router.delete("/:id", requireAdmin, reservasController.eliminar);
 
+// Pre check-in del huésped (público — acceso por link en email)
+router.get("/:id/checkin-info", reservasController.getCheckinInfo);
+router.post("/:id/checkin-data", reservasController.submitCheckinData);
+
 module.exports = router;

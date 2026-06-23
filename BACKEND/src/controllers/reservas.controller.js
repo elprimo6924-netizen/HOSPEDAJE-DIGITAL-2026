@@ -146,8 +146,8 @@ const crear = async (req, res) => {
 
       if (!c.Email) return;
 
+      const appUrl = process.env.APP_URL || 'https://hospedaje-digital.onrender.com';
       if (metodoPago === 2) {
-        const appUrl = process.env.APP_URL || 'http://localhost:3000';
         const linkSubir = `${appUrl}/pages/reservas.html?comprobante=${idReserva}`;
         EmailService.enviarPendienteComprobante({ ...notifPayload, linkSubir })
           .then(ok => console.log(`[Notif] enviarPendienteComprobante → ${ok ? 'OK' : 'FALLÓ'}`))
@@ -156,6 +156,11 @@ const crear = async (req, res) => {
         EmailService.enviarConfirmacionReserva(notifPayload)
           .then(ok => console.log(`[Notif] enviarConfirmacionReserva → ${ok ? 'OK' : 'FALLÓ'}`))
           .catch(err => console.error(`[Notif] Error enviarConfirmacionReserva:`, err.message));
+        // Formulario pre check-in junto con la confirmación
+        const checkinLink = `${appUrl}/pages/checkin.html?reserva=${idReserva}`;
+        EmailService.enviarFormularioCheckin({ ...notifPayload, checkinLink })
+          .then(ok => console.log(`[Notif] enviarFormularioCheckin → ${ok ? 'OK' : 'FALLÓ'}`))
+          .catch(err => console.error(`[Notif] Error enviarFormularioCheckin:`, err.message));
         WhatsappService.enviarConfirmacionReserva({ ...notifPayload, clienteTelefono: c.Telefono })
           .catch(() => {});
       }
@@ -280,8 +285,43 @@ const cancelar = async (req, res) => {
 const actualizar = async (req, res) => {
   try {
     const id = req.params.id;
+    const { IdEstadoReserva } = req.body;
     const ok = await ReservasService.actualizar(id, req.body);
     if (!ok) return res.status(404).json({ error: "Reserva no encontrada" });
+
+    // Notificación fin de estadía cuando se marca como Completada (estado 4)
+    if (Number(IdEstadoReserva) === 4) {
+      db.query(
+        `SELECT COALESCE(c.Nombre, u.NombreUsuario,'') AS Nombre,
+                COALESCE(c.Apellido, u.Apellido,'')   AS Apellido,
+                COALESCE(c.Email, u.Email)             AS Email,
+                r.FechaInicio, r.FechaFinalizacion, r.Monto_Total AS montoTotal,
+                COALESCE(hd.NombreHabitacion, hp.NombreHabitacion,'') AS habitacion
+         FROM reserva r
+         LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
+         LEFT JOIN usuarios  u ON r.id_usuario = u.IDUsuario
+         LEFT JOIN habitacion hd ON r.IDHabitacion = hd.IDHabitacion
+         LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
+         LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
+         LEFT JOIN habitacion hp ON p.IDHabitacion = hp.IDHabitacion
+         WHERE r.IdReserva = ? LIMIT 1`,
+        [id]
+      ).then(([rows]) => {
+        if (!rows.length || !rows[0].Email) return;
+        const r = rows[0];
+        EmailService.enviarFinDeEstadia({
+          clienteNombre: `${r.Nombre} ${r.Apellido}`.trim() || 'Cliente',
+          clienteEmail:  r.Email,
+          reservaId:     id,
+          habitacion:    r.habitacion,
+          fechaInicio:   r.FechaInicio,
+          fechaFin:      r.FechaFinalizacion,
+          montoTotal:    r.montoTotal,
+        }).then(ok => console.log(`[Notif] enviarFinDeEstadia #${id} → ${ok ? 'OK' : 'FALLÓ'}`))
+          .catch(err => console.error(`[Notif] Error fin de estadía:`, err.message));
+      }).catch(() => {});
+    }
+
     return res.status(200).json({ mensaje: "Reserva actualizada" });
   } catch (error) {
     console.error("RESERVAS ERROR:", error);
@@ -647,6 +687,103 @@ const extenderDias = async (req, res) => {
   }
 };
 
+// ─── Pre Check-In público (sin autenticación) ───────────────────────────────
+
+const getCheckinInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await db.query(
+      `SELECT r.IdReserva AS id,
+              r.FechaInicio AS fechaInicio,
+              r.FechaFinalizacion AS fechaFin,
+              COALESCE(hd.NombreHabitacion, hp.NombreHabitacion, '') AS habitacion,
+              r.CheckinEnviado AS checkinEnviado
+       FROM reserva r
+       LEFT JOIN habitacion hd ON r.IDHabitacion = hd.IDHabitacion
+       LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
+       LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
+       LEFT JOIN habitacion hp ON p.IDHabitacion = hp.IDHabitacion
+       WHERE r.IdReserva = ? LIMIT 1`,
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Reserva no encontrada' });
+    return res.status(200).json({ reserva: rows[0] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const submitCheckinData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { numPersonas, horaLlegada, solicitudesEspeciales } = req.body;
+
+    if (!numPersonas || !horaLlegada) {
+      return res.status(400).json({ error: 'Número de personas y hora de llegada son obligatorios' });
+    }
+
+    // Verificar que la reserva existe
+    const [rows] = await db.query(
+      `SELECT r.IdReserva,
+              r.FechaInicio, r.FechaFinalizacion,
+              COALESCE(c.Nombre, u.NombreUsuario,'') AS Nombre,
+              COALESCE(c.Apellido, u.Apellido,'')   AS Apellido,
+              COALESCE(c.Email, u.Email)             AS Email,
+              COALESCE(hd.NombreHabitacion, hp.NombreHabitacion,'') AS habitacion
+       FROM reserva r
+       LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
+       LEFT JOIN usuarios  u ON r.id_usuario = u.IDUsuario
+       LEFT JOIN habitacion hd ON r.IDHabitacion = hd.IDHabitacion
+       LEFT JOIN detallereservapaquetes drp ON r.IdReserva = drp.IDReserva
+       LEFT JOIN paquetes p  ON drp.IDPaquete = p.IDPaquete
+       LEFT JOIN habitacion hp ON p.IDHabitacion = hp.IDHabitacion
+       WHERE r.IdReserva = ? LIMIT 1`,
+      [id]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: 'Reserva no encontrada' });
+    const r = rows[0];
+
+    // Guardar datos de check-in en la reserva
+    await db.query(
+      `UPDATE reserva
+       SET CheckinNumPersonas = ?, CheckinHoraLlegada = ?, CheckinSolicitudes = ?, CheckinEnviado = 1
+       WHERE IdReserva = ?`,
+      [numPersonas, horaLlegada, solicitudesEspeciales || null, id]
+    ).catch(() => {
+      // Si las columnas no existen aún, continuar sin error
+    });
+
+    // Notificar al admin
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+    if (adminEmail) {
+      const htmlAdmin = `
+        <div style="font-family:Sora,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#fff;">
+          <h2 style="color:#1a1a2e;font-family:Georgia,serif;">Pre Check-In recibido</h2>
+          <p><strong>Reserva:</strong> #${id}</p>
+          <p><strong>Huésped:</strong> ${r.Nombre} ${r.Apellido}</p>
+          <p><strong>Email:</strong> ${r.Email}</p>
+          <p><strong>Habitación:</strong> ${r.habitacion}</p>
+          <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+          <p><strong>Número de personas:</strong> ${numPersonas}</p>
+          <p><strong>Hora estimada de llegada:</strong> ${horaLlegada}</p>
+          ${solicitudesEspeciales ? `<p><strong>Solicitudes especiales:</strong> ${solicitudesEspeciales}</p>` : ''}
+        </div>`;
+      EmailService.enviarCorreo({
+        from: `Hospedaje Digital <${process.env.EMAIL_USER || 'noreply@hospedajedigital.com'}>`,
+        to:   adminEmail,
+        subject: `Pre Check-In Reserva #${id} — ${r.Nombre} ${r.Apellido}`,
+        html:    htmlAdmin,
+      }).catch(() => {});
+    }
+
+    return res.status(200).json({ ok: true, mensaje: 'Pre check-in registrado correctamente' });
+  } catch (error) {
+    console.error('[Checkin] submitCheckinData:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   crear,
   obtener,
@@ -664,4 +801,6 @@ module.exports = {
   syncEstados,
   getDisponibilidad,
   getComprobantesPendientes,
+  getCheckinInfo,
+  submitCheckinData,
 };

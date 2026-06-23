@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre Check-In — Hospedaje Digital</title>
+
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #f5f0eb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ci-header {
+            background: #1a1a2e;
+            padding: 1.2rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .ci-header .logo-text {
+            font-family: 'Fraunces', serif;
+            color: #c9a96e;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .ci-header .logo-sub {
+            color: #aaa;
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .ci-main {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 3rem 1rem;
+        }
+
+        .ci-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            max-width: 560px;
+            width: 100%;
+            padding: 2.5rem 2rem;
+        }
+
+        .ci-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #c9a96e, #a07840);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .ci-icon i {
+            font-size: 1.6rem;
+            color: #fff;
+        }
+
+        .ci-card h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            color: #1a1a2e;
+            text-align: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .ci-card .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Info de reserva */
+        .reserva-info {
+            background: #f9f6f0;
+            border: 1px solid #e8ddc8;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .reserva-info h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #c9a96e;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.72rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.15rem;
+        }
+
+        .info-item span {
+            font-size: 0.9rem;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        /* Form */
+        .ci-form .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .ci-form label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .ci-form input,
+        .ci-form select,
+        .ci-form textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.9rem;
+            color: #1a1a2e;
+            background: #fafafa;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .ci-form input:focus,
+        .ci-form select:focus,
+        .ci-form textarea:focus {
+            border-color: #c9a96e;
+            background: #fff;
+        }
+
+        .ci-form textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #c9a96e, #a07840);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Sora', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Estados */
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.error   { background: #fdecea; border: 1px solid #f5c6c6; color: #c0392b; display: flex; gap: 0.5rem; align-items: flex-start; }
+        .alert.success { background: #edf7ed; border: 1px solid #b8e0b8; color: #1b5e20; display: flex; gap: 0.5rem; align-items: flex-start; }
+
+        #pantalla-exito {
+            text-align: center;
+            padding: 1rem 0;
+            display: none;
+        }
+
+        #pantalla-exito .exito-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        #pantalla-exito .exito-icon i {
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        #pantalla-exito h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            color: #1a1a2e;
+            margin-bottom: 0.75rem;
+        }
+
+        #pantalla-exito p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+            background-size: 400% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 6px;
+            height: 18px;
+            margin-bottom: 6px;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        @media (max-width: 480px) {
+            .ci-card { padding: 1.5rem 1rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="ci-header">
+    <div>
+        <div class="logo-text">Hospedaje Digital</div>
+        <div class="logo-sub">Pre Check-In en línea</div>
+    </div>
+</header>
+
+<main class="ci-main">
+    <div class="ci-card">
+
+        <div class="ci-icon">
+            <i class="fa-solid fa-door-open"></i>
+        </div>
+
+        <h1>Pre Check-In</h1>
+        <p class="subtitle">Completa este formulario para agilizar tu llegada.<br>Solo toma 2 minutos.</p>
+
+        <!-- Info de reserva -->
+        <div class="reserva-info" id="reserva-info">
+            <h3><i class="fa-solid fa-calendar-check"></i> &nbsp;Tu reserva</h3>
+            <div class="info-grid" id="info-grid">
+                <div class="info-item"><label>Cargando...</label><span><div class="loading-skeleton" style="width:80%"></div></span></div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="alert error" id="alert-error"><i class="fa-solid fa-circle-exclamation"></i> <span id="error-msg"></span></div>
+        <div class="alert success" id="alert-success"><i class="fa-solid fa-circle-check"></i> <span id="success-msg"></span></div>
+
+        <!-- Formulario -->
+        <form class="ci-form" id="ci-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="num-personas"><i class="fa-solid fa-users"></i> N.º de personas</label>
+                    <input type="number" id="num-personas" name="numPersonas" min="1" max="20" placeholder="Ej: 2" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora-llegada"><i class="fa-solid fa-clock"></i> Hora estimada de llegada</label>
+                    <input type="time" id="hora-llegada" name="horaLlegada" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="solicitudes"><i class="fa-solid fa-comment-dots"></i> Solicitudes especiales (opcional)</label>
+                <textarea id="solicitudes" name="solicitudesEspeciales" placeholder="Cama adicional, vegetariano, piso alto, cumpleaños..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-enviar">
+                <i class="fa-solid fa-paper-plane"></i>
+                Confirmar Pre Check-In
+            </button>
+        </form>
+
+        <!-- Pantalla de éxito -->
+        <div id="pantalla-exito">
+            <div class="exito-icon"><i class="fa-solid fa-check"></i></div>
+            <h2>¡Listo! Te esperamos</h2>
+            <p>Recibimos tu pre check-in correctamente.<br>
+               Nuestro equipo está preparando todo para tu llegada.<br><br>
+               Puedes cerrar esta página.</p>
+        </div>
+
+    </div>
+</main>
+
+<script>
+(function () {
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3000'
+        : 'https://hospedaje-digital.onrender.com';
+
+    const params   = new URLSearchParams(window.location.search);
+    const reservaId = params.get('reserva');
+
+    // ───── helpers UI ─────
+    const showError = (msg) => {
+        document.getElementById('error-msg').textContent = msg;
+        document.getElementById('alert-error').style.display = 'flex';
+        document.getElementById('alert-success').style.display = 'none';
+    };
+
+    const showSuccess = (msg) => {
+        document.getElementById('success-msg').textContent = msg;
+        document.getElementById('alert-success').style.display = 'flex';
+        document.getElementById('alert-error').style.display = 'none';
+    };
+
+    // ───── cargar info reserva ─────
+    const loadReservaInfo = async () => {
+        if (!reservaId) {
+            document.getElementById('info-grid').innerHTML =
+                '<div class="info-item"><label>Error</label><span>Enlace inválido</span></div>';
+            showError('El enlace no contiene un ID de reserva válido.');
+            document.getElementById('ci-form').style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/reservas/${reservaId}/checkin-info`);
+            if (!res.ok) throw new Error('No se pudo cargar la información');
+            const data = await res.json();
+            const r = data.reserva || {};
+
+            const formatDate = (d) => d
+                ? new Date(d).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })
+                : '—';
+
+            document.getElementById('info-grid').innerHTML = `
+                <div class="info-item"><label>Reserva N.°</label><span>#${r.id || reservaId}</span></div>
+                <div class="info-item"><label>Habitación</label><span>${r.habitacion || '—'}</span></div>
+                <div class="info-item"><label>Check-in</label><span>${formatDate(r.fechaInicio)}</span></div>
+                <div class="info-item"><label>Check-out</label><span>${formatDate(r.fechaFin)}</span></div>
+            `;
+
+            // Si ya fue enviado
+            if (r.checkinEnviado) {
+                document.getElementById('ci-form').style.display = 'none';
+                document.getElementById('pantalla-exito').style.display = 'block';
+                showSuccess('Ya registraste tu pre check-in anteriormente.');
+            }
+        } catch (e) {
+            document.getElementById('info-grid').innerHTML =
+                `<div class="info-item"><label>Reserva N.°</label><span>#${reservaId}</span></div>`;
+        }
+    };
+
+    // ───── submit ─────
+    document.getElementById('ci-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-enviar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
+        const body = {
+            numPersonas:         parseInt(document.getElementById('num-personas').value, 10),
+            horaLlegada:         document.getElementById('hora-llegada').value,
+            solicitudesEspeciales: document.getElementById('solicitudes').value.trim(),
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/api/reservas/${reservaId}/checkin-data`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(body),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || 'Error al enviar');
+
+            document.getElementById('ci-form').style.display = 'none';
+            document.getElementById('alert-error').style.display = 'none';
+            document.getElementById('alert-success').style.display = 'none';
+            document.getElementById('pantalla-exito').style.display = 'block';
+        } catch (err) {
+            showError(err.message || 'Error de red. Intenta de nuevo.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar Pre Check-In';
+        }
+    });
+
+    loadReservaInfo();
+})();
+</script>
+
+</body>
+</html>

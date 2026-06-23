@@ -121,6 +121,31 @@ const app = express();
     }
 })();
 
+// Migración: columnas pre check-in en reserva
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const colExists = async (col) => {
+            const [[row]] = await db.query(
+                'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+                [dbName, 'reserva', col]
+            );
+            return row.c > 0;
+        };
+        if (!(await colExists('CheckinEnviado')))
+            await db.query('ALTER TABLE reserva ADD COLUMN CheckinEnviado TINYINT(1) DEFAULT 0');
+        if (!(await colExists('CheckinNumPersonas')))
+            await db.query('ALTER TABLE reserva ADD COLUMN CheckinNumPersonas INT NULL');
+        if (!(await colExists('CheckinHoraLlegada')))
+            await db.query('ALTER TABLE reserva ADD COLUMN CheckinHoraLlegada VARCHAR(10) NULL');
+        if (!(await colExists('CheckinSolicitudes')))
+            await db.query('ALTER TABLE reserva ADD COLUMN CheckinSolicitudes TEXT NULL');
+        console.log('[MIGRATION] Columnas pre check-in OK.');
+    } catch (err) {
+        console.error("[MIGRATION] Error en migración pre check-in:", err.message);
+    }
+})();
+
 (async () => {
     try {
         await db.query(`
@@ -182,6 +207,11 @@ const habitacionesController = require('./controllers/habitaciones.controller');
 app.get('/api/paquetes/activos',       paquetesController.listarActivos);
 app.get('/api/servicios/activos',      serviciosController.listarActivos);
 app.get('/api/habitaciones/disponibles', habitacionesController.disponibles);
+
+// Rutas públicas de pre check-in (acceso por link en email, sin token)
+const reservasController = require('./controllers/reservas.controller');
+app.get('/api/reservas/:id/checkin-info', reservasController.getCheckinInfo);
+app.post('/api/reservas/:id/checkin-data', reservasController.submitCheckinData);
 
 // Rutas de autenticación y acceso
 app.use("/api/auth", authRoutes);
