@@ -1,30 +1,24 @@
 const nodemailer = require("nodemailer");
 const { Resend } = require("resend");
+const dns = require("dns");
 
-/* ── Envío unificado: Resend (preferido) o SMTP fallback ── */
+// Forzar IPv4 en todas las resoluciones DNS para evitar ENETUNREACH en hosts sin IPv6
+if (typeof dns.setDefaultResultOrder === "function") dns.setDefaultResultOrder("ipv4first");
+
+/* ── Envío unificado: Gmail SMTP puerto 465 (IPv4) ── */
 const enviarCorreo = async ({ from, to, subject, html }) => {
-  // Resend (HTTP API — mejor deliverability, llega al inbox)
-  if (process.env.RESEND_API_KEY) {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const fromAddr = process.env.RESEND_FROM || "Hospedaje Digital <onboarding@resend.dev>";
-    const { data, error } = await resend.emails.send({ from: fromAddr, to, subject, html });
-    if (error) throw new Error(error.message || JSON.stringify(error));
-    return { messageId: data?.id || "resend-ok" };
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn("[Email] EMAIL_USER/EMAIL_PASS no configurados; se omite el envío.");
+    return { messageId: null };
   }
-
-  // Fallback: Gmail SMTP
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    const transporter = nodemailer.createTransport({
-      host:   process.env.EMAIL_HOST || "smtp.gmail.com",
-      port:   Number(process.env.EMAIL_PORT) || 587,
-      secure: false,
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
-    return await transporter.sendMail({ from, to, subject, html });
-  }
-
-  console.warn("[Email] Sin credenciales configuradas (RESEND_API_KEY ni EMAIL_USER); se omite el envío.");
-  return { messageId: null };
+  const transporter = nodemailer.createTransport({
+    host:   "smtp.gmail.com",
+    port:   465,
+    secure: true,
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    tls:  { rejectUnauthorized: false },
+  });
+  return await transporter.sendMail({ from, to, subject, html });
 };
 
 /* ── Paleta visual compartida ── */
