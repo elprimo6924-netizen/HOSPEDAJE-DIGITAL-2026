@@ -90,7 +90,8 @@ const ReservasService = {
         GROUP_CONCAT(DISTINCT p.NombrePaquete  SEPARATOR ', ') AS Paquetes,
         GROUP_CONCAT(DISTINCT p.IDPaquete      SEPARATOR ',')  AS PaquetesIds,
         GROUP_CONCAT(DISTINCT s.NombreServicio SEPARATOR ', ') AS Servicios,
-        GROUP_CONCAT(DISTINCT s.IDServicio     SEPARATOR ',')  AS ServiciosIds
+        GROUP_CONCAT(DISTINCT s.IDServicio     SEPARATOR ',')  AS ServiciosIds,
+        MAX(CASE WHEN drs.EsAdicional = 1 THEN 1 ELSE 0 END)  AS TieneCargosAdicionales
       FROM reserva r
       LEFT JOIN clientes          c   ON CAST(r.NroDocumentoCliente AS CHAR) = CAST(c.NroDocumento AS CHAR)
       LEFT JOIN usuarios          u   ON r.id_usuario = u.IDUsuario
