@@ -148,6 +148,18 @@ const PaquetesController = {
 
         try {
 
+            const db = require('../config/db');
+            const [[{ total }]] = await db.query(
+                "SELECT COUNT(*) AS total FROM detallereservapaquetes WHERE IDPaquete = ?",
+                [req.params.id]
+            );
+
+            if (total > 0) {
+                return res.status(409).json({
+                    error: `No se puede eliminar este paquete porque está asociado a ${total} reserva${total > 1 ? 's' : ''} en el sistema.`
+                });
+            }
+
             const data = await PaquetesService.eliminar(req.params.id);
 
             res.json({
@@ -162,6 +174,13 @@ const PaquetesController = {
                 code: error?.code,
                 stack: error?.stack
             });
+
+            // FK constraint de MySQL
+            if (error?.code === 'ER_ROW_IS_REFERENCED_2' || error?.errno === 1451) {
+                return res.status(409).json({
+                    error: "No se puede eliminar este paquete porque está asociado a reservas en el sistema."
+                });
+            }
 
             res.status(500).json({
                 error: "Error eliminando paquete"

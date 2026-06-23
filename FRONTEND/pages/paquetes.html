@@ -883,7 +883,7 @@
                     await requestJson(`/paquetes/${id}`, { method: 'DELETE', allowNoContent: true });
                     showMsg('Paquete eliminado correctamente.', 'ok');
                     cargarPaquetes();
-                } catch { showMsg('Error al eliminar el paquete.', 'error'); }
+                } catch (err) { showMsg(err.message || 'Error al eliminar el paquete.', 'error'); }
             }
         });
     }
