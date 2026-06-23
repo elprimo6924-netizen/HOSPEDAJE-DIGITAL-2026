@@ -383,7 +383,20 @@ exports.toggleStatus = async (req, res) => {
             }
         }
 
-        await db.query("UPDATE usuarios SET IsActive = ? WHERE IDUsuario = ?", [isActive ? 1 : 0, usuarioId]);
+        const nuevoEstado = isActive ? 1 : 0;
+        await db.query("UPDATE usuarios SET IsActive = ? WHERE IDUsuario = ?", [nuevoEstado, usuarioId]);
+
+        // Sincronizar Estado en clientes para que el buscador de reservas sea consistente
+        const [[u]] = await db.query(
+            "SELECT NumeroDocumento FROM usuarios WHERE IDUsuario = ? LIMIT 1", [usuarioId]
+        );
+        if (u?.NumeroDocumento) {
+            await db.query(
+                "UPDATE clientes SET Estado = ? WHERE CAST(NroDocumento AS CHAR) = CAST(? AS CHAR)",
+                [nuevoEstado, u.NumeroDocumento]
+            ).catch(() => {});
+        }
+
         const usuario = await obtenerUsuarioBase(usuarioId);
         res.json({ mensaje: "Estado actualizado", usuario: mapUsuario(usuario) });
     } catch (error) {

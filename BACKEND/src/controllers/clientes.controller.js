@@ -429,7 +429,7 @@ exports.toggleEstado = async (req, res) => {
   }
 };
 
-/* ================= BUSCAR CLIENTES ================= */
+/* ================= BUSCAR CLIENTES (solo activos, fuente única: clientes) ================= */
 exports.search = async (req, res) => {
   try {
     const q = String(req.query.q || "").trim();
@@ -439,87 +439,32 @@ exports.search = async (req, res) => {
 
     const like = `%${q}%`;
 
-    // Fuente 1: usuarios registrados con rol Cliente (o IDRol=3)
-    const usuarioCols = await getUsuariosCols();
-    let deUsuarios = [];
-
-    if (usuarioCols.has("NumeroDocumento")) {
-      const nombreSelect = usuarioCols.has("Nombre") && usuarioCols.has("NombreUsuario")
-        ? "COALESCE(u.Nombre, u.NombreUsuario) AS Nombre"
-        : (usuarioCols.has("Nombre") ? "u.Nombre AS Nombre" : "u.NombreUsuario AS Nombre");
-      const apellidoSelect = usuarioCols.has("Apellido") ? "u.Apellido AS Apellido" : "'' AS Apellido";
-      const emailSelect = usuarioCols.has("Email") ? "u.Email AS Email" : "'' AS Email";
-      const tipoDocSelect = usuarioCols.has("TipoDocumento")
-        ? "u.TipoDocumento AS TipoDocumento"
-        : "'CC' AS TipoDocumento";
-
-      const joins = [
-        usuarioCols.has("IDRol") ? "LEFT JOIN roles r ON u.IDRol = r.IDRol" : "",
-        // Excluir usuarios cuyo registro en clientes exista pero esté inactivo
-        "LEFT JOIN clientes cli ON CAST(u.NumeroDocumento AS CHAR) = CAST(cli.NroDocumento AS CHAR)",
-      ].filter(Boolean).join(" ");
-
-      const filtrosRol = usuarioCols.has("IDRol")
-        ? "(u.IDRol = 2 OR u.IDRol = 3 OR r.Nombre = 'Cliente')"
-        : "1=1";
-
-      const filtrosLike = [];
-      const params = [];
-
-      if (usuarioCols.has("Nombre")) {
-        filtrosLike.push("u.Nombre LIKE ?");
-        params.push(like);
-      }
-      if (usuarioCols.has("NombreUsuario")) {
-        filtrosLike.push("u.NombreUsuario LIKE ?");
-        params.push(like);
-      }
-      if (usuarioCols.has("Apellido")) {
-        filtrosLike.push("u.Apellido LIKE ?");
-        params.push(like);
-      }
-      if (usuarioCols.has("Email")) {
-        filtrosLike.push("u.Email LIKE ?");
-        params.push(like);
-      }
-
-      filtrosLike.push("u.NumeroDocumento LIKE ?");
-      params.push(like);
-
-      const [rowsUsuarios] = await db.query(
-        `SELECT u.NumeroDocumento AS documento,
-                ${nombreSelect},
-                ${apellidoSelect},
-                ${emailSelect},
-                ${tipoDocSelect},
-                'usuario' AS fuente
-         FROM usuarios u
-         ${joins}
-         WHERE ${filtrosRol}
-           AND u.NumeroDocumento IS NOT NULL
-           AND u.IsActive = 1
-           AND (cli.NroDocumento IS NULL OR cli.Estado = 1)
-           AND (${filtrosLike.join(" OR ")})`,
-        params
-      );
-
-      deUsuarios = rowsUsuarios;
-    }
-
-    // Fuente 2: tabla cliente (solo activos — Estado = 1)
-    const [deCliente] = await db.query(
-            `SELECT NroDocumento AS documento, Nombre, Apellido, Email,
-              'CC' AS TipoDocumento, 'cliente' AS fuente
-             FROM clientes
-             WHERE Estado = 1
-               AND (Nombre LIKE ? OR Apellido LIKE ? OR Email LIKE ? OR NroDocumento LIKE ?)`,
+    // Fuente única: tabla clientes con Estado=1 + usuario activo (si existe)
+    // La tabla clientes es la fuente de verdad para el estado del cliente.
+    // Si está en usuarios pero su clientes.Estado=0 → no aparece.
+    const [rows] = await db.query(
+      `SELECT
+         CAST(c.NroDocumento AS CHAR) AS documento,
+         c.Nombre,
+         c.Apellido,
+         c.Email,
+         COALESCE(u.TipoDocumento, 'CC') AS TipoDocumento
+       FROM clientes c
+       LEFT JOIN usuarios u
+         ON CAST(u.NumeroDocumento AS CHAR) = CAST(c.NroDocumento AS CHAR)
+         AND u.IDRol IN (2, 3)
+       WHERE c.Estado = 1
+         AND COALESCE(u.IsActive, 1) = 1
+         AND (
+           c.Nombre      LIKE ? OR
+           c.Apellido    LIKE ? OR
+           c.Email       LIKE ? OR
+           CAST(c.NroDocumento AS CHAR) LIKE ?
+         )
+       ORDER BY c.Nombre ASC
+       LIMIT 10`,
       [like, like, like, like]
     );
-
-    // Combinar sin duplicar (prioridad: usuario registrado)
-    const vistos = new Set(deUsuarios.map(r => r.documento));
-    const deClienteNoDup = deCliente.filter(r => !vistos.has(r.documento));
-    const rows = [...deUsuarios, ...deClienteNoDup].slice(0, 10);
 
     console.log(`[Clientes.search] q="${q}" → ${rows.length} resultados`);
     res.json(rows);
