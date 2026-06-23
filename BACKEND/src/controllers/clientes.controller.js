@@ -345,12 +345,20 @@ exports.update = async (req, res) => {
       }
     }
 
+    const estadoFinal = Estado !== undefined ? Estado : 1;
+
     await db.query(
       `UPDATE clientes
        SET Nombre = ?, Apellido = ?, Direccion = ?, Email = ?, Telefono = ?, Estado = ?, IDRol = ?
        WHERE NroDocumento = ?`,
-      [Nombre, Apellido, Direccion || null, Email, Telefono || null, Estado || 1, IDRol || 2, id]
+      [Nombre, Apellido, Direccion || null, Email, Telefono || null, estadoFinal, IDRol || 2, id]
     );
+
+    // Sincronizar IsActive en usuarios
+    await db.query(
+      "UPDATE usuarios SET IsActive = ? WHERE CAST(NumeroDocumento AS CHAR) = CAST(? AS CHAR) AND IDRol IN (2, 3)",
+      [estadoFinal, id]
+    ).catch(() => {});
 
     res.json({ mensaje: "Cliente actualizado" });
   } catch (error) {
@@ -408,6 +416,13 @@ exports.toggleEstado = async (req, res) => {
     }
 
     await db.query("UPDATE clientes SET Estado = ? WHERE NroDocumento = ?", [Estado, id]);
+
+    // Sincronizar IsActive en usuarios para que el buscador de reservas también lo refleje
+    await db.query(
+      "UPDATE usuarios SET IsActive = ? WHERE CAST(NumeroDocumento AS CHAR) = CAST(? AS CHAR) AND IDRol IN (2, 3)",
+      [Estado, id]
+    ).catch(() => {});
+
     res.json({ mensaje: "Estado del cliente actualizado", Estado });
   } catch (error) {
     res.status(500).json({ error: "Error actualizando estado del cliente", detalle: error.message });
@@ -438,12 +453,14 @@ exports.search = async (req, res) => {
         ? "u.TipoDocumento AS TipoDocumento"
         : "'CC' AS TipoDocumento";
 
-      const joins = usuarioCols.has("IDRol")
-        ? "LEFT JOIN roles r ON u.IDRol = r.IDRol"
-        : "";
+      const joins = [
+        usuarioCols.has("IDRol") ? "LEFT JOIN roles r ON u.IDRol = r.IDRol" : "",
+        // Excluir usuarios cuyo registro en clientes exista pero esté inactivo
+        "LEFT JOIN clientes cli ON CAST(u.NumeroDocumento AS CHAR) = CAST(cli.NroDocumento AS CHAR)",
+      ].filter(Boolean).join(" ");
 
       const filtrosRol = usuarioCols.has("IDRol")
-        ? "(u.IDRol = 3 OR r.Nombre = 'Cliente')"
+        ? "(u.IDRol = 2 OR u.IDRol = 3 OR r.Nombre = 'Cliente')"
         : "1=1";
 
       const filtrosLike = [];
@@ -481,6 +498,7 @@ exports.search = async (req, res) => {
          WHERE ${filtrosRol}
            AND u.NumeroDocumento IS NOT NULL
            AND u.IsActive = 1
+           AND (cli.NroDocumento IS NULL OR cli.Estado = 1)
            AND (${filtrosLike.join(" OR ")})`,
         params
       );
