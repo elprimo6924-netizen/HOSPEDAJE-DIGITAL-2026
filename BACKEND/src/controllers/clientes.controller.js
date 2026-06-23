@@ -480,6 +480,7 @@ exports.search = async (req, res) => {
          ${joins}
          WHERE ${filtrosRol}
            AND u.NumeroDocumento IS NOT NULL
+           AND u.IsActive = 1
            AND (${filtrosLike.join(" OR ")})`,
         params
       );
@@ -487,12 +488,13 @@ exports.search = async (req, res) => {
       deUsuarios = rowsUsuarios;
     }
 
-    // Fuente 2: tabla cliente (datos legacy / creados desde admin)
+    // Fuente 2: tabla cliente (solo activos — Estado = 1)
     const [deCliente] = await db.query(
             `SELECT NroDocumento AS documento, Nombre, Apellido, Email,
               'CC' AS TipoDocumento, 'cliente' AS fuente
              FROM clientes
-             WHERE Nombre LIKE ? OR Apellido LIKE ? OR Email LIKE ? OR NroDocumento LIKE ?`,
+             WHERE Estado = 1
+               AND (Nombre LIKE ? OR Apellido LIKE ? OR Email LIKE ? OR NroDocumento LIKE ?)`,
       [like, like, like, like]
     );
 

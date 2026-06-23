@@ -227,7 +227,7 @@ function configurarBuscadorCliente() {
   if (!input || !lista) return;
 
   let clientes = [];
-  requestJson('/clientes').then(d => { clientes = (Array.isArray(d) ? d : []).filter(c => c.Estado == 1); }).catch(() => {});
+  requestJson('/clientes/activos').then(d => { clientes = Array.isArray(d) ? d : []; }).catch(() => {});
 
   input.addEventListener('input', () => {
     const q = input.value.toLowerCase().trim();
