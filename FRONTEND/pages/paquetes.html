@@ -831,7 +831,7 @@
     async function abrirForm(paquete = null) {
         /* poblar habitaciones y servicios */
         try {
-            const [habs, svcs] = await Promise.all([requestJson('/habitaciones'), requestJson('/servicios')]);
+            const [habs, svcs] = await Promise.all([requestJson('/habitaciones/disponibles'), requestJson('/servicios')]);
             _svcsTodos = svcs || [];
             const selH = document.getElementById('fpaq-habitacion');
             selH.innerHTML = '<option value="">— Selecciona —</option>' +
