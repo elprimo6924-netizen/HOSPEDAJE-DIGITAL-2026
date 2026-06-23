@@ -1,24 +1,30 @@
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-/* ── Transporter Gmail SMTP ── */
-const crearTransporter = () =>
-  nodemailer.createTransport({
-    host:   process.env.EMAIL_HOST || "smtp.gmail.com",
-    port:   Number(process.env.EMAIL_PORT) || 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-const enviarCorreo = async (payload) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("[Email] Credenciales SMTP no configuradas; se omite el envío.");
-    return { messageId: null };
+/* ── Envío unificado: Resend (preferido) o SMTP fallback ── */
+const enviarCorreo = async ({ from, to, subject, html }) => {
+  // Resend (HTTP API — mejor deliverability, llega al inbox)
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const fromAddr = process.env.RESEND_FROM || "Hospedaje Digital <onboarding@resend.dev>";
+    const { data, error } = await resend.emails.send({ from: fromAddr, to, subject, html });
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    return { messageId: data?.id || "resend-ok" };
   }
-  const transporter = crearTransporter();
-  return await transporter.sendMail(payload);
+
+  // Fallback: Gmail SMTP
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    const transporter = nodemailer.createTransport({
+      host:   process.env.EMAIL_HOST || "smtp.gmail.com",
+      port:   Number(process.env.EMAIL_PORT) || 587,
+      secure: false,
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    });
+    return await transporter.sendMail({ from, to, subject, html });
+  }
+
+  console.warn("[Email] Sin credenciales configuradas (RESEND_API_KEY ni EMAIL_USER); se omite el envío.");
+  return { messageId: null };
 };
 
 /* ── Paleta visual compartida ── */
