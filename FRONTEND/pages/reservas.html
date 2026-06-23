@@ -576,9 +576,14 @@
                 return Math.max(1, Math.round(ms / 86400000));
             })();
 
-            const totalServicios = (r.servicios || []).reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
-            // costoExtraDias: lo que se sumó a MontoTotal por extensiones de días (SubTotal+IVA = MontoTotal original sin extensiones)
-            const costoExtraDias = Math.max(0, (r.MontoTotal || 0) - (r.SubTotal || 0) - (r.IVA || 0));
+            // Separar servicios originales (EsAdicional=0) de cargos adicionales (EsAdicional=1)
+            const svcsOriginales   = (r.servicios || []).filter(s => !s.EsAdicional);
+            const svcsAdicionales  = (r.servicios || []).filter(s =>  s.EsAdicional);
+            const totalSvcsOrig    = svcsOriginales.reduce ((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
+            const totalSvcsAdic    = svcsAdicionales.reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
+            const totalServicios   = totalSvcsOrig + totalSvcsAdic;
+            // costoExtraDias: delta de MontoTotal sobre lo registrado como SubTotal+IVA (extensiones de días)
+            const costoExtraDias   = Math.max(0, (r.MontoTotal || 0) - (r.SubTotal || 0) - (r.IVA || 0));
             const costoAlojamiento = Math.max(0, (r.MontoTotal || 0) - totalServicios - costoExtraDias);
 
             const tieneServicios = (r.servicios || []).length > 0 || !!r.Servicios;
@@ -615,12 +620,15 @@
                 };
                 const sep = `<div style="border-top:1.5px dashed #e2e8f0;margin:8px 0;"></div>`;
 
-                const filaAloj  = fila('🏨 Alojamiento', formatMonto(costoAlojamiento));
-                const filaExtra = costoExtraDias > 0
+                const filaAloj     = fila('🏨 Alojamiento', formatMonto(costoAlojamiento));
+                const filaExtra    = costoExtraDias > 0
                     ? fila('📅 Días adicionales', formatMonto(costoExtraDias), { color:'#7c3aed', labelColor:'#7c3aed' })
                     : '';
-                const filaSvc   = totalServicios > 0
-                    ? fila('🛎️ Servicios adicionales', formatMonto(totalServicios), { color:'#0369a1', labelColor:'#0369a1' })
+                const filaSvcOrig  = totalSvcsOrig > 0
+                    ? fila('🛎️ Servicios incluidos', formatMonto(totalSvcsOrig), { color:'#0369a1', labelColor:'#0369a1' })
+                    : '';
+                const filaSvcAdic  = totalSvcsAdic > 0
+                    ? fila('➕ Cargos adicionales', formatMonto(totalSvcsAdic), { color:'#b45309', labelColor:'#b45309' })
                     : '';
                 const filaDesc  = Number(r.Descuento) > 0
                     ? fila('🏷️ Descuento', `− ${formatMonto(r.Descuento)}`, { color:'#16a34a', labelColor:'#16a34a' })
@@ -637,7 +645,7 @@
                         <i class="fa-solid fa-receipt" style="color:#d97706;font-size:.9rem;"></i>
                         <span style="font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#92400e;">Desglose financiero</span>
                     </div>
-                    ${filaAloj}${filaExtra}${filaSvc}${filaDesc}
+                    ${filaAloj}${filaSvcOrig}${filaExtra}${filaSvcAdic}${filaDesc}
                     ${sep}
                     ${filaBase}${filaIva}
                     ${sep}
@@ -645,11 +653,11 @@
                 </div>`;
             })();
 
-            // Bloque itemizado de servicios adicionales (full-width)
-            const serviciosDetalleHtml = (r.servicios && r.servicios.length > 0)
+            // Bloque CARGOS ADICIONALES — solo muestra servicios agregados post-reserva (EsAdicional=1)
+            const serviciosDetalleHtml = (svcsAdicionales.length > 0)
                 ? (() => {
-                    const totalSvcs = r.servicios.reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
-                    const filas = r.servicios.map(s => {
+                    const totalSvcs = totalSvcsAdic;
+                    const filas = svcsAdicionales.map(s => {
                         const cant    = Number(s.Cantidad) || 1;
                         const precio  = Number(s.Precio)   || 0;
                         return `<tr style="border-bottom:1px solid #e0f2fe;">

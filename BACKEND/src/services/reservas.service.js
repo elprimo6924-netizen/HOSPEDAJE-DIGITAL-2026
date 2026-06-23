@@ -229,10 +229,11 @@ const ReservasService = {
     }
 
     const svcCols = await getDetalleServicioCols();
-    const horaField  = svcCols.has('HoraServicio') ? ', drs.HoraServicio' : '';
-    const cantField  = svcCols.has('Cantidad')     ? ', drs.Cantidad'     : '';
+    const horaField       = svcCols.has('HoraServicio') ? ', drs.HoraServicio' : '';
+    const cantField       = svcCols.has('Cantidad')     ? ', drs.Cantidad'     : '';
+    const esAdicionalField= svcCols.has('EsAdicional')  ? ', drs.EsAdicional'  : '';
     const [servicios] = await db.query(
-      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}${cantField}
+      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}${cantField}${esAdicionalField}
        FROM detallereservaservicio drs
        JOIN servicio s ON drs.IDServicio = s.IDServicio
        WHERE drs.IDReserva = ?`,
@@ -483,7 +484,8 @@ const ReservasService = {
       : (Array.isArray(serviciosIds) ? serviciosIds.map(id => ({ id, hora: null })) : []);
 
     const detalleCols = await getDetalleServicioCols();
-    const hasHoraServicio = detalleCols.has("HoraServicio");
+    const hasHoraServicio  = detalleCols.has("HoraServicio");
+    const hasEsAdicional   = detalleCols.has("EsAdicional");
 
     for (const { id: sid, hora } of svcList) {
       const columns = ["IDReserva", "IDServicio", "Cantidad", "Precio", "Estado"];
@@ -494,6 +496,10 @@ const ReservasService = {
         columns.push("HoraServicio");
         selectExpr.push("?");
         params.push(hora || null);
+      }
+      if (hasEsAdicional) {
+        columns.push("EsAdicional");
+        selectExpr.push("0"); // 0 = incluido en la reserva original
       }
 
       params.push(sid);
@@ -604,6 +610,7 @@ const ReservasService = {
         : (Array.isArray(serviciosIds) ? serviciosIds.map(sid => ({ id: sid, hora: null })) : []);
       const detalleCols = await getDetalleServicioCols();
       const hasHoraServicio = detalleCols.has("HoraServicio");
+      const hasEsAdicional  = detalleCols.has("EsAdicional");
 
       for (const { id: sid, hora } of svcList) {
         const columns = ["IDReserva", "IDServicio", "Cantidad", "Precio", "Estado"];
@@ -614,6 +621,10 @@ const ReservasService = {
           columns.push("HoraServicio");
           selectExpr.push("?");
           params.push(hora || null);
+        }
+        if (hasEsAdicional) {
+          columns.push("EsAdicional");
+          selectExpr.push("0"); // 0 = incluido en la reserva original
         }
 
         params.push(sid);
@@ -746,6 +757,7 @@ const ReservasService = {
   agregarServicios: async (reservaId, servicios) => {
     const detalleCols = await getDetalleServicioCols();
     const hasHoraServicio = detalleCols.has("HoraServicio");
+    const hasEsAdicional  = detalleCols.has("EsAdicional");
 
     let costoAdicional = 0;
 
@@ -756,21 +768,15 @@ const ReservasService = {
       const [[svc]] = await db.query("SELECT Costo FROM servicio WHERE IDServicio = ?", [sid]);
       if (!svc) continue;
 
-      if (hasHoraServicio) {
-        await db.query(
-          `INSERT IGNORE INTO detallereservaservicio
-           (IDReserva, IDServicio, Cantidad, Precio, Estado, HoraServicio)
-           VALUES (?, ?, ?, ?, 1, NULL)`,
-          [reservaId, sid, qty, svc.Costo]
-        );
-      } else {
-        await db.query(
-          `INSERT IGNORE INTO detallereservaservicio
-           (IDReserva, IDServicio, Cantidad, Precio, Estado)
-           VALUES (?, ?, ?, ?, 1)`,
-          [reservaId, sid, qty, svc.Costo]
-        );
-      }
+      const cols = ["IDReserva", "IDServicio", "Cantidad", "Precio", "Estado"];
+      const vals = [reservaId, sid, qty, svc.Costo, 1];
+      if (hasHoraServicio) { cols.push("HoraServicio"); vals.push(null); }
+      if (hasEsAdicional)  { cols.push("EsAdicional");  vals.push(1); } // 1 = cargo adicional post-reserva
+
+      await db.query(
+        `INSERT IGNORE INTO detallereservaservicio (${cols.join(", ")}) VALUES (${cols.map(() => '?').join(", ")})`,
+        vals
+      );
       costoAdicional += svc.Costo * qty;
     }
 

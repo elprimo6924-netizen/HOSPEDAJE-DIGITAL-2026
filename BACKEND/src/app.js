@@ -166,6 +166,35 @@ const app = express();
     }
 })();
 
+// Migración: EsAdicional en detallereservaservicio (distingue servicios originales de adicionales)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const [[row]] = await db.query(
+            'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+            [dbName, 'detallereservaservicio', 'EsAdicional']
+        );
+        if (row.c === 0) {
+            await db.query('ALTER TABLE detallereservaservicio ADD COLUMN EsAdicional TINYINT(1) NOT NULL DEFAULT 0');
+            console.log('[MIGRATION] Columna EsAdicional agregada a detallereservaservicio.');
+            const svc = require('./services/reservas.service.js');
+            if (typeof svc._resetColsCache === 'function') svc._resetColsCache();
+        }
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración EsAdicional:', err.message);
+    }
+})();
+
+// Auto-sync de estados cada 60 s: cancela reservas con comprobante vencido, cierra estancias completadas
+setInterval(async () => {
+    try {
+        const ReservasService = require('./services/reservas.service');
+        await ReservasService.syncEstados();
+    } catch (err) {
+        console.error('[AutoSync] Error en syncEstados:', err.message);
+    }
+}, 60 * 1000);
+
 // =============================
 // MIDDLEWARES
 // =============================
