@@ -5,20 +5,42 @@ const dns = require("dns");
 // Forzar IPv4 en todas las resoluciones DNS para evitar ENETUNREACH en hosts sin IPv6
 if (typeof dns.setDefaultResultOrder === "function") dns.setDefaultResultOrder("ipv4first");
 
-/* ── Envío unificado: Gmail SMTP puerto 465 (IPv4) ── */
+/* ── Envío unificado: Brevo HTTP API (preferido) o SMTP local ── */
 const enviarCorreo = async ({ from, to, subject, html }) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("[Email] EMAIL_USER/EMAIL_PASS no configurados; se omite el envío.");
-    return { messageId: null };
+  // Brevo — API HTTP pura, no bloqueada por Render, entrega a cualquier destinatario
+  if (process.env.BREVO_API_KEY) {
+    const senderEmail = process.env.EMAIL_USER || "noreply@hospedajedigital.com";
+    const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender:      { name: "Hospedaje Digital", email: senderEmail },
+        to:          [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.message || JSON.stringify(data));
+    console.log("[Email] Brevo enviado OK, messageId:", data.messageId);
+    return { messageId: data.messageId || "brevo-ok" };
   }
-  const transporter = nodemailer.createTransport({
-    host:   "smtp.gmail.com",
-    port:   465,
-    secure: true,
-    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    tls:  { rejectUnauthorized: false },
-  });
-  return await transporter.sendMail({ from, to, subject, html });
+
+  // Fallback local: Gmail SMTP (solo funciona en entorno de desarrollo)
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com", port: 465, secure: true,
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+      tls: { rejectUnauthorized: false },
+    });
+    return await transporter.sendMail({ from, to, subject, html });
+  }
+
+  console.warn("[Email] Sin credenciales configuradas; se omite el envío.");
+  return { messageId: null };
 };
 
 /* ── Paleta visual compartida ── */
