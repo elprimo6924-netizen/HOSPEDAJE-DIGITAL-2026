@@ -8,8 +8,8 @@ const CONFIG = {
         ? `${window.location.origin}/api` 
         : 'http://localhost:3000/api',
     
-    // Timeout para peticiones fetch (en milisegundos)
-    FETCH_TIMEOUT: 10000,
+    // Timeout para peticiones fetch (en milisegundos) — 35s para tolerar cold start de Render
+    FETCH_TIMEOUT: 35000,
     
     // Habilitar logs en consola
     ENABLE_LOGS: true,

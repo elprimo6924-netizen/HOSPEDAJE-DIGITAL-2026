@@ -86,17 +86,24 @@ step1Form.addEventListener('submit', async (e) => {
     try {
         step1Btn.disabled = true;
         step1Btn.textContent = '⏳ Enviando...';
-        
+
+        // Indicar al usuario si tarda más de 5s (posible cold start de Render)
+        const waitHint = setTimeout(() => {
+            showMessage(step1Message, '⏳ El servidor está iniciando, por favor espera unos segundos...', 'info');
+        }, 5000);
+
         // Llamar al API usando window.apiRequest
         if (typeof window.apiRequest !== 'function') {
             throw new Error('API no disponible. Por favor recarga la página.');
         }
-        
+
         const response = await window.apiRequest('/password-reset/forgot-password', {
             method: 'POST',
             body: { email }
         });
-        
+
+        clearTimeout(waitHint);
+
         recoveryEmail = email;
         showMessage(step1Message, '✓ Código enviado a tu correo. Revisa tu bandeja de entrada.', 'success');
         setTimeout(() => {

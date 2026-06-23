@@ -1,20 +1,43 @@
 /**
- * Servicio de email con Nodemailer/Brevo para recuperación de contraseña (código de 6 dígitos)
+ * Servicio de email para recuperación de contraseña (código de 6 dígitos)
+ * Usa Brevo HTTP API (no SMTP) para funcionar en Render.
  */
 
-const nodemailer = require("nodemailer");
-require("dotenv").config({ override: true });
+const dns = require("dns");
+if (typeof dns.setDefaultResultOrder === "function") dns.setDefaultResultOrder("ipv4first");
 
-const crearTransporter = () =>
-  nodemailer.createTransport({
+const enviarCorreoBrush = async ({ to, subject, html }) => {
+  if (process.env.BREVO_API_KEY) {
+    const senderEmail = process.env.EMAIL_USER || "noreply@hospedajedigital.com";
+    const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json", "api-key": process.env.BREVO_API_KEY },
+      body:    JSON.stringify({
+        sender:      { name: "Hospedaje Digital", email: senderEmail },
+        to:          [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.message || JSON.stringify(data));
+    return { messageId: data.messageId || "brevo-ok" };
+  }
+
+  // Fallback local: Gmail SMTP (solo funciona en desarrollo)
+  const nodemailer = require("nodemailer");
+  const transporter = nodemailer.createTransport({
     host:   process.env.EMAIL_HOST || "smtp.gmail.com",
-    port:   Number(process.env.EMAIL_PORT) || 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
+    port:   Number(process.env.EMAIL_PORT) || 465,
+    secure: true,
+    auth:   { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    tls:    { rejectUnauthorized: false },
   });
+  return await transporter.sendMail({
+    from:    process.env.EMAIL_FROM || `Hospedaje Digital <${process.env.EMAIL_USER}>`,
+    to, subject, html,
+  });
+};
 
 /**
  * Envía email con código de recuperación de contraseña
@@ -23,14 +46,9 @@ const crearTransporter = () =>
  */
 const sendPasswordResetEmail = async (email, code) => {
   try {
-    const transporter  = crearTransporter();
-    const sendToEmail  = process.env.TEST_EMAIL || email;
-    const fromEmail    = process.env.EMAIL_FROM || "Hospedaje Digital <elprimo6924@gmail.com>";
-
-    const info = await transporter.sendMail({
-      from:    fromEmail,
-      to:      sendToEmail,
-      subject: "🔐 Código para Recuperar tu Contraseña - Hospedaje Digital",
+    const info = await enviarCorreoBrush({
+      to:      email,
+      subject: "Código para recuperar tu contraseña - Hospedaje Digital",
       html: `
         <!DOCTYPE html>
         <html>
@@ -51,7 +69,7 @@ const sendPasswordResetEmail = async (email, code) => {
             <div class="container">
               <div class="card">
                 <div class="header">
-                  <h1>🔐 Recuperar Contraseña</h1>
+                  <h1>Recuperar Contraseña</h1>
                   <p style="color:#666;margin:6px 0 0">Hospedaje Digital</p>
                 </div>
 
@@ -64,7 +82,7 @@ const sendPasswordResetEmail = async (email, code) => {
                 </div>
 
                 <div class="warning">
-                  <strong>⏰ Importante:</strong> Este código expira en 30 minutos.
+                  <strong>Importante:</strong> Este código expira en 30 minutos.
                   Si no solicitaste este cambio, ignora este email.
                 </div>
 
@@ -86,9 +104,7 @@ const sendPasswordResetEmail = async (email, code) => {
       `,
     });
 
-    if (info.messageId) {
-      console.log("[Email] Código de recuperación enviado:", info.messageId);
-    }
+    console.log("[Email] Código de recuperación enviado a", email, "| ID:", info.messageId);
     return { messageId: info.messageId };
   } catch (error) {
     console.error("[Email] Error enviando código de recuperación:", error.message);

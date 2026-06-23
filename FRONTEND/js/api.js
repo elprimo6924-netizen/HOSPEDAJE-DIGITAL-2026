@@ -17,7 +17,7 @@ const API_BASE_URL = (typeof CONFIG !== 'undefined' && CONFIG.API_URL)
 
 const API_TIMEOUT_MS = (typeof CONFIG !== 'undefined' && CONFIG.FETCH_TIMEOUT)
     ? CONFIG.FETCH_TIMEOUT
-    : 10000;
+    : 30000;
 
 const apiLogger = {
     log: (...args) => {
@@ -135,6 +135,12 @@ async function requestJson(endpoint, options = {}) {
             return allowNoContent ? { success: true } : null;
         }
     } catch (error) {
+        // AbortController disparó el timeout o se perdió la conexión
+        if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+            const msg = 'El servidor tardó demasiado en responder. Si es la primera solicitud del día, el servidor puede estar iniciando — espera unos segundos e intenta de nuevo.';
+            setApiLastError(msg);
+            throw new Error(msg);
+        }
         setApiLastError(error.message || 'Error de conexión con el backend');
         throw error;
     } finally {
