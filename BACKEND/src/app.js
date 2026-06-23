@@ -202,6 +202,44 @@ const app = express();
     }
 })();
 
+// Migración: ComprobanteCargos* en reserva (comprobante independiente para cargos adicionales)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const colExists = async (col) => {
+            const [[row]] = await db.query(
+                'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+                [dbName, 'reserva', col]
+            );
+            return row.c > 0;
+        };
+        let migro = false;
+        if (!(await colExists('ComprobanteCargos'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteCargos VARCHAR(255) NULL');
+            migro = true;
+        }
+        if (!(await colExists('ComprobanteCargosEstado'))) {
+            await db.query("ALTER TABLE reserva ADD COLUMN ComprobanteCargosEstado VARCHAR(20) NULL DEFAULT 'pendiente'");
+            migro = true;
+        }
+        if (!(await colExists('ComprobanteCargosFecha'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteCargosFecha DATETIME NULL');
+            migro = true;
+        }
+        if (!(await colExists('ComprobanteCargosNota'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN ComprobanteCargosNota VARCHAR(255) NULL');
+            migro = true;
+        }
+        if (migro) {
+            const svc = require('./services/reservas.service.js');
+            if (typeof svc._resetColsCache === 'function') svc._resetColsCache();
+            console.log('[MIGRATION] Columnas ComprobanteCargos* agregadas a reserva.');
+        }
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración ComprobanteCargos:', err.message);
+    }
+})();
+
 // Auto-sync de estados cada 60 s: cancela reservas con comprobante vencido, cierra estancias completadas
 setInterval(async () => {
     try {

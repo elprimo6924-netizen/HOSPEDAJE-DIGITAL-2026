@@ -24,9 +24,13 @@ router.put("/:id/cancelar", requireReservaOwnerOrAdmin, reservasController.cance
 // (Opcional) por si luego usas editar
 router.put("/:id", requireAdmin, reservasController.actualizar);
 
-// Comprobante de pago
+// Comprobante de pago principal
 router.post("/:id/comprobante",           requireReservaOwnerOrAdmin, uploadComprobante, reservasController.subirComprobante);
 router.put("/:id/comprobante/verificar",  requireAdmin,               reservasController.verificarComprobante);
+
+// Comprobante de cargos adicionales (independiente del comprobante principal)
+router.post("/:id/comprobante-cargos",           requireReservaOwnerOrAdmin, uploadComprobante, reservasController.subirComprobanteCargos);
+router.put("/:id/comprobante-cargos/verificar",  requireAdmin,               reservasController.verificarComprobanteCargos);
 
 // Agregar servicios adicionales a una reserva existente (admin o dueño)
 router.post("/:id/servicios", requireReservaOwnerOrAdmin, reservasController.agregarServicios);

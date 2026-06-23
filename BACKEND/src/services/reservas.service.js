@@ -52,6 +52,9 @@ const ReservasService = {
     const compFields = rCols.has('ComprobantePago')
       ? `,\n        r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota`
       : '';
+    const compCargosFields = rCols.has('ComprobanteCargos')
+      ? `,\n        r.ComprobanteCargos, r.ComprobanteCargosEstado, r.ComprobanteCargosFecha, r.ComprobanteCargosNota`
+      : '';
 
     const [rows] = await db.query(`
       SELECT
@@ -67,7 +70,7 @@ const ReservasService = {
         r.MetodoPago,
         r.IdEstadoReserva,
         r.id_usuario
-        ${compFields},
+        ${compFields}${compCargosFields},
         ANY_VALUE(COALESCE(
           c.Nombre,
           u.NombreUsuario,
@@ -110,9 +113,20 @@ const ReservasService = {
 
   obtenerPorId: async (id) => {
     const rCols2 = await getReservaCols();
+    const svcCols0 = await getDetalleServicioCols();
     const compFields2 = rCols2.has('ComprobantePago')
       ? ', r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota'
       : '';
+    const compCargosFields2 = rCols2.has('ComprobanteCargos')
+      ? ', r.ComprobanteCargos, r.ComprobanteCargosEstado, r.ComprobanteCargosFecha, r.ComprobanteCargosNota'
+      : '';
+    const estadoCargosField2 = rCols2.has('EstadoCargosAdicionales')
+      ? ', r.EstadoCargosAdicionales'
+      : '';
+    const tieneCargosSubq = svcCols0.has('EsAdicional')
+      ? `, (SELECT MAX(CASE WHEN drs2.EsAdicional = 1 THEN 1 ELSE 0 END)
+             FROM detallereservaservicio drs2 WHERE drs2.IDReserva = r.IdReserva) AS TieneCargosAdicionales`
+      : ', 0 AS TieneCargosAdicionales';
     const habCol2 = rCols2.has('IDHabitacion') ? 'IDHabitacion' : (rCols2.has('IdHabitacion') ? 'IdHabitacion' : null);
     const habJoin   = habCol2 ? `LEFT JOIN habitacion h ON r.${habCol2} = h.IDHabitacion` : '';
     const habSelect = habCol2 ? `, r.${habCol2} AS IDHabitacion, h.NombreHabitacion` : '';
@@ -121,7 +135,8 @@ const ReservasService = {
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
               r.Sub_Total AS SubTotal, r.Descuento, r.IVA, r.Monto_Total AS MontoTotal,
               r.MetodoPago, r.IdEstadoReserva
-              ${compFields2},
+              ${compFields2}${compCargosFields2}${estadoCargosField2}
+              ${tieneCargosSubq},
               c.Nombre, c.Apellido, e.NombreEstadoReserva
               ${habSelect}
        FROM reserva r
@@ -675,6 +690,45 @@ const ReservasService = {
          SET ComprobanteEstado = 'rechazado',
              ComprobanteNota   = ?,
              IdEstadoReserva   = 5
+         WHERE IdReserva = ?`,
+        [nota || null, reservaId]
+      );
+      return result.affectedRows > 0 ? 'rechazado' : null;
+    }
+    throw new Error("Acción inválida. Use 'aprobar' o 'rechazar'.");
+  },
+
+  guardarComprobanteCargos: async (reservaId, comprobanteUrl) => {
+    const [result] = await db.query(
+      `UPDATE reserva
+       SET ComprobanteCargos      = ?,
+           ComprobanteCargosFecha  = NOW(),
+           ComprobanteCargosEstado = 'pendiente',
+           ComprobanteCargosNota   = NULL
+       WHERE IdReserva = ?`,
+      [comprobanteUrl, reservaId]
+    );
+    return result.affectedRows > 0;
+  },
+
+  verificarComprobanteCargos: async (reservaId, accion, nota) => {
+    if (accion === 'aprobar') {
+      const [result] = await db.query(
+        `UPDATE reserva
+         SET ComprobanteCargosEstado = 'aprobado',
+             EstadoCargosAdicionales = 2,
+             ComprobanteCargosNota   = NULL
+         WHERE IdReserva = ?`,
+        [reservaId]
+      );
+      return result.affectedRows > 0 ? 'aprobado' : null;
+    }
+    if (accion === 'rechazar') {
+      const [result] = await db.query(
+        `UPDATE reserva
+         SET ComprobanteCargosEstado = 'rechazado',
+             ComprobanteCargosNota   = ?,
+             EstadoCargosAdicionales = 5
          WHERE IdReserva = ?`,
         [nota || null, reservaId]
       );

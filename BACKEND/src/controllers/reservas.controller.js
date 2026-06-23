@@ -454,10 +454,10 @@ const verificarComprobante = async (req, res) => {
     const nuevoEstado = await ReservasService.verificarComprobante(id, accion, nota);
     if (!nuevoEstado) return res.status(404).json({ error: "Reserva no encontrada." });
 
-    // Al aprobar comprobante → confirmar también EstadoCargosAdicionales si estaba pendiente
+    // Al aprobar comprobante principal → confirmar EstadoCargosAdicionales solo si no hay comprobante de cargos separado
     if (accion === "aprobar") {
       await db.query(
-        "UPDATE reserva SET EstadoCargosAdicionales = 2 WHERE IdReserva = ? AND EstadoCargosAdicionales = 5",
+        "UPDATE reserva SET EstadoCargosAdicionales = 2 WHERE IdReserva = ? AND EstadoCargosAdicionales = 5 AND (ComprobanteCargos IS NULL OR ComprobanteCargos = '')",
         [id]
       );
     }
@@ -810,6 +810,54 @@ const submitCheckinData = async (req, res) => {
   }
 };
 
+const subirComprobanteCargos = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No se recibió ningún archivo." });
+    }
+    const { id } = req.params;
+
+    // Borrar archivo anterior de cargos si existe
+    try {
+      const [[prev]] = await db.query(
+        "SELECT ComprobanteCargos FROM reserva WHERE IdReserva = ? LIMIT 1", [id]
+      );
+      if (prev?.ComprobanteCargos) {
+        const oldPath = path.join(__dirname, "../public", prev.ComprobanteCargos);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+    } catch (_) { /* no crítico */ }
+
+    const comprobanteUrl = `/uploads/comprobantes/${req.file.filename}`;
+    const ok = await ReservasService.guardarComprobanteCargos(id, comprobanteUrl);
+    if (!ok) {
+      fs.unlink(req.file.path, () => {});
+      return res.status(404).json({ error: "Reserva no encontrada." });
+    }
+    return res.status(200).json({ ok: true, comprobanteUrl, estado: "pendiente" });
+  } catch (error) {
+    if (req.file?.path) fs.unlink(req.file.path, () => {});
+    console.error("[Reservas] Error subirComprobanteCargos:", error);
+    return res.status(500).json({ error: "Error al guardar comprobante de cargos.", detalle: error.message });
+  }
+};
+
+const verificarComprobanteCargos = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { accion, nota } = req.body;
+    if (!["aprobar", "rechazar"].includes(accion)) {
+      return res.status(400).json({ error: "Acción inválida. Use 'aprobar' o 'rechazar'." });
+    }
+    const nuevoEstado = await ReservasService.verificarComprobanteCargos(id, accion, nota);
+    if (!nuevoEstado) return res.status(404).json({ error: "Reserva no encontrada." });
+    return res.status(200).json({ ok: true, nuevoEstado });
+  } catch (error) {
+    console.error("[Reservas] Error verificarComprobanteCargos:", error);
+    return res.status(500).json({ error: error.message, detalle: error.message });
+  }
+};
+
 module.exports = {
   crear,
   obtener,
@@ -823,6 +871,8 @@ module.exports = {
   getReservasPendientesPago,
   subirComprobante,
   verificarComprobante,
+  subirComprobanteCargos,
+  verificarComprobanteCargos,
   cotizar,
   syncEstados,
   getDisponibilidad,
