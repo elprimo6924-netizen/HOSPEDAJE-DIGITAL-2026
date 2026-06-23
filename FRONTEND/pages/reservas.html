@@ -76,7 +76,7 @@
 
         /* ── Tabla ── */
         .crud-reservas-tabla-wrap { overflow:auto; border:1px solid #eadfca; border-radius:16px; background:#fffdf7; }
-        .crud-reservas-tabla { width:100%; min-width:1000px; border-collapse:collapse; }
+        .crud-reservas-tabla { width:100%; min-width:1100px; border-collapse:collapse; }
         .crud-reservas-tabla thead th { background:#f8f2e3; color:#7a5a18; text-align:left; padding:1rem; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid #eadfca; }
         .crud-reservas-tabla tbody td { padding:1rem; border-bottom:1px solid #efe7d6; vertical-align:middle; color:#1a2230; }
         .crud-reservas-tabla tbody tr:hover { background:#fff6e6; }
@@ -206,11 +206,11 @@
                             <tr>
                                 <th>#</th><th>Cliente</th>
                                 <th>Fecha Inicio</th><th>Fecha Fin</th>
-                                <th>Total</th><th>Estado</th><th>Acciones</th>
+                                <th>Total</th><th>Servicios adicionales</th><th>Estado</th><th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="reservas-tbody">
-                            <tr><td colspan="7" class="mensaje-vacio">Cargando reservas...</td></tr>
+                            <tr><td colspan="8" class="mensaje-vacio">Cargando reservas...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -346,7 +346,7 @@
             const pagina = lista.slice(desde, hasta);
 
             if (!pagina.length) {
-                tbody.innerHTML = '<tr><td colspan="7" class="mensaje-vacio">No hay reservas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="mensaje-vacio">No hay reservas.</td></tr>';
             } else {
                 tbody.innerHTML = pagina.map(r => {
                     const nombreCompleto = `${r.Nombre||''} ${r.Apellido||''}`.trim();
@@ -358,6 +358,13 @@
                         <td>${formatFecha(r.FechaInicio)}</td>
                         <td>${formatFecha(r.FechaFinalizacion)}</td>
                         <td><strong>${formatMonto(r.MontoTotal)}</strong></td>
+                        <td style="max-width:220px;">
+                            ${r.Servicios
+                                ? r.Servicios.split(', ').map(s =>
+                                    `<span style="display:inline-flex;align-items:center;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:6px;padding:2px 8px;font-size:.72rem;font-weight:600;margin:2px 2px 2px 0;white-space:nowrap;">${s.trim()}</span>`
+                                  ).join('')
+                                : '<span style="color:#94a3b8;font-size:.8rem;">—</span>'}
+                        </td>
                         <td>
                             ${badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)}
                             ${r.ComprobantePago && r.ComprobanteEstado === 'pendiente'
