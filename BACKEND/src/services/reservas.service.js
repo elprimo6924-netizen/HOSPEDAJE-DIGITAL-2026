@@ -119,7 +119,8 @@ const ReservasService = {
       : '';
     const compCargosFields2 = rCols2.has('ComprobanteCargos')
       ? ', r.ComprobanteCargos, r.ComprobanteCargosEstado, r.ComprobanteCargosFecha, r.ComprobanteCargosNota' +
-        (rCols2.has('ComprobanteCargosReferencia') ? ', r.ComprobanteCargosReferencia' : '')
+        (rCols2.has('ComprobanteCargosReferencia') ? ', r.ComprobanteCargosReferencia' : '') +
+        (rCols2.has('FechaLimiteCargosAdicionales') ? ', r.FechaLimiteCargosAdicionales' : '')
       : '';
     const estadoCargosField2 = rCols2.has('EstadoCargosAdicionales')
       ? ', r.EstadoCargosAdicionales'
