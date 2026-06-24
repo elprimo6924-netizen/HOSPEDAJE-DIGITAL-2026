@@ -259,7 +259,20 @@ const ReservasService = {
       [id]
     );
 
-    return { ...reserva, paquetes, servicios };
+    // Historial de comprobantes de cargos anteriores (para trazabilidad)
+    let historialComprobanteCargos = [];
+    try {
+      const [historial] = await db.query(
+        `SELECT ComprobanteCargos, Estado, Nota, FechaSubida, FechaVerificacion
+         FROM comprobante_cargos_historial
+         WHERE IdReserva = ?
+         ORDER BY FechaSubida ASC`,
+        [id]
+      );
+      historialComprobanteCargos = historial || [];
+    } catch (_) { /* tabla puede no existir aún */ }
+
+    return { ...reserva, paquetes, servicios, historialComprobanteCargos };
   },
 
   cancelar: async (idReserva) => {
@@ -701,6 +714,28 @@ const ReservasService = {
   },
 
   guardarComprobanteCargos: async (reservaId, comprobanteUrl) => {
+    // Guardar el comprobante actual en historial antes de sobreescribirlo
+    try {
+      const [[prev]] = await db.query(
+        'SELECT ComprobanteCargos, ComprobanteCargosEstado, ComprobanteCargosNota, ComprobanteCargosFecha FROM reserva WHERE IdReserva = ? LIMIT 1',
+        [reservaId]
+      );
+      if (prev?.ComprobanteCargos) {
+        await db.query(
+          `INSERT INTO comprobante_cargos_historial (IdReserva, ComprobanteCargos, Estado, Nota, FechaSubida, FechaVerificacion)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            reservaId,
+            prev.ComprobanteCargos,
+            prev.ComprobanteCargosEstado || 'pendiente',
+            prev.ComprobanteCargosNota || null,
+            prev.ComprobanteCargosFecha || new Date(),
+            (prev.ComprobanteCargosEstado === 'aprobado' || prev.ComprobanteCargosEstado === 'rechazado') ? new Date() : null,
+          ]
+        );
+      }
+    } catch (_) { /* no crítico */ }
+
     const [result] = await db.query(
       `UPDATE reserva
        SET ComprobanteCargos      = ?,

@@ -240,6 +240,27 @@ const app = express();
     }
 })();
 
+// Migración: tabla comprobante_cargos_historial (trazabilidad de todos los comprobantes de cargos adicionales)
+(async () => {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS comprobante_cargos_historial (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                IdReserva INT NOT NULL,
+                ComprobanteCargos VARCHAR(255) NOT NULL,
+                Estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+                Nota VARCHAR(255) NULL,
+                FechaSubida DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FechaVerificacion DATETIME NULL,
+                INDEX idx_reserva (IdReserva)
+            )
+        `);
+        console.log('[MIGRATION] Tabla comprobante_cargos_historial verificada.');
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración comprobante_cargos_historial:', err.message);
+    }
+})();
+
 // Migración: CostoExtension + NochesExtension en reserva (registro de días extendidos)
 (async () => {
     try {

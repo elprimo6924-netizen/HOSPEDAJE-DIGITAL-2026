@@ -783,6 +783,51 @@
             // Se muestra si hay servicios EsAdicional=1 O si hay días extendidos O si EstadoCargosAdicionales fue seteado
             let comprobanteCargosHtml = '';
             if (r.TieneCargosAdicionales || costoExtraDias > 0 || r.EstadoCargosAdicionales != null) {
+                // Historial de comprobantes anteriores (trazabilidad)
+                const historial = r.historialComprobanteCargos || [];
+                const badgeHistorial = (estado) => {
+                    const map = { pendiente:'⏳ Pendiente', aprobado:'✓ Aprobado', rechazado:'✗ Rechazado' };
+                    const color = { pendiente:'#d97706', aprobado:'#16a34a', rechazado:'#dc2626' };
+                    const bg    = { pendiente:'#fef3c7', aprobado:'#dcfce7', rechazado:'#fee2e2' };
+                    return `<span style="font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;
+                                        background:${bg[estado]||'#f3f4f6'};color:${color[estado]||'#374151'};">
+                                ${map[estado]||estado}</span>`;
+                };
+                const historialHtml = historial.length > 0
+                    ? `<div style="margin-bottom:12px;">
+                           <p style="margin:0 0 8px;font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">
+                               <i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;"></i>Historial de comprobantes anteriores
+                           </p>
+                           ${historial.map((h, i) => {
+                               const urlH = `${apiBase}${h.ComprobanteCargos}`;
+                               const esPdfH = h.ComprobanteCargos.endsWith('.pdf');
+                               const fechaH = h.FechaSubida ? new Date(h.FechaSubida).toLocaleDateString('es-CO', {day:'2-digit',month:'short',year:'numeric'}) : '';
+                               return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;
+                                                   background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">
+                                           <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#e2e8f0;
+                                                       display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#64748b;">
+                                               ${i+1}
+                                           </div>
+                                           <div style="flex:1;min-width:0;">
+                                               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+                                                   <span style="font-size:.75rem;color:#64748b;">${fechaH}</span>
+                                                   ${badgeHistorial(h.Estado)}
+                                               </div>
+                                               ${esPdfH
+                                                   ? `<a href="${urlH}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
+                                                          background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;text-decoration:none;color:#1d4ed8;font-size:.78rem;">
+                                                          <i class="fa-solid fa-file-pdf"></i>Ver PDF</a>`
+                                                   : `<a href="${urlH}" target="_blank">
+                                                          <img src="${urlH}" alt="Comprobante ${i+1}" style="max-height:80px;max-width:100%;border-radius:6px;border:1px solid #bfdbfe;object-fit:contain;display:block;">
+                                                      </a>`
+                                               }
+                                               ${h.Nota ? `<p style="margin:4px 0 0;font-size:.74rem;color:#7c3aed;"><i class="fa-solid fa-comment-dots" style="margin-right:3px;"></i>${h.Nota}</p>` : ''}
+                                           </div>
+                                       </div>`;
+                           }).join('')}
+                       </div>`
+                    : '';
+
                 if (r.ComprobanteCargos) {
                     const urlC  = `${apiBase}${r.ComprobanteCargos}`;
                     const esPdfC = r.ComprobanteCargos.endsWith('.pdf');
@@ -829,6 +874,7 @@
                                 <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
                                 ${chipEstadoC}
                             </div>
+                            ${historialHtml}
                             ${previewElC}
                             ${notaHtmlC}
                             ${btnResubirC}
@@ -845,6 +891,7 @@
                                    <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
                                    <span class="badge-comprobante pendiente">⏳ Pendiente</span>
                                </div>
+                               ${historialHtml}
                                <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;
                                            display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
                                    <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:600;line-height:1.4;">
@@ -867,6 +914,7 @@
                                        <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
                                        <span class="badge-comprobante pendiente">⏳ Pendiente</span>
                                    </div>
+                                   ${historialHtml}
                                    <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;">
                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
                                            <div style="flex:1;min-width:0;">

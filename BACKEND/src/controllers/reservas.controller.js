@@ -816,17 +816,6 @@ const subirComprobanteCargos = async (req, res) => {
     }
     const { id } = req.params;
 
-    // Borrar archivo anterior de cargos si existe
-    try {
-      const [[prev]] = await db.query(
-        "SELECT ComprobanteCargos FROM reserva WHERE IdReserva = ? LIMIT 1", [id]
-      );
-      if (prev?.ComprobanteCargos) {
-        const oldPath = path.join(__dirname, "../public", prev.ComprobanteCargos);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-    } catch (_) { /* no crítico */ }
-
     const comprobanteUrl = `/uploads/comprobantes/${req.file.filename}`;
     const ok = await ReservasService.guardarComprobanteCargos(id, comprobanteUrl);
     if (!ok) {
