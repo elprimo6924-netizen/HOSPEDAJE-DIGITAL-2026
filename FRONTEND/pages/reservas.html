@@ -918,6 +918,23 @@
                                     </div>
                                 </div>
                             </div>`;
+                    } else if (estadoCargos === 3) {
+                        comprobanteCargosHtml += `
+                            <div style="grid-column:1/-1;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:12px;padding:14px 16px;margin-top:4px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <i class="fa-solid fa-clock-rotate-left" style="color:#dc2626;"></i>
+                                    <strong style="font-size:.85rem;color:#0f172a;">Comprobante #${cardNum} — ${tiActual.label}</strong>
+                                    <span class="badge-comprobante rechazado">⌛ Plazo vencido</span>
+                                </div>
+                                <p style="margin:10px 0 0;font-size:.82rem;color:#b91c1c;line-height:1.5;">
+                                    No se recibió el comprobante de transferencia dentro del plazo de 5 minutos, por lo que los cargos adicionales fueron cancelados automáticamente.
+                                    ${esAdmin ? 'Si el cliente realizó el pago, puedes subir el comprobante manualmente.' : 'Contacta al administrador si ya realizaste el pago.'}
+                                </p>
+                                ${esAdmin ? `<button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
+                                    style="margin-top:10px;padding:9px 16px;border-radius:9px;border:none;background:#dc2626;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;">
+                                    <i class="fa-solid fa-cloud-arrow-up" style="margin-right:6px;"></i>Subir comprobante de igual forma
+                                </button>` : ''}
+                            </div>`;
                     }
                 }
             }

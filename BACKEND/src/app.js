@@ -68,6 +68,10 @@ const app = express();
             await db.query('ALTER TABLE reserva ADD COLUMN FechaLimiteComprobante DATETIME NULL');
             migracionHizo = true;
         }
+        if (!(await colExists('FechaLimiteCargosAdicionales'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN FechaLimiteCargosAdicionales DATETIME NULL');
+            migracionHizo = true;
+        }
 
         // Invalidar cache del service para que lea las nuevas columnas
         if (migracionHizo) {

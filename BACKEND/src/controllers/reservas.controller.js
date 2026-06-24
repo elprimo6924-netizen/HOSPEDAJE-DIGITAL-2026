@@ -521,7 +521,7 @@ const agregarServicios = async (req, res) => {
     // Actualizar EstadoCargosAdicionales según método de pago (NO tocar IdEstadoReserva principal)
     if (esTransferencia) {
       await db.query(
-        "UPDATE reserva SET EstadoCargosAdicionales = 5, ComprobanteCargosReferencia = 'servicios' WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET EstadoCargosAdicionales = 5, ComprobanteCargosReferencia = 'servicios', FechaLimiteCargosAdicionales = DATE_ADD(NOW(), INTERVAL 5 MINUTE) WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
       );
     } else if (Number(metodoPago) === 1) {
@@ -692,7 +692,7 @@ const extenderDias = async (req, res) => {
     // Actualizar EstadoCargosAdicionales según método de pago (NO tocar IdEstadoReserva principal)
     if (esTransferencia) {
       await db.query(
-        "UPDATE reserva SET EstadoCargosAdicionales = 5, ComprobanteCargosReferencia = 'dias' WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET EstadoCargosAdicionales = 5, ComprobanteCargosReferencia = 'dias', FechaLimiteCargosAdicionales = DATE_ADD(NOW(), INTERVAL 5 MINUTE) WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
       );
     } else if (Number(metodoPago) === 1) {

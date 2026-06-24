@@ -740,10 +740,12 @@ const ReservasService = {
 
     const [result] = await db.query(
       `UPDATE reserva
-       SET ComprobanteCargos      = ?,
-           ComprobanteCargosFecha  = NOW(),
-           ComprobanteCargosEstado = 'pendiente',
-           ComprobanteCargosNota   = NULL
+       SET ComprobanteCargos          = ?,
+           ComprobanteCargosFecha      = NOW(),
+           ComprobanteCargosEstado     = 'pendiente',
+           ComprobanteCargosNota       = NULL,
+           EstadoCargosAdicionales     = 5,
+           FechaLimiteCargosAdicionales = NULL
        WHERE IdReserva = ?`,
       [comprobanteUrl, reservaId]
     );
@@ -816,6 +818,16 @@ const ReservasService = {
            AND FechaLimiteComprobante IS NOT NULL
            AND FechaLimiteComprobante < NOW()
            AND (ComprobantePago IS NULL OR ComprobantePago = '')`
+      );
+    }
+    // Cargos adicionales pendientes por transferencia que vencieron sin comprobante → Cancelado (3)
+    if (rCols.has('FechaLimiteCargosAdicionales') && rCols.has('EstadoCargosAdicionales')) {
+      await db.query(
+        `UPDATE reserva SET EstadoCargosAdicionales = 3
+         WHERE EstadoCargosAdicionales = 5
+           AND FechaLimiteCargosAdicionales IS NOT NULL
+           AND FechaLimiteCargosAdicionales < NOW()
+           AND (ComprobanteCargos IS NULL OR ComprobanteCargos = '')`
       );
     }
   },
