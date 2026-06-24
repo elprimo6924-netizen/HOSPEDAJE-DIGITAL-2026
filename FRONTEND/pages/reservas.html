@@ -799,22 +799,32 @@
                            </a>`;
                     const notaHtmlC = r.ComprobanteCargosNota
                         ? `<p style="margin:6px 0 0;font-size:.78rem;color:#7c3aed;"><i class="fa-solid fa-comment-dots" style="margin-right:4px;"></i>${r.ComprobanteCargosNota}</p>` : '';
-                    const btnResubirC = (!esAdmin && r.ComprobanteCargosEstado === 'rechazado')
+                    // Mostrar botón de upload si comprobante fue rechazado O si hay nuevos cargos pendientes (incluso con comprobante previo aprobado)
+                    const necesitaNuevoC = Number(r.EstadoCargosAdicionales) === 5 && r.ComprobanteCargosEstado !== 'pendiente';
+                    const btnResubirC = !esAdmin && (r.ComprobanteCargosEstado === 'rechazado' || necesitaNuevoC)
                         ? `<button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
                                style="margin-top:10px;padding:9px 16px;border-radius:9px;border:none;
-                                      background:#3b82f6;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;">
-                               <i class="fa-solid fa-arrow-up-from-bracket" style="margin-right:7px;"></i>Subir nuevo comprobante de cargos
+                                      background:#3b82f6;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;
+                                      box-shadow:0 4px 12px rgba(59,130,246,.3);display:inline-flex;align-items:center;gap:7px;">
+                               <i class="fa-solid fa-arrow-up-from-bracket"></i>Subir comprobante de cargos adicionales
                            </button>` : '';
+                    // Aviso al admin cuando hay nuevos cargos pero el comprobante previo era aprobado
+                    const adminNuevoCargosHtml = esAdmin && necesitaNuevoC
+                        ? `<div style="margin-top:10px;background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+                               <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1rem;flex-shrink:0;"></i>
+                               <p style="margin:0;font-size:.78rem;color:#1d4ed8;font-weight:600;line-height:1.4;">Se agregaron nuevos cargos adicionales. Esperando comprobante actualizado del cliente.</p>
+                           </div>` : '';
                     comprobanteCargosHtml = `
                         <div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
                             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                                 <i class="fa-solid fa-file-invoice-dollar" style="color:#3b82f6;"></i>
-                                <strong style="font-size:.85rem;color:#0f172a;">Comprobante de cargos adicionales</strong>
+                                <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
                                 ${chipEstadoC}
                             </div>
                             ${previewElC}
                             ${notaHtmlC}
                             ${btnResubirC}
+                            ${adminNuevoCargosHtml}
                         </div>`;
                 } else {
                     const estadoCargos = Number(r.EstadoCargosAdicionales);
@@ -1031,9 +1041,10 @@
                 }
 
                 // Botón subir comprobante de cargos adicionales
+                // Puede subir si: hay cargos pendientes (estado 5) Y el comprobante previo no está en revisión
                 const clientePuedeSubirCargos = (r.TieneCargosAdicionales || r.EstadoCargosAdicionales != null) &&
                     Number(r.EstadoCargosAdicionales) === 5 &&
-                    (!r.ComprobanteCargos || r.ComprobanteCargosEstado === 'rechazado');
+                    r.ComprobanteCargosEstado !== 'pendiente';
                 if (clientePuedeSubirCargos) {
                     const btnSubirC = document.createElement('button');
                     btnSubirC.id = 'btn-subir-comp-cargos-cliente';
