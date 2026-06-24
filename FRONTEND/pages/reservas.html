@@ -2424,6 +2424,15 @@
                     history.replaceState(null, '', window.location.pathname);
                     setTimeout(() => abrirModalSubirComprobante(Number(_compId)), 800);
                 }
+
+                // Auto-refresh cada 30 segundos: actualiza la lista sin interrumpir modales abiertos
+                setInterval(() => {
+                    const modalAbierto = document.querySelector(
+                        '#modal-reserva-detalle:not(.hidden), [id^="modal-"]:not(.hidden)'
+                    );
+                    if (!modalAbierto) cargarReservas();
+                }, 30000);
+
             } catch (e) { console.error('Error en reservas.html:', e); }
         });
     </script>
