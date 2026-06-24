@@ -779,87 +779,79 @@
                        </div>`;
             }
 
-            // Bloque comprobante de cargos adicionales (independiente del comprobante principal)
-            // Se muestra si hay servicios EsAdicional=1 O si hay días extendidos O si EstadoCargosAdicionales fue seteado
+            // Bloque comprobante de cargos adicionales — cada comprobante como tarjeta independiente
             let comprobanteCargosHtml = '';
             if (r.TieneCargosAdicionales || costoExtraDias > 0 || r.EstadoCargosAdicionales != null) {
-                // Historial de comprobantes anteriores (trazabilidad)
                 const historial = r.historialComprobanteCargos || [];
-                const badgeHistorial = (estado) => {
-                    const map = { pendiente:'⏳ Pendiente', aprobado:'✓ Aprobado', rechazado:'✗ Rechazado' };
-                    const color = { pendiente:'#d97706', aprobado:'#16a34a', rechazado:'#dc2626' };
-                    const bg    = { pendiente:'#fef3c7', aprobado:'#dcfce7', rechazado:'#fee2e2' };
-                    return `<span style="font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;
-                                        background:${bg[estado]||'#f3f4f6'};color:${color[estado]||'#374151'};">
-                                ${map[estado]||estado}</span>`;
-                };
-                const historialHtml = historial.length > 0
-                    ? `<div style="margin-bottom:12px;">
-                           <p style="margin:0 0 8px;font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">
-                               <i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;"></i>Historial de comprobantes anteriores
-                           </p>
-                           ${historial.map((h, i) => {
-                               const urlH = `${apiBase}${h.ComprobanteCargos}`;
-                               const esPdfH = h.ComprobanteCargos.endsWith('.pdf');
-                               const fechaH = h.FechaSubida ? new Date(h.FechaSubida).toLocaleDateString('es-CO', {day:'2-digit',month:'short',year:'numeric'}) : '';
-                               return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;
-                                                   background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">
-                                           <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#e2e8f0;
-                                                       display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#64748b;">
-                                               ${i+1}
-                                           </div>
-                                           <div style="flex:1;min-width:0;">
-                                               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
-                                                   <span style="font-size:.75rem;color:#64748b;">${fechaH}</span>
-                                                   ${badgeHistorial(h.Estado)}
-                                               </div>
-                                               ${esPdfH
-                                                   ? `<a href="${urlH}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
-                                                          background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;text-decoration:none;color:#1d4ed8;font-size:.78rem;">
-                                                          <i class="fa-solid fa-file-pdf"></i>Ver PDF</a>`
-                                                   : `<a href="${urlH}" target="_blank">
-                                                          <img src="${urlH}" alt="Comprobante ${i+1}" style="max-height:80px;max-width:100%;border-radius:6px;border:1px solid #bfdbfe;object-fit:contain;display:block;">
-                                                      </a>`
-                                               }
-                                               ${h.Nota ? `<p style="margin:4px 0 0;font-size:.74rem;color:#7c3aed;"><i class="fa-solid fa-comment-dots" style="margin-right:3px;"></i>${h.Nota}</p>` : ''}
-                                           </div>
-                                       </div>`;
-                           }).join('')}
-                       </div>`
-                    : '';
 
+                // Helpers reutilizables
+                const tipoInfo = (tipo) => {
+                    if (tipo === 'servicios') return { label: 'Servicios adicionales', color: '#3b82f6', icon: 'fa-concierge-bell' };
+                    if (tipo === 'dias')      return { label: 'Días adicionales',       color: '#7c3aed', icon: 'fa-calendar-plus'  };
+                    return { label: 'Cargos adicionales', color: '#3b82f6', icon: 'fa-file-invoice-dollar' };
+                };
+                const chipC = (estado) => {
+                    const map = { pendiente:'⏳ Pendiente', aprobado:'✓ Aprobado', rechazado:'✗ Rechazado' };
+                    return `<span class="badge-comprobante ${estado||'pendiente'}">${map[estado]||estado}</span>`;
+                };
+                const previewImg = (url, esPdf) => esPdf
+                    ? `<a href="${url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;
+                           background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;text-decoration:none;color:#1d4ed8;font-size:.84rem;font-weight:600;">
+                           <i class="fa-solid fa-file-pdf" style="font-size:1.2rem;"></i>Ver PDF
+                       </a>`
+                    : `<a href="${url}" target="_blank">
+                           <img src="${url}" alt="Comprobante" style="max-height:130px;max-width:100%;border-radius:8px;border:1px solid #bfdbfe;object-fit:contain;display:block;">
+                       </a>`;
+                const cardBg = (estado) => ({
+                    aprobado:  { bg:'#f0fdf4', border:'#86efac' },
+                    rechazado: { bg:'#fef2f2', border:'#fca5a5' },
+                })[estado] || { bg:'#f8fafc', border:'#e2e8f0' };
+
+                // Tarjetas del historial (comprobantes anteriores ya verificados o rechazados)
+                historial.forEach((h, i) => {
+                    const urlH  = `${apiBase}${h.ComprobanteCargos}`;
+                    const ti    = tipoInfo(h.Tipo);
+                    const cb    = cardBg(h.Estado);
+                    const fechaH = h.FechaSubida
+                        ? new Date(h.FechaSubida).toLocaleDateString('es-CO', {day:'2-digit',month:'short',year:'numeric'})
+                        : '';
+                    comprobanteCargosHtml += `
+                        <div style="grid-column:1/-1;background:${cb.bg};border:1.5px solid ${cb.border};border-radius:12px;padding:14px 16px;margin-top:4px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+                                <i class="fa-solid ${ti.icon}" style="color:${ti.color};"></i>
+                                <strong style="font-size:.85rem;color:#0f172a;">Comprobante #${i+1} — ${ti.label}</strong>
+                                ${chipC(h.Estado)}
+                                <span style="margin-left:auto;font-size:.73rem;color:#94a3b8;">${fechaH}</span>
+                            </div>
+                            ${previewImg(urlH, h.ComprobanteCargos.endsWith('.pdf'))}
+                            ${h.Nota ? `<p style="margin:6px 0 0;font-size:.78rem;color:#7c3aed;"><i class="fa-solid fa-comment-dots" style="margin-right:4px;"></i>${h.Nota}</p>` : ''}
+                        </div>`;
+                });
+
+                // Tarjeta del comprobante actual (activo)
+                const cardNum = historial.length + 1;
+                const tiActual = tipoInfo(r.ComprobanteCargosReferencia);
                 if (r.ComprobanteCargos) {
-                    const urlC  = `${apiBase}${r.ComprobanteCargos}`;
+                    const urlC   = `${apiBase}${r.ComprobanteCargos}`;
                     const esPdfC = r.ComprobanteCargos.endsWith('.pdf');
-                    const chipEstadoC = `<span class="badge-comprobante ${r.ComprobanteCargosEstado||'pendiente'}">
-                        ${{'pendiente':'⏳ Pendiente','aprobado':'✓ Aprobado','rechazado':'✗ Rechazado'}[r.ComprobanteCargosEstado]||r.ComprobanteCargosEstado}
-                    </span>`;
-                    const previewElC = esPdfC
-                        ? `<a href="${urlC}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:9px 16px;
-                               background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;text-decoration:none;color:#1d4ed8;font-size:.84rem;font-weight:600;">
-                               <i class="fa-solid fa-file-pdf" style="font-size:1.2rem;"></i>Ver PDF
-                           </a>`
-                        : `<a href="${urlC}" target="_blank">
-                               <img src="${urlC}" alt="Comprobante cargos" style="max-height:130px;max-width:100%;border-radius:8px;border:1px solid #bfdbfe;object-fit:contain;display:block;">
-                           </a>`;
-                    const notaHtmlC = r.ComprobanteCargosNota
-                        ? `<p style="margin:6px 0 0;font-size:.78rem;color:#7c3aed;"><i class="fa-solid fa-comment-dots" style="margin-right:4px;"></i>${r.ComprobanteCargosNota}</p>` : '';
-                    // Mostrar botón de upload si comprobante fue rechazado O si hay nuevos cargos pendientes (incluso con comprobante previo aprobado)
-                    const necesitaNuevoC = Number(r.EstadoCargosAdicionales) === 5 && r.ComprobanteCargosEstado !== 'pendiente';
-                    const btnResubirC = !esAdmin && (r.ComprobanteCargosEstado === 'rechazado' || necesitaNuevoC)
+                    const estadoC = r.ComprobanteCargosEstado || 'pendiente';
+                    const fechaC  = r.ComprobanteCargosFecha
+                        ? new Date(r.ComprobanteCargosFecha).toLocaleDateString('es-CO', {day:'2-digit',month:'short',year:'numeric'})
+                        : '';
+                    const necesitaNuevoC = Number(r.EstadoCargosAdicionales) === 5 && estadoC !== 'pendiente';
+                    const btnResubirC = !esAdmin && (estadoC === 'rechazado' || necesitaNuevoC)
                         ? `<button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
-                               style="margin-top:10px;padding:9px 16px;border-radius:9px;border:none;
-                                      background:#3b82f6;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;
-                                      box-shadow:0 4px 12px rgba(59,130,246,.3);display:inline-flex;align-items:center;gap:7px;">
-                               <i class="fa-solid fa-arrow-up-from-bracket"></i>Subir comprobante de cargos adicionales
+                               style="margin-top:10px;padding:9px 16px;border-radius:9px;border:none;background:#3b82f6;color:#fff;
+                                      font-weight:700;font-size:.82rem;cursor:pointer;box-shadow:0 4px 12px rgba(59,130,246,.3);
+                                      display:inline-flex;align-items:center;gap:7px;">
+                               <i class="fa-solid fa-arrow-up-from-bracket"></i>Subir nuevo comprobante
                            </button>` : '';
-                    // Aviso + botón de subida al admin cuando hay nuevos cargos con comprobante previo aprobado
                     const adminNuevoCargosHtml = esAdmin && necesitaNuevoC
                         ? `<div style="margin-top:10px;background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:12px 14px;
                                        display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
                                <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
                                    <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1rem;flex-shrink:0;"></i>
-                                   <p style="margin:0;font-size:.78rem;color:#1d4ed8;font-weight:600;line-height:1.4;">Se agregaron nuevos cargos adicionales. El cliente debe subir el comprobante actualizado o puedes subirlo tú.</p>
+                                   <p style="margin:0;font-size:.78rem;color:#1d4ed8;font-weight:600;line-height:1.4;">Se agregaron nuevos cargos. El cliente debe subir el comprobante actualizado o puedes subirlo tú.</p>
                                </div>
                                <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
                                    style="flex-shrink:0;padding:8px 14px;border-radius:9px;border:none;background:#3b82f6;color:#fff;
@@ -867,70 +859,67 @@
                                    <i class="fa-solid fa-cloud-arrow-up"></i>Subir comprobante
                                </button>
                            </div>` : '';
-                    comprobanteCargosHtml = `
+                    comprobanteCargosHtml += `
                         <div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                                <i class="fa-solid fa-file-invoice-dollar" style="color:#3b82f6;"></i>
-                                <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
-                                ${chipEstadoC}
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+                                <i class="fa-solid ${tiActual.icon}" style="color:${tiActual.color};"></i>
+                                <strong style="font-size:.85rem;color:#0f172a;">Comprobante #${cardNum} — ${tiActual.label}</strong>
+                                ${chipC(estadoC)}
+                                ${fechaC ? `<span style="margin-left:auto;font-size:.73rem;color:#94a3b8;">${fechaC}</span>` : ''}
                             </div>
-                            ${historialHtml}
-                            ${previewElC}
-                            ${notaHtmlC}
+                            ${previewImg(urlC, esPdfC)}
+                            ${r.ComprobanteCargosNota ? `<p style="margin:6px 0 0;font-size:.78rem;color:#7c3aed;"><i class="fa-solid fa-comment-dots" style="margin-right:4px;"></i>${r.ComprobanteCargosNota}</p>` : ''}
                             ${btnResubirC}
                             ${adminNuevoCargosHtml}
                         </div>`;
                 } else {
                     const estadoCargos = Number(r.EstadoCargosAdicionales);
-                    const necesitaSubirC = !esAdmin && estadoCargos === 5;
-                    const adminEsperandoC = esAdmin && estadoCargos === 5;
-                    comprobanteCargosHtml = necesitaSubirC
-                        ? `<div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
-                               <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                                   <i class="fa-solid fa-file-invoice-dollar" style="color:#3b82f6;"></i>
-                                   <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
-                                   <span class="badge-comprobante pendiente">⏳ Pendiente</span>
-                               </div>
-                               ${historialHtml}
-                               <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;
-                                           display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-                                   <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:600;line-height:1.4;">
-                                       <i class="fa-solid fa-triangle-exclamation" style="margin-right:7px;"></i>
-                                       Aún no has subido el comprobante de los cargos adicionales.<br>
-                                       <span style="font-weight:400;font-size:.78rem;color:#3b82f6;">El administrador lo revisará y confirmará los cargos.</span>
-                                   </p>
-                                   <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
-                                       style="flex-shrink:0;padding:10px 18px;border-radius:10px;border:none;
-                                              background:#3b82f6;color:#fff;font-weight:700;font-size:.83rem;cursor:pointer;
-                                              box-shadow:0 4px 12px rgba(59,130,246,.35);white-space:nowrap;">
-                                       <i class="fa-solid fa-cloud-arrow-up" style="margin-right:7px;"></i>Subir comprobante de cargos
-                                   </button>
-                               </div>
-                           </div>`
-                        : adminEsperandoC
-                            ? `<div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
-                                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                                       <i class="fa-solid fa-file-invoice-dollar" style="color:#3b82f6;"></i>
-                                       <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
-                                       <span class="badge-comprobante pendiente">⏳ Pendiente</span>
-                                   </div>
-                                   ${historialHtml}
-                                   <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;">
-                                       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-                                           <div style="flex:1;min-width:0;">
-                                               <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1.2rem;margin-bottom:6px;display:block;"></i>
-                                               <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:700;">Esperando comprobante del cliente</p>
-                                               <p style="margin:5px 0 0;font-size:.76rem;color:#3b82f6;line-height:1.4;">El cliente debe subir el comprobante de transferencia.<br>También puedes subirlo tú si lo recibes por otro medio.</p>
-                                           </div>
-                                           <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
-                                               style="flex-shrink:0;padding:10px 16px;border-radius:10px;border:none;background:#3b82f6;color:#fff;font-weight:700;font-size:.82rem;
-                                                      cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;box-shadow:0 4px 12px rgba(59,130,246,.3);">
-                                               <i class="fa-solid fa-cloud-arrow-up"></i>Subir comprobante de cargos
-                                           </button>
-                                       </div>
-                                   </div>
-                               </div>`
-                            : '';
+                    if (!esAdmin && estadoCargos === 5) {
+                        comprobanteCargosHtml += `
+                            <div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                                    <i class="fa-solid ${tiActual.icon}" style="color:${tiActual.color};"></i>
+                                    <strong style="font-size:.85rem;color:#0f172a;">Comprobante #${cardNum} — ${tiActual.label}</strong>
+                                    <span class="badge-comprobante pendiente">⏳ Pendiente</span>
+                                </div>
+                                <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;
+                                            display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                                    <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:600;line-height:1.4;">
+                                        <i class="fa-solid fa-triangle-exclamation" style="margin-right:7px;"></i>
+                                        Aún no has subido el comprobante de los cargos adicionales.<br>
+                                        <span style="font-weight:400;font-size:.78rem;color:#3b82f6;">El administrador lo revisará y confirmará los cargos.</span>
+                                    </p>
+                                    <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
+                                        style="flex-shrink:0;padding:10px 18px;border-radius:10px;border:none;background:#3b82f6;color:#fff;
+                                               font-weight:700;font-size:.83rem;cursor:pointer;box-shadow:0 4px 12px rgba(59,130,246,.35);white-space:nowrap;">
+                                        <i class="fa-solid fa-cloud-arrow-up" style="margin-right:7px;"></i>Subir comprobante de cargos
+                                    </button>
+                                </div>
+                            </div>`;
+                    } else if (esAdmin && estadoCargos === 5) {
+                        comprobanteCargosHtml += `
+                            <div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                                    <i class="fa-solid ${tiActual.icon}" style="color:${tiActual.color};"></i>
+                                    <strong style="font-size:.85rem;color:#0f172a;">Comprobante #${cardNum} — ${tiActual.label}</strong>
+                                    <span class="badge-comprobante pendiente">⏳ Pendiente</span>
+                                </div>
+                                <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                                        <div style="flex:1;min-width:0;">
+                                            <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1.2rem;margin-bottom:6px;display:block;"></i>
+                                            <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:700;">Esperando comprobante del cliente</p>
+                                            <p style="margin:5px 0 0;font-size:.76rem;color:#3b82f6;line-height:1.4;">El cliente debe subir el comprobante de transferencia.<br>También puedes subirlo tú si lo recibes por otro medio.</p>
+                                        </div>
+                                        <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
+                                            style="flex-shrink:0;padding:10px 16px;border-radius:10px;border:none;background:#3b82f6;color:#fff;font-weight:700;font-size:.82rem;
+                                                   cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;box-shadow:0 4px 12px rgba(59,130,246,.3);">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>Subir comprobante de cargos
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
                 }
             }
 

@@ -118,7 +118,8 @@ const ReservasService = {
       ? ', r.ComprobantePago, r.ComprobanteEstado, r.ComprobanteFecha, r.ComprobanteNota'
       : '';
     const compCargosFields2 = rCols2.has('ComprobanteCargos')
-      ? ', r.ComprobanteCargos, r.ComprobanteCargosEstado, r.ComprobanteCargosFecha, r.ComprobanteCargosNota'
+      ? ', r.ComprobanteCargos, r.ComprobanteCargosEstado, r.ComprobanteCargosFecha, r.ComprobanteCargosNota' +
+        (rCols2.has('ComprobanteCargosReferencia') ? ', r.ComprobanteCargosReferencia' : '')
       : '';
     const estadoCargosField2 = rCols2.has('EstadoCargosAdicionales')
       ? ', r.EstadoCargosAdicionales'
@@ -263,7 +264,7 @@ const ReservasService = {
     let historialComprobanteCargos = [];
     try {
       const [historial] = await db.query(
-        `SELECT ComprobanteCargos, Estado, Nota, FechaSubida, FechaVerificacion
+        `SELECT ComprobanteCargos, Estado, Tipo, Nota, FechaSubida, FechaVerificacion
          FROM comprobante_cargos_historial
          WHERE IdReserva = ?
          ORDER BY FechaSubida ASC`,
@@ -717,17 +718,18 @@ const ReservasService = {
     // Guardar el comprobante actual en historial antes de sobreescribirlo
     try {
       const [[prev]] = await db.query(
-        'SELECT ComprobanteCargos, ComprobanteCargosEstado, ComprobanteCargosNota, ComprobanteCargosFecha FROM reserva WHERE IdReserva = ? LIMIT 1',
+        'SELECT ComprobanteCargos, ComprobanteCargosEstado, ComprobanteCargosNota, ComprobanteCargosFecha, ComprobanteCargosReferencia FROM reserva WHERE IdReserva = ? LIMIT 1',
         [reservaId]
       );
       if (prev?.ComprobanteCargos) {
         await db.query(
-          `INSERT INTO comprobante_cargos_historial (IdReserva, ComprobanteCargos, Estado, Nota, FechaSubida, FechaVerificacion)
-           VALUES (?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO comprobante_cargos_historial (IdReserva, ComprobanteCargos, Estado, Tipo, Nota, FechaSubida, FechaVerificacion)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
             reservaId,
             prev.ComprobanteCargos,
             prev.ComprobanteCargosEstado || 'pendiente',
+            prev.ComprobanteCargosReferencia || null,
             prev.ComprobanteCargosNota || null,
             prev.ComprobanteCargosFecha || new Date(),
             (prev.ComprobanteCargosEstado === 'aprobado' || prev.ComprobanteCargosEstado === 'rechazado') ? new Date() : null,

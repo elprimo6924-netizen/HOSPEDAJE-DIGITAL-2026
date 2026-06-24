@@ -249,15 +249,37 @@ const app = express();
                 IdReserva INT NOT NULL,
                 ComprobanteCargos VARCHAR(255) NOT NULL,
                 Estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+                Tipo VARCHAR(30) NULL,
                 Nota VARCHAR(255) NULL,
                 FechaSubida DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FechaVerificacion DATETIME NULL,
                 INDEX idx_reserva (IdReserva)
             )
         `);
+        // Agregar columna Tipo si la tabla ya existía sin ella
+        try {
+            await db.query("ALTER TABLE comprobante_cargos_historial ADD COLUMN Tipo VARCHAR(30) NULL AFTER Estado");
+        } catch (_) { /* columna ya existe */ }
         console.log('[MIGRATION] Tabla comprobante_cargos_historial verificada.');
     } catch (err) {
         console.error('[MIGRATION] Error en migración comprobante_cargos_historial:', err.message);
+    }
+})();
+
+// Migración: columna ComprobanteCargosReferencia en reserva (tipo de cargo que originó la solicitud de comprobante)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const [[row]] = await db.query(
+            'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+            [dbName, 'reserva', 'ComprobanteCargosReferencia']
+        );
+        if (row.c === 0) {
+            await db.query("ALTER TABLE reserva ADD COLUMN ComprobanteCargosReferencia VARCHAR(30) NULL");
+            console.log('[MIGRATION] Columna ComprobanteCargosReferencia agregada a reserva.');
+        }
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración ComprobanteCargosReferencia:', err.message);
     }
 })();
 
