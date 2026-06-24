@@ -239,17 +239,17 @@
                 <h4>Detalle de Reserva</h4>
                 <div id="detalle-reserva-contenido" class="detalle-grid"></div>
                 <div id="detalle-modal-footer" style="display:none;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);">
+                    <button id="btn-agregar-svc-detalle"
+                        style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;
+                               border:none;background:linear-gradient(135deg,#d6b25e,#b78a2a);color:#1b1205;
+                               font-weight:700;font-size:0.84rem;cursor:pointer;box-shadow:0 4px 14px rgba(183,138,42,0.3);">
+                        <i class="fa-solid fa-plus"></i> Agregar servicios
+                    </button>
                     <button id="btn-agregar-dias-detalle"
                         style="display:none;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;
                                border:1.5px solid #6366f1;background:#eef2ff;color:#3730a3;
                                font-weight:700;font-size:0.84rem;cursor:pointer;">
                         <i class="fa-solid fa-calendar-plus"></i> Agregar días
-                    </button>
-                    <button id="btn-agregar-svc-detalle"
-                        style="display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;
-                               border:none;background:linear-gradient(135deg,#d6b25e,#b78a2a);color:#1b1205;
-                               font-weight:700;font-size:0.84rem;cursor:pointer;box-shadow:0 4px 14px rgba(183,138,42,0.3);">
-                        <i class="fa-solid fa-plus"></i> Agregar servicio adicional
                     </button>
                 </div>
             </div>
@@ -1003,6 +1003,7 @@
                 // Cliente: ocultar botones de admin y limpiar botones previos del cliente
                 if (btnAgregar) btnAgregar.style.display = 'none';
                 if (btnDias)    btnDias.style.display    = 'none';
+                document.getElementById('btn-generar-comp-modal')?.remove();
                 document.getElementById('btn-subir-comp-cliente')?.remove();
                 document.getElementById('btn-subir-comp-cargos-cliente')?.remove();
                 document.getElementById('btn-cliente-svc')?.remove();
