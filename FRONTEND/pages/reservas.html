@@ -583,17 +583,17 @@
             })();
 
             // Separar servicios originales (EsAdicional=0) de cargos adicionales (EsAdicional=1)
-            const svcsOriginales   = (r.servicios || []).filter(s => !s.EsAdicional);
-            const svcsAdicionales  = (r.servicios || []).filter(s =>  s.EsAdicional);
-            const totalSvcsOrig    = svcsOriginales.reduce ((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
-            const totalSvcsAdic    = svcsAdicionales.reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
+            // Usar Number() para comparación segura por si MySQL devuelve el campo como string
+            const svcsOriginales   = (r.servicios || []).filter(s => !s.EsAdicional || Number(s.EsAdicional) === 0);
+            const svcsAdicionales  = (r.servicios || []).filter(s => Number(s.EsAdicional) === 1);
+            const totalSvcsOrig    = svcsOriginales.reduce ((acc, s) => acc + Number(s.Precio || s.Costo || 0) * (Number(s.Cantidad) || 1), 0);
+            const totalSvcsAdic    = svcsAdicionales.reduce((acc, s) => acc + Number(s.Precio || s.Costo || 0) * (Number(s.Cantidad) || 1), 0);
             const totalServicios   = totalSvcsOrig + totalSvcsAdic;
-            // costoExtraDias: usa el valor exacto almacenado en BD (columna CostoExtension) si existe
-            const costoExtraDias   = Number(r.CostoExtension) > 0
-                ? Number(r.CostoExtension)
-                : Math.max(0, (r.MontoTotal || 0) - (r.SubTotal || 0) - (r.IVA || 0) + (r.Descuento || 0) - totalSvcsAdic);
-            // costoAlojamiento: lo que originalmente se pagó por noches (SubTotal+IVA-Descuento menos servicios base)
-            const costoAlojamiento = Math.max(0, (r.SubTotal || 0) + (r.IVA || 0) - (r.Descuento || 0) - totalSvcsOrig);
+            // costoExtraDias: valor exacto de BD (CostoExtension) — MontoTotal siempre incluye los cargos adicionales
+            const costoExtraDias   = Number(r.CostoExtension) || 0;
+            const totalCargosAdic  = totalSvcsAdic + costoExtraDias;
+            // costoAlojamiento = MontoTotal - todos los servicios - todos los cargos adicionales
+            const costoAlojamiento = Math.max(0, Number(r.MontoTotal || 0) - totalSvcsOrig - totalCargosAdic);
 
             const tieneServicios = (r.servicios || []).length > 0 || !!r.Servicios;
 
@@ -682,7 +682,7 @@
                     // Filas de servicios adicionales
                     const filasServicios = svcsAdicionales.map(s => {
                         const cant    = Number(s.Cantidad) || 1;
-                        const precio  = Number(s.Precio)   || 0;
+                        const precio  = Number(s.Precio || s.Costo || 0);
                         return `<tr style="border-bottom:1px solid #e0f2fe;">
                             <td style="padding:7px 8px;font-size:.82rem;color:#1e293b;font-weight:600;">${s.NombreServicio}${s.HoraServicio ? ` <span style="color:#94a3b8;font-size:.73rem;">(${s.HoraServicio})</span>` : ''}</td>
                             <td style="padding:7px 8px;font-size:.82rem;color:#475569;text-align:center;">${cant}</td>
@@ -690,9 +690,8 @@
                             <td style="padding:7px 8px;font-size:.83rem;color:#0f172a;font-weight:700;text-align:right;">${formatMonto(precio * cant)}</td>
                         </tr>`;
                     }).join('');
-                    const totalCargos = costoExtraDias + totalSvcsAdic;
-                    const totalFila = totalCargos > 0
-                        ? `<tr style="background:#dbeafe;"><td colspan="3" style="padding:7px 8px;font-size:.78rem;color:#1d4ed8;font-weight:800;text-align:right;border-radius:0 0 0 8px;">Total a pagar (extras):</td><td style="padding:7px 8px;font-size:.88rem;color:#1d4ed8;font-weight:900;text-align:right;border-radius:0 0 8px 0;">${formatMonto(totalCargos)}</td></tr>`
+                    const totalFila = totalCargosAdic > 0
+                        ? `<tr style="background:#dbeafe;"><td colspan="3" style="padding:7px 8px;font-size:.78rem;color:#1d4ed8;font-weight:800;text-align:right;border-radius:0 0 0 8px;">Total a pagar (extras):</td><td style="padding:7px 8px;font-size:.88rem;color:#1d4ed8;font-weight:900;text-align:right;border-radius:0 0 8px 0;">${formatMonto(totalCargosAdic)}</td></tr>`
                         : '';
                     return `<div style="grid-column:1/-1;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:14px 16px;margin-top:2px;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
