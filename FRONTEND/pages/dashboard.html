@@ -513,14 +513,14 @@
                     renderRecientes([]);
                 }
 
-                // Auto-refresh cada 30 segundos para el cliente (actualiza Reservas Recientes)
+                // Auto-refresh cada 15 segundos para el cliente (actualiza Reservas Recientes)
                 setInterval(async () => {
                     try {
                         const misRes = await requestJson('/reservas/mis-reservas');
                         _recientesData = Array.isArray(misRes) ? misRes.slice(0, 5) : [];
                         renderRecientes(_recientesData);
                     } catch { /* silencioso */ }
-                }, 30000);
+                }, 15000);
             }
 
             /* Botón exportar — solo visible para administradores */
