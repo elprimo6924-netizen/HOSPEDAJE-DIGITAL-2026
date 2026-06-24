@@ -808,11 +808,19 @@
                                       box-shadow:0 4px 12px rgba(59,130,246,.3);display:inline-flex;align-items:center;gap:7px;">
                                <i class="fa-solid fa-arrow-up-from-bracket"></i>Subir comprobante de cargos adicionales
                            </button>` : '';
-                    // Aviso al admin cuando hay nuevos cargos pero el comprobante previo era aprobado
+                    // Aviso + botón de subida al admin cuando hay nuevos cargos con comprobante previo aprobado
                     const adminNuevoCargosHtml = esAdmin && necesitaNuevoC
-                        ? `<div style="margin-top:10px;background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
-                               <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1rem;flex-shrink:0;"></i>
-                               <p style="margin:0;font-size:.78rem;color:#1d4ed8;font-weight:600;line-height:1.4;">Se agregaron nuevos cargos adicionales. Esperando comprobante actualizado del cliente.</p>
+                        ? `<div style="margin-top:10px;background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:12px 14px;
+                                       display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                               <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                                   <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1rem;flex-shrink:0;"></i>
+                                   <p style="margin:0;font-size:.78rem;color:#1d4ed8;font-weight:600;line-height:1.4;">Se agregaron nuevos cargos adicionales. El cliente debe subir el comprobante actualizado o puedes subirlo tú.</p>
+                               </div>
+                               <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
+                                   style="flex-shrink:0;padding:8px 14px;border-radius:9px;border:none;background:#3b82f6;color:#fff;
+                                          font-weight:700;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+                                   <i class="fa-solid fa-cloud-arrow-up"></i>Subir comprobante
+                               </button>
                            </div>` : '';
                     comprobanteCargosHtml = `
                         <div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
@@ -859,10 +867,19 @@
                                        <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
                                        <span class="badge-comprobante pendiente">⏳ Pendiente</span>
                                    </div>
-                                   <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:18px;text-align:center;">
-                                       <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1.5rem;margin-bottom:8px;display:block;"></i>
-                                       <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:700;">Esperando comprobante del cliente</p>
-                                       <p style="margin:5px 0 0;font-size:.76rem;color:#3b82f6;line-height:1.4;">El cliente debe subir el comprobante de transferencia de los cargos adicionales.<br>Cuando lo haga, podrás aprobarlo o rechazarlo aquí.</p>
+                                   <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:14px 16px;">
+                                       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                                           <div style="flex:1;min-width:0;">
+                                               <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1.2rem;margin-bottom:6px;display:block;"></i>
+                                               <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:700;">Esperando comprobante del cliente</p>
+                                               <p style="margin:5px 0 0;font-size:.76rem;color:#3b82f6;line-height:1.4;">El cliente debe subir el comprobante de transferencia.<br>También puedes subirlo tú si lo recibes por otro medio.</p>
+                                           </div>
+                                           <button onclick="document.getElementById('modal-reserva-detalle').classList.add('hidden'); abrirModalSubirComprobanteCargos(${r.IDReserva})"
+                                               style="flex-shrink:0;padding:10px 16px;border-radius:10px;border:none;background:#3b82f6;color:#fff;font-weight:700;font-size:.82rem;
+                                                      cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;box-shadow:0 4px 12px rgba(59,130,246,.3);">
+                                               <i class="fa-solid fa-cloud-arrow-up"></i>Subir comprobante de cargos
+                                           </button>
+                                       </div>
                                    </div>
                                </div>`
                             : '';
@@ -999,11 +1016,29 @@
                 btnGenComp.style.cssText = 'padding:9px 18px;border-radius:10px;border:1.5px solid #16a34a;background:#f0fdf4;color:#166534;font-weight:700;font-size:.84rem;cursor:pointer;display:inline-flex;align-items:center;';
                 btnGenComp.onclick = () => generarComprobante(r.IDReserva);
                 footer.appendChild(btnGenComp);
+
+                // Botón subir comprobante de cargos adicionales (admin)
+                document.getElementById('btn-admin-subir-cargos')?.remove();
+                const adminPuedeSubirCargos = (r.TieneCargosAdicionales || r.EstadoCargosAdicionales != null) &&
+                    Number(r.EstadoCargosAdicionales) === 5 &&
+                    r.ComprobanteCargosEstado !== 'pendiente';
+                if (adminPuedeSubirCargos) {
+                    const btnAdminSubirC = document.createElement('button');
+                    btnAdminSubirC.id = 'btn-admin-subir-cargos';
+                    btnAdminSubirC.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" style="margin-right:6px;"></i>Subir comprobante de cargos';
+                    btnAdminSubirC.style.cssText = 'padding:9px 18px;border-radius:10px;border:none;background:#3b82f6;color:#fff;font-weight:700;font-size:.84rem;cursor:pointer;display:inline-flex;align-items:center;box-shadow:0 4px 12px rgba(59,130,246,.35);';
+                    btnAdminSubirC.onclick = () => {
+                        document.getElementById('modal-reserva-detalle').classList.add('hidden');
+                        abrirModalSubirComprobanteCargos(r.IDReserva);
+                    };
+                    footer.appendChild(btnAdminSubirC);
+                }
             } else if (footer) {
                 // Cliente: ocultar botones de admin y limpiar botones previos del cliente
                 if (btnAgregar) btnAgregar.style.display = 'none';
                 if (btnDias)    btnDias.style.display    = 'none';
                 document.getElementById('btn-generar-comp-modal')?.remove();
+                document.getElementById('btn-admin-subir-cargos')?.remove();
                 document.getElementById('btn-subir-comp-cliente')?.remove();
                 document.getElementById('btn-subir-comp-cargos-cliente')?.remove();
                 document.getElementById('btn-cliente-svc')?.remove();
