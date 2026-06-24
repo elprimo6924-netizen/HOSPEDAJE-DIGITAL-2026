@@ -370,7 +370,7 @@
                         <td>${formatFecha(r.FechaInicio)}</td>
                         <td>${formatFecha(r.FechaFinalizacion)}</td>
                         <td><strong>${formatMonto(r.MontoTotal)}</strong></td>
-                        <td>${badgeCargos(r.TieneCargosAdicionales ? r.EstadoCargosAdicionales : null)}</td>
+                        <td>${badgeCargos((r.TieneCargosAdicionales || r.EstadoCargosAdicionales != null) ? r.EstadoCargosAdicionales : null)}</td>
                         <td>
                             ${badgeEstado(r.IdEstadoReserva, r.NombreEstadoReserva)}
                             ${r.ComprobantePago && r.ComprobanteEstado === 'pendiente'
@@ -588,9 +588,12 @@
             const totalSvcsOrig    = svcsOriginales.reduce ((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
             const totalSvcsAdic    = svcsAdicionales.reduce((acc, s) => acc + (Number(s.Precio) || 0) * (Number(s.Cantidad) || 1), 0);
             const totalServicios   = totalSvcsOrig + totalSvcsAdic;
-            // costoExtraDias: delta de MontoTotal sobre lo registrado como SubTotal+IVA (extensiones de días)
-            const costoExtraDias   = Math.max(0, (r.MontoTotal || 0) - (r.SubTotal || 0) - (r.IVA || 0));
-            const costoAlojamiento = Math.max(0, (r.MontoTotal || 0) - totalServicios - costoExtraDias);
+            // costoExtraDias: usa el valor exacto almacenado en BD (columna CostoExtension) si existe
+            const costoExtraDias   = Number(r.CostoExtension) > 0
+                ? Number(r.CostoExtension)
+                : Math.max(0, (r.MontoTotal || 0) - (r.SubTotal || 0) - (r.IVA || 0) + (r.Descuento || 0) - totalSvcsAdic);
+            // costoAlojamiento: lo que originalmente se pagó por noches (SubTotal+IVA-Descuento menos servicios base)
+            const costoAlojamiento = Math.max(0, (r.SubTotal || 0) + (r.IVA || 0) - (r.Descuento || 0) - totalSvcsOrig);
 
             const tieneServicios = (r.servicios || []).length > 0 || !!r.Servicios;
 
@@ -659,11 +662,25 @@
                 </div>`;
             })();
 
-            // Bloque CARGOS ADICIONALES — solo muestra servicios agregados post-reserva (EsAdicional=1)
-            const serviciosDetalleHtml = (svcsAdicionales.length > 0)
+            // Bloque CARGOS ADICIONALES — servicios post-reserva (EsAdicional=1) + días extendidos
+            const nochesExt    = Number(r.NochesExtension) || 0;
+            const tieneCargos  = svcsAdicionales.length > 0 || costoExtraDias > 0;
+            const serviciosDetalleHtml = tieneCargos
                 ? (() => {
-                    const totalSvcs = totalSvcsAdic;
-                    const filas = svcsAdicionales.map(s => {
+                    // Fila de días adicionales (si existen)
+                    const filaDias = costoExtraDias > 0
+                        ? `<tr style="border-bottom:1px solid #e0f2fe;background:#f5f3ff;">
+                               <td style="padding:7px 8px;font-size:.82rem;color:#7c3aed;font-weight:700;">
+                                   <i class="fa-solid fa-calendar-plus" style="margin-right:6px;font-size:.75rem;"></i>
+                                   Días adicionales${nochesExt > 0 ? ` <span style="color:#a78bfa;font-size:.73rem;">(${nochesExt} noche${nochesExt !== 1 ? 's' : ''})</span>` : ''}
+                               </td>
+                               <td style="padding:7px 8px;font-size:.82rem;color:#7c3aed;text-align:center;">${nochesExt || '—'}</td>
+                               <td style="padding:7px 8px;font-size:.82rem;color:#7c3aed;text-align:right;">${nochesExt > 0 ? formatMonto(costoExtraDias / nochesExt) : '—'}</td>
+                               <td style="padding:7px 8px;font-size:.83rem;color:#7c3aed;font-weight:700;text-align:right;">${formatMonto(costoExtraDias)}</td>
+                           </tr>`
+                        : '';
+                    // Filas de servicios adicionales
+                    const filasServicios = svcsAdicionales.map(s => {
                         const cant    = Number(s.Cantidad) || 1;
                         const precio  = Number(s.Precio)   || 0;
                         return `<tr style="border-bottom:1px solid #e0f2fe;">
@@ -673,8 +690,9 @@
                             <td style="padding:7px 8px;font-size:.83rem;color:#0f172a;font-weight:700;text-align:right;">${formatMonto(precio * cant)}</td>
                         </tr>`;
                     }).join('');
-                    const totalFila = r.servicios.length > 1
-                        ? `<tr style="background:#dbeafe;"><td colspan="3" style="padding:7px 8px;font-size:.78rem;color:#1d4ed8;font-weight:800;text-align:right;border-radius:0 0 0 8px;">Total servicios:</td><td style="padding:7px 8px;font-size:.88rem;color:#1d4ed8;font-weight:900;text-align:right;border-radius:0 0 8px 0;">${formatMonto(totalSvcs)}</td></tr>`
+                    const totalCargos = costoExtraDias + totalSvcsAdic;
+                    const totalFila = totalCargos > 0
+                        ? `<tr style="background:#dbeafe;"><td colspan="3" style="padding:7px 8px;font-size:.78rem;color:#1d4ed8;font-weight:800;text-align:right;border-radius:0 0 0 8px;">Total a pagar (extras):</td><td style="padding:7px 8px;font-size:.88rem;color:#1d4ed8;font-weight:900;text-align:right;border-radius:0 0 8px 0;">${formatMonto(totalCargos)}</td></tr>`
                         : '';
                     return `<div style="grid-column:1/-1;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:14px 16px;margin-top:2px;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -684,13 +702,13 @@
                         <table style="width:100%;border-collapse:collapse;">
                             <thead>
                                 <tr style="border-bottom:1.5px solid #bae6fd;">
-                                    <th style="text-align:left;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Servicio</th>
+                                    <th style="text-align:left;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Concepto</th>
                                     <th style="text-align:center;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;width:55px;">Cant.</th>
                                     <th style="text-align:right;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Precio unit.</th>
                                     <th style="text-align:right;padding:6px 8px;font-size:.7rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.05em;">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody>${filas}</tbody>
+                            <tbody>${filaDias}${filasServicios}</tbody>
                             ${totalFila ? `<tfoot>${totalFila}</tfoot>` : ''}
                         </table>
                     </div>`;
@@ -762,8 +780,9 @@
             }
 
             // Bloque comprobante de cargos adicionales (independiente del comprobante principal)
+            // Se muestra si hay servicios EsAdicional=1 O si hay días extendidos O si EstadoCargosAdicionales fue seteado
             let comprobanteCargosHtml = '';
-            if (r.TieneCargosAdicionales) {
+            if (r.TieneCargosAdicionales || costoExtraDias > 0 || r.EstadoCargosAdicionales != null) {
                 if (r.ComprobanteCargos) {
                     const urlC  = `${apiBase}${r.ComprobanteCargos}`;
                     const esPdfC = r.ComprobanteCargos.endsWith('.pdf');
@@ -818,8 +837,17 @@
                                </button>
                            </div>`
                         : adminEsperandoC
-                            ? `<div style="grid-column:1/-1;background:#eff6ff;border:1px dashed #bfdbfe;border-radius:10px;padding:12px 14px;margin-top:4px;">
-                                   <p style="margin:0;font-size:.82rem;color:#1d4ed8;"><i class="fa-solid fa-clock" style="margin-right:6px;"></i>Pendiente: el cliente debe subir el comprobante de los cargos adicionales.</p>
+                            ? `<div style="grid-column:1/-1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-top:4px;">
+                                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                                       <i class="fa-solid fa-file-invoice-dollar" style="color:#3b82f6;"></i>
+                                       <strong style="font-size:.85rem;color:#0f172a;">Comprobante de pago cargos adicionales</strong>
+                                       <span class="badge-comprobante pendiente">⏳ Pendiente</span>
+                                   </div>
+                                   <div style="background:#f0f7ff;border:1.5px dashed #93c5fd;border-radius:8px;padding:18px;text-align:center;">
+                                       <i class="fa-solid fa-clock" style="color:#3b82f6;font-size:1.5rem;margin-bottom:8px;display:block;"></i>
+                                       <p style="margin:0;font-size:.84rem;color:#1d4ed8;font-weight:700;">Esperando comprobante del cliente</p>
+                                       <p style="margin:5px 0 0;font-size:.76rem;color:#3b82f6;line-height:1.4;">El cliente debe subir el comprobante de transferencia de los cargos adicionales.<br>Cuando lo haga, podrás aprobarlo o rechazarlo aquí.</p>
+                                   </div>
                                </div>`
                             : '';
                 }
@@ -1003,7 +1031,7 @@
                 }
 
                 // Botón subir comprobante de cargos adicionales
-                const clientePuedeSubirCargos = r.TieneCargosAdicionales &&
+                const clientePuedeSubirCargos = (r.TieneCargosAdicionales || r.EstadoCargosAdicionales != null) &&
                     Number(r.EstadoCargosAdicionales) === 5 &&
                     (!r.ComprobanteCargos || r.ComprobanteCargosEstado === 'rechazado');
                 if (clientePuedeSubirCargos) {
@@ -1253,13 +1281,14 @@
                         method: 'POST',
                         body: { servicios: lista, metodoPago }
                     });
-                    const totalSvcs = lista.reduce((a, i) => a + i.Cantidad, 0);
-                    showMsg(`${totalSvcs} servicio${totalSvcs !== 1 ? 's' : ''} agregado${totalSvcs !== 1 ? 's' : ''} correctamente.${pedirComprobante ? ' Por favor sube el nuevo comprobante de pago.' : ''}`, true);
+                    const totalSvcs  = lista.reduce((a, i) => a + i.Cantidad, 0);
+                    const esTransfSvc = metodoPago === 2;
+                    showMsg(`${totalSvcs} servicio${totalSvcs !== 1 ? 's' : ''} agregado${totalSvcs !== 1 ? 's' : ''} correctamente.${esTransfSvc ? ' Por favor sube el comprobante de los cargos adicionales.' : ''}`, true);
                     setTimeout(() => {
                         modal.remove();
-                        if (pedirComprobante) {
+                        if (esTransfSvc) {
                             document.getElementById('modal-reserva-detalle')?.classList.add('hidden');
-                            abrirModalSubirComprobante(reservaId);
+                            abrirModalSubirComprobanteCargos(reservaId);
                         } else {
                             verDetalle(reservaId);
                         }
@@ -1452,7 +1481,7 @@
                         modal.remove();
                         if (esTransf) {
                             document.getElementById('modal-reserva-detalle')?.classList.add('hidden');
-                            abrirModalSubirComprobante(reservaId);
+                            abrirModalSubirComprobanteCargos(reservaId);
                         } else {
                             verDetalle(reservaId);
                         }

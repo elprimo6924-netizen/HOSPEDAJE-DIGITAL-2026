@@ -240,6 +240,36 @@ const app = express();
     }
 })();
 
+// Migración: CostoExtension + NochesExtension en reserva (registro de días extendidos)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const colExists = async (col) => {
+            const [[row]] = await db.query(
+                'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+                [dbName, 'reserva', col]
+            );
+            return row.c > 0;
+        };
+        let migro = false;
+        if (!(await colExists('CostoExtension'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN CostoExtension DECIMAL(12,2) NOT NULL DEFAULT 0');
+            migro = true;
+        }
+        if (!(await colExists('NochesExtension'))) {
+            await db.query('ALTER TABLE reserva ADD COLUMN NochesExtension INT NOT NULL DEFAULT 0');
+            migro = true;
+        }
+        if (migro) {
+            const svc = require('./services/reservas.service.js');
+            if (typeof svc._resetColsCache === 'function') svc._resetColsCache();
+            console.log('[MIGRATION] Columnas CostoExtension/NochesExtension agregadas a reserva.');
+        }
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración CostoExtension:', err.message);
+    }
+})();
+
 // Auto-sync de estados cada 60 s: cancela reservas con comprobante vencido, cierra estancias completadas
 setInterval(async () => {
     try {

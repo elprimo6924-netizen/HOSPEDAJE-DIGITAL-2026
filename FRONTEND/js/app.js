@@ -762,30 +762,26 @@ async function cambiarEstadoClienteAdmin(id, nuevoEstado, inputToggle = null) {
     try {
         if (inputToggle) inputToggle.disabled = true;
 
-        const payload = {
-            Nombre: cliente.Nombre,
-            Apellido: cliente.Apellido,
-            Direccion: cliente.Direccion,
-            Email: cliente.Email,
-            Telefono: cliente.Telefono,
-            Estado: nuevoEstado ? 1 : 0,
-            IDRol: cliente.IDRol || 1
-        };
-
-        const resultado = await actualizarCliente(id, payload);
-        if (!resultado) {
-            throw new Error('No se pudo actualizar el estado del cliente');
-        }
+        // Usar endpoint dedicado PATCH que propaga el mensaje exacto del backend
+        // (ej: "No se puede desactivar porque tiene reservas activas o pendientes")
+        await requestJson(`/clientes/${id}/estado`, {
+            method: 'PATCH',
+            body: { Estado: nuevoEstado ? 1 : 0 }
+        });
 
         cliente.Estado = nuevoEstado ? 1 : 0;
         renderizarClientesAdmin();
-        mostrarMensajeClienteAdmin(`Estado actualizado: ${cliente.Nombre || id} ${nuevoEstado ? 'activado' : 'desactivado'}.`, 'ok');
+        mostrarMensajeClienteAdmin(
+            `${cliente.Nombre || id} ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`,
+            'ok'
+        );
     } catch (error) {
         console.error('Error al cambiar estado de cliente:', error);
         if (inputToggle) {
             inputToggle.checked = !nuevoEstado;
         }
-        mostrarMensajeClienteAdmin(error.message || 'No se pudo actualizar el estado', 'error');
+        // Muestra el mensaje específico del backend (reservas activas, etc.)
+        mostrarMensajeClienteAdmin(error.message || 'No se pudo actualizar el estado del cliente', 'error');
     } finally {
         if (inputToggle) inputToggle.disabled = false;
     }

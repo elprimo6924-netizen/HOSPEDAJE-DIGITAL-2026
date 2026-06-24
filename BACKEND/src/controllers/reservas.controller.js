@@ -518,11 +518,10 @@ const agregarServicios = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
-    // Actualizar estado principal y EstadoCargosAdicionales según método de pago
-    const estadoCargoAdic = esTransferencia ? 5 : 2; // 5=Pendiente verificación, 2=Confirmado
+    // Actualizar EstadoCargosAdicionales según método de pago (NO tocar IdEstadoReserva principal)
     if (esTransferencia) {
       await db.query(
-        "UPDATE reserva SET IdEstadoReserva = 5, EstadoCargosAdicionales = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET EstadoCargosAdicionales = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
       );
     } else if (Number(metodoPago) === 1) {
@@ -690,10 +689,10 @@ const extenderDias = async (req, res) => {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
     }
 
-    // Actualizar estado principal y EstadoCargosAdicionales según método de pago
+    // Actualizar EstadoCargosAdicionales según método de pago (NO tocar IdEstadoReserva principal)
     if (esTransferencia) {
       await db.query(
-        "UPDATE reserva SET IdEstadoReserva = 5, EstadoCargosAdicionales = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
+        "UPDATE reserva SET EstadoCargosAdicionales = 5 WHERE IdReserva = ? AND IdEstadoReserva NOT IN (3, 4)",
         [id]
       );
     } else if (Number(metodoPago) === 1) {

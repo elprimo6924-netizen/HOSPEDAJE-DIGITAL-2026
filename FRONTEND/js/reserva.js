@@ -891,8 +891,27 @@ const ResumenLateral = {
             fechasEl.textContent = 'Selecciona las fechas de estadía';
         }
 
-        // Servicios extras
+        // Servicios extras — nombres en el resumen lateral
         const costoServicios = State.serviciosExtras.reduce((acc, s) => acc + (s.precio * (s.cantidad || 1)), 0);
+        const svcDetailEl = document.getElementById('resumen-svc-detail');
+        if (svcDetailEl) {
+            if (State.serviciosExtras.length > 0) {
+                svcDetailEl.innerHTML = State.serviciosExtras.map(s => {
+                    const cant = s.cantidad || 1;
+                    return `<div class="flex items-center justify-between gap-1.5 text-xs text-gray-500">
+                        <span class="flex items-center gap-1.5 min-w-0 truncate">
+                            <i class="fa-solid fa-bell-concierge text-amber-500 text-[10px] shrink-0"></i>
+                            <span class="truncate">${s.nombre}${cant > 1 ? ` ×${cant}` : ''}</span>
+                        </span>
+                        <span class="shrink-0 font-medium">${fmt(s.precio * cant)}</span>
+                    </div>`;
+                }).join('');
+                svcDetailEl.classList.remove('hidden');
+            } else {
+                svcDetailEl.innerHTML = '';
+                svcDetailEl.classList.add('hidden');
+            }
+        }
 
         // IVA INCLUIDO: los precios del catálogo ya contienen el 19%
         const descInput = document.getElementById('descuento');

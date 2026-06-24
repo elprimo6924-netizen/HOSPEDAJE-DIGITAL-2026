@@ -429,7 +429,7 @@ exports.toggleEstado = async (req, res) => {
   }
 };
 
-/* ================= BUSCAR CLIENTES (solo activos, fuente única: clientes) ================= */
+/* ================= BUSCAR CLIENTES (fuente combinada: clientes + usuarios sin registro en clientes) ================= */
 exports.search = async (req, res) => {
   try {
     const q = String(req.query.q || "").trim();
@@ -439,16 +439,16 @@ exports.search = async (req, res) => {
 
     const like = `%${q}%`;
 
-    // Fuente única: tabla clientes con Estado=1 + usuario activo (si existe)
-    // La tabla clientes es la fuente de verdad para el estado del cliente.
-    // Si está en usuarios pero su clientes.Estado=0 → no aparece.
+    // Parte 1: clientes registrados en tabla clientes (Estado=1)
+    // Parte 2: usuarios con IDRol=2/3 que NO tienen registro en clientes (mismo criterio que getAll)
+    // Esto garantiza que el autocomplete de reservas muestra lo mismo que el módulo Clientes.
     const [rows] = await db.query(
       `SELECT
-         CAST(c.NroDocumento AS CHAR) AS documento,
+         CAST(c.NroDocumento AS CHAR)       AS documento,
          c.Nombre,
          c.Apellido,
          c.Email,
-         COALESCE(u.TipoDocumento, 'CC') AS TipoDocumento
+         COALESCE(u.TipoDocumento, 'CC')    AS TipoDocumento
        FROM clientes c
        LEFT JOIN usuarios u
          ON CAST(u.NumeroDocumento AS CHAR) = CAST(c.NroDocumento AS CHAR)
@@ -461,9 +461,37 @@ exports.search = async (req, res) => {
            c.Email       LIKE ? OR
            CAST(c.NroDocumento AS CHAR) LIKE ?
          )
-       ORDER BY c.Nombre ASC
+
+       UNION
+
+       SELECT
+         CAST(u.NumeroDocumento AS CHAR)    AS documento,
+         u.NombreUsuario                    AS Nombre,
+         u.Apellido,
+         u.Email,
+         COALESCE(u.TipoDocumento, 'CC')    AS TipoDocumento
+       FROM usuarios u
+       WHERE u.IDRol IN (2, 3)
+         AND u.IsActive = 1
+         AND u.NumeroDocumento IS NOT NULL
+         AND NOT EXISTS (
+           SELECT 1 FROM clientes c
+           WHERE CAST(c.NroDocumento AS CHAR) = CAST(u.NumeroDocumento AS CHAR)
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM clientes c
+           WHERE c.Email = u.Email
+         )
+         AND (
+           u.NombreUsuario                      LIKE ? OR
+           u.Apellido                           LIKE ? OR
+           u.Email                              LIKE ? OR
+           CAST(u.NumeroDocumento AS CHAR)      LIKE ?
+         )
+
+       ORDER BY Nombre ASC
        LIMIT 10`,
-      [like, like, like, like]
+      [like, like, like, like, like, like, like, like]
     );
 
     console.log(`[Clientes.search] q="${q}" → ${rows.length} resultados`);

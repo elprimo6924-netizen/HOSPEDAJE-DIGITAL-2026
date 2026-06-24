@@ -123,6 +123,8 @@ const ReservasService = {
     const estadoCargosField2 = rCols2.has('EstadoCargosAdicionales')
       ? ', r.EstadoCargosAdicionales'
       : '';
+    const extensionFields2 = (rCols2.has('CostoExtension') ? ', r.CostoExtension' : '') +
+                             (rCols2.has('NochesExtension') ? ', r.NochesExtension' : '');
     const tieneCargosSubq = svcCols0.has('EsAdicional')
       ? `, (SELECT MAX(CASE WHEN drs2.EsAdicional = 1 THEN 1 ELSE 0 END)
              FROM detallereservaservicio drs2 WHERE drs2.IDReserva = r.IdReserva) AS TieneCargosAdicionales`
@@ -135,7 +137,7 @@ const ReservasService = {
               r.FechaReserva, r.FechaInicio, r.FechaFinalizacion,
               r.Sub_Total AS SubTotal, r.Descuento, r.IVA, r.Monto_Total AS MontoTotal,
               r.MetodoPago, r.IdEstadoReserva
-              ${compFields2}${compCargosFields2}${estadoCargosField2}
+              ${compFields2}${compCargosFields2}${estadoCargosField2}${extensionFields2}
               ${tieneCargosSubq},
               c.Nombre, c.Apellido, e.NombreEstadoReserva
               ${habSelect}
@@ -859,10 +861,15 @@ const ReservasService = {
     if (!reserva) return { ok: false, error: "Reserva no encontrada" };
     if (!reserva.IDHabitacion) return { ok: false, error: "Solo se pueden extender reservas de habitación individual" };
 
+    // Normalizar fechas a solo día (UTC) para evitar errores de zona horaria en el cálculo
+    const toUTCDay = (d) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
     const fechaActualFin = new Date(reserva.FechaFinalizacion);
     const fechaNuevaFin  = new Date(nuevaFechaFin + "T12:00:00");
 
-    if (fechaNuevaFin <= fechaActualFin) {
+    const msActual = toUTCDay(fechaActualFin);
+    const msNueva  = toUTCDay(fechaNuevaFin);
+
+    if (msNueva <= msActual) {
       return { ok: false, error: "La nueva fecha debe ser posterior a la fecha de finalización actual" };
     }
 
@@ -888,12 +895,18 @@ const ReservasService = {
     );
     if (!hab) return { ok: false, error: "Habitación no encontrada" };
 
-    const nightsExtra = Math.ceil((fechaNuevaFin - fechaActualFin) / 86400000);
+    // Diferencia en días exactos (UTC, sin Math.ceil para evitar desbordamiento por zona horaria)
+    const nightsExtra = Math.round((msNueva - msActual) / 86400000);
     const costoExtra  = Number(hab.Costo) * nightsExtra;
 
     await db.query(
-      "UPDATE reserva SET FechaFinalizacion = ?, Monto_Total = Monto_Total + ? WHERE IdReserva = ?",
-      [nuevaFechaFin, costoExtra, reservaId]
+      `UPDATE reserva
+       SET FechaFinalizacion = ?,
+           Monto_Total        = Monto_Total + ?,
+           CostoExtension     = COALESCE(CostoExtension, 0) + ?,
+           NochesExtension    = COALESCE(NochesExtension, 0) + ?
+       WHERE IdReserva = ?`,
+      [nuevaFechaFin, costoExtra, costoExtra, nightsExtra, reservaId]
     );
 
     return { ok: true, nightsExtra, costoExtra };
