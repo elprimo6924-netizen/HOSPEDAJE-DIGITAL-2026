@@ -595,6 +595,16 @@
             // costoAlojamiento = MontoTotal - todos los servicios - todos los cargos adicionales
             const costoAlojamiento = Math.max(0, Number(r.MontoTotal || 0) - totalSvcsOrig - totalCargosAdic);
 
+            // Determinar qué tipos de cargos adicionales ya fueron verificados (comprobante aprobado)
+            const _histCargos = r.historialComprobanteCargos || [];
+            const _tiposAprobados = new Set();
+            _histCargos.forEach(h => { if (h.Estado === 'aprobado' && h.Tipo) _tiposAprobados.add(h.Tipo); });
+            if (r.ComprobanteCargosEstado === 'aprobado' && r.ComprobanteCargosReferencia) _tiposAprobados.add(r.ComprobanteCargosReferencia);
+            const montoCargosServAprobado = _tiposAprobados.has('servicios') ? totalSvcsAdic : 0;
+            const montoCargosDiasAprobado = _tiposAprobados.has('dias')      ? costoExtraDias : 0;
+            const montoCargosAprobados    = montoCargosServAprobado + montoCargosDiasAprobado;
+            const montoCargosEnRevision   = totalCargosAdic - montoCargosAprobados;
+
             const tieneServicios = (r.servicios || []).length > 0 || !!r.Servicios;
 
             const campos = [
@@ -631,23 +641,41 @@
 
                 const filaAloj     = fila('🏨 Alojamiento', formatMonto(costoAlojamiento));
                 const filaExtra    = costoExtraDias > 0
-                    ? fila('📅 Días adicionales', formatMonto(costoExtraDias), { color:'#7c3aed', labelColor:'#7c3aed' })
+                    ? fila(`📅 Días adicionales${_tiposAprobados.has('dias') ? ' <span style="color:#16a34a;font-size:.7rem;font-weight:700;">✅</span>' : ' <span style="color:#c2410c;font-size:.7rem;font-weight:700;">⏳</span>'}`,
+                           formatMonto(costoExtraDias),
+                           { color: _tiposAprobados.has('dias') ? '#16a34a' : '#7c3aed', labelColor: _tiposAprobados.has('dias') ? '#16a34a' : '#7c3aed' })
                     : '';
                 const filaSvcOrig  = totalSvcsOrig > 0
                     ? fila('🛎️ Servicios incluidos', formatMonto(totalSvcsOrig), { color:'#0369a1', labelColor:'#0369a1' })
                     : '';
                 const filaSvcAdic  = totalSvcsAdic > 0
-                    ? fila('➕ Cargos adicionales', formatMonto(totalSvcsAdic), { color:'#b45309', labelColor:'#b45309' })
+                    ? fila(`➕ Servicios adicionales${_tiposAprobados.has('servicios') ? ' <span style="color:#16a34a;font-size:.7rem;font-weight:700;">✅</span>' : ' <span style="color:#c2410c;font-size:.7rem;font-weight:700;">⏳</span>'}`,
+                           formatMonto(totalSvcsAdic),
+                           { color: _tiposAprobados.has('servicios') ? '#16a34a' : '#b45309', labelColor: _tiposAprobados.has('servicios') ? '#16a34a' : '#b45309' })
                     : '';
                 const filaDesc  = Number(r.Descuento) > 0
                     ? fila('🏷️ Descuento', `− ${formatMonto(r.Descuento)}`, { color:'#16a34a', labelColor:'#16a34a' })
                     : '';
                 const filaBase  = fila('Base gravable', formatMonto(r.SubTotal), { labelColor:'#94a3b8' });
                 const filaIva   = fila('IVA (19%) incluido', formatMonto(r.IVA), { labelColor:'#94a3b8' });
-                const filaTotal = fila('TOTAL', formatMonto(r.MontoTotal), {
+                const filaTotal = fila('TOTAL FACTURADO', formatMonto(r.MontoTotal), {
                     bold: true, color:'#1a3020', labelColor:'#1a3020',
                     bg:'linear-gradient(90deg,#f0fdf4,#dcfce7)'
                 });
+
+                // Saldo de cargos adicionales (solo si hay cargos)
+                const saldoCargosHtml = (() => {
+                    if (totalCargosAdic <= 0) return '';
+                    if (montoCargosAprobados > 0 && montoCargosEnRevision > 0) {
+                        return sep +
+                            fila('✅ Cargos adicionales verificados', formatMonto(montoCargosAprobados), { color:'#16a34a', labelColor:'#16a34a', bg:'#f0fdf4' }) +
+                            fila('⏳ Cargos adicionales pendientes', formatMonto(montoCargosEnRevision), { color:'#9a3412', labelColor:'#9a3412', bg:'#fff7ed' });
+                    }
+                    if (montoCargosAprobados >= totalCargosAdic) {
+                        return sep + fila('✅ Cargos adicionales — todos verificados', formatMonto(montoCargosAprobados), { color:'#16a34a', labelColor:'#16a34a', bg:'#f0fdf4' });
+                    }
+                    return sep + fila('⏳ Cargos adicionales — pendientes de pago', formatMonto(totalCargosAdic), { color:'#9a3412', labelColor:'#9a3412', bg:'#fff7ed' });
+                })();
 
                 return `<div style="grid-column:1/-1;background:#fffdf7;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-top:2px;">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -659,6 +687,7 @@
                     ${filaBase}${filaIva}
                     ${sep}
                     ${filaTotal}
+                    ${saldoCargosHtml}
                 </div>`;
             })();
 
@@ -667,12 +696,18 @@
             const tieneCargos  = svcsAdicionales.length > 0 || costoExtraDias > 0;
             const serviciosDetalleHtml = tieneCargos
                 ? (() => {
+                    const _badgePago = (tipo) => {
+                        if (_tiposAprobados.has(tipo)) return `<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:5px;background:#dcfce7;border:1px solid #86efac;color:#16a34a;font-size:.68rem;font-weight:700;margin-left:6px;">✅ Verificado</span>`;
+                        if (totalCargosAdic > 0) return `<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:5px;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;font-size:.68rem;font-weight:700;margin-left:6px;">⏳ Pendiente</span>`;
+                        return '';
+                    };
                     // Fila de días adicionales (si existen)
                     const filaDias = costoExtraDias > 0
-                        ? `<tr style="border-bottom:1px solid #e0f2fe;background:#f5f3ff;">
+                        ? `<tr style="border-bottom:1px solid #e0f2fe;background:${_tiposAprobados.has('dias') ? '#f0fdf4' : '#f5f3ff'};">
                                <td style="padding:7px 8px;font-size:.82rem;color:#7c3aed;font-weight:700;">
                                    <i class="fa-solid fa-calendar-plus" style="margin-right:6px;font-size:.75rem;"></i>
                                    Días adicionales${nochesExt > 0 ? ` <span style="color:#a78bfa;font-size:.73rem;">(${nochesExt} noche${nochesExt !== 1 ? 's' : ''})</span>` : ''}
+                                   ${_badgePago('dias')}
                                </td>
                                <td style="padding:7px 8px;font-size:.82rem;color:#7c3aed;text-align:center;">${nochesExt || '—'}</td>
                                <td style="padding:7px 8px;font-size:.82rem;color:#7c3aed;text-align:right;">${nochesExt > 0 ? formatMonto(costoExtraDias / nochesExt) : '—'}</td>
@@ -680,19 +715,42 @@
                            </tr>`
                         : '';
                     // Filas de servicios adicionales
-                    const filasServicios = svcsAdicionales.map(s => {
+                    const filasServicios = svcsAdicionales.map((s, idx) => {
                         const cant    = Number(s.Cantidad) || 1;
                         const precio  = Number(s.Precio || s.Costo || 0);
-                        return `<tr style="border-bottom:1px solid #e0f2fe;">
-                            <td style="padding:7px 8px;font-size:.82rem;color:#1e293b;font-weight:600;">${s.NombreServicio}${s.HoraServicio ? ` <span style="color:#94a3b8;font-size:.73rem;">(${s.HoraServicio})</span>` : ''}</td>
+                        return `<tr style="border-bottom:1px solid #e0f2fe;background:${_tiposAprobados.has('servicios') ? '#f0fdf4' : 'transparent'};">
+                            <td style="padding:7px 8px;font-size:.82rem;color:#1e293b;font-weight:600;">
+                                ${s.NombreServicio}${s.HoraServicio ? ` <span style="color:#94a3b8;font-size:.73rem;">(${s.HoraServicio})</span>` : ''}
+                                ${idx === 0 ? _badgePago('servicios') : ''}
+                            </td>
                             <td style="padding:7px 8px;font-size:.82rem;color:#475569;text-align:center;">${cant}</td>
                             <td style="padding:7px 8px;font-size:.82rem;color:#475569;text-align:right;">${formatMonto(precio)}</td>
                             <td style="padding:7px 8px;font-size:.83rem;color:#0f172a;font-weight:700;text-align:right;">${formatMonto(precio * cant)}</td>
                         </tr>`;
                     }).join('');
-                    const totalFila = totalCargosAdic > 0
-                        ? `<tr style="background:#dbeafe;"><td colspan="3" style="padding:7px 8px;font-size:.78rem;color:#1d4ed8;font-weight:800;text-align:right;border-radius:0 0 0 8px;">Total a pagar (extras):</td><td style="padding:7px 8px;font-size:.88rem;color:#1d4ed8;font-weight:900;text-align:right;border-radius:0 0 8px 0;">${formatMonto(totalCargosAdic)}</td></tr>`
-                        : '';
+                    const totalFila = (() => {
+                        if (totalCargosAdic <= 0) return '';
+                        if (montoCargosAprobados > 0 && montoCargosEnRevision > 0) {
+                            return `<tr style="background:#d1fae5;border-top:1.5px solid #6ee7b7;">
+                                        <td colspan="3" style="padding:6px 8px;font-size:.77rem;color:#065f46;font-weight:800;text-align:right;">✅ Pagado y verificado:</td>
+                                        <td style="padding:6px 8px;font-size:.86rem;color:#065f46;font-weight:900;text-align:right;">${formatMonto(montoCargosAprobados)}</td>
+                                    </tr>
+                                    <tr style="background:#fff7ed;border-top:1px solid #fed7aa;">
+                                        <td colspan="3" style="padding:6px 8px;font-size:.77rem;color:#9a3412;font-weight:800;text-align:right;">⏳ Pendiente de pago:</td>
+                                        <td style="padding:6px 8px;font-size:.86rem;color:#9a3412;font-weight:900;text-align:right;">${formatMonto(montoCargosEnRevision)}</td>
+                                    </tr>`;
+                        }
+                        if (montoCargosAprobados >= totalCargosAdic) {
+                            return `<tr style="background:#d1fae5;border-top:1.5px solid #6ee7b7;">
+                                        <td colspan="3" style="padding:6px 8px;font-size:.77rem;color:#065f46;font-weight:800;text-align:right;">✅ Todo verificado y pagado:</td>
+                                        <td style="padding:6px 8px;font-size:.86rem;color:#065f46;font-weight:900;text-align:right;">${formatMonto(montoCargosAprobados)}</td>
+                                    </tr>`;
+                        }
+                        return `<tr style="background:#dbeafe;border-top:1.5px solid #93c5fd;">
+                                    <td colspan="3" style="padding:6px 8px;font-size:.77rem;color:#1d4ed8;font-weight:800;text-align:right;">⏳ Total pendiente de pago:</td>
+                                    <td style="padding:6px 8px;font-size:.86rem;color:#1d4ed8;font-weight:900;text-align:right;">${formatMonto(totalCargosAdic)}</td>
+                                </tr>`;
+                    })();
                     return `<div style="grid-column:1/-1;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:14px 16px;margin-top:2px;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                             <i class="fa-solid fa-file-invoice-dollar" style="color:#0284c7;font-size:.9rem;"></i>
