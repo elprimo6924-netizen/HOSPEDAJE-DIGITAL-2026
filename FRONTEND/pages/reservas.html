@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -255,7 +255,7 @@
             </div>
         </div>
 
-        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados.</p></footer>
+        <footer><p>&copy; 2026 Hospedaje Digital. Todos los derechos reservados. | Desarrollado por Roberto Molina, Miguel R&iacute;os y Mauricio</p></footer>
     </div>
 
     <script src="../js/config.js"></script>
@@ -1914,6 +1914,16 @@
             const totalCargosAdic = totalSvcsAdic + costoExtraDias;
             const costoAlojamiento = Math.max(0, Number(r.MontoTotal || 0) - totalSvcsOrig - totalCargosAdic);
 
+            // Determinar qué tipos de cargos ya fueron verificados (igual que en verDetalle)
+            const _hC = r.historialComprobanteCargos || [];
+            const _tAprobC = new Set();
+            _hC.forEach(h => { if (h.Estado === 'aprobado' && h.Tipo) _tAprobC.add(h.Tipo); });
+            if (r.ComprobanteCargosEstado === 'aprobado' && r.ComprobanteCargosReferencia) _tAprobC.add(r.ComprobanteCargosReferencia);
+            const _cServAprobC = _tAprobC.has('servicios') ? totalSvcsAdic  : 0;
+            const _cDiasAprobC = _tAprobC.has('dias')      ? costoExtraDias : 0;
+            const _cAprobTotal = _cServAprobC + _cDiasAprobC;
+            const _cPendTotal  = totalCargosAdic - _cAprobTotal;
+
             const metodoPago = Number(r.MetodoPago) === 2
                 ? 'Transferencia bancaria'
                 : Number(r.MetodoPago) === 1 ? 'Efectivo' : '—';
@@ -2127,22 +2137,49 @@
         <table>
           ${tableHead('#7c3aed')}
           <tbody>
-            ${costoExtraDias > 0 ? `<tr style="border-bottom:1px solid #f1f5f9;background:#faf5ff;">
+            ${costoExtraDias > 0 ? `<tr style="border-bottom:1px solid #f1f5f9;background:${_tAprobC.has('dias') ? '#f0fdf4' : '#faf5ff'};">
               <td style="padding:8px 12px;font-size:.83rem;color:#6d28d9;font-weight:600;">
                 📅 Días adicionales
                 <span style="font-size:.73rem;color:#8b5cf6;font-weight:400;margin-left:4px;">(${nochesExtra} noche${nochesExtra !== 1 ? 's' : ''} extra)</span>
+                <span style="margin-left:6px;display:inline-flex;align-items:center;padding:1px 6px;border-radius:5px;font-size:.66rem;font-weight:700;${_tAprobC.has('dias') ? 'background:#dcfce7;border:1px solid #86efac;color:#16a34a;' : 'background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;'}">${_tAprobC.has('dias') ? '✅ Verificado' : '⏳ Pendiente'}</span>
               </td>
               <td style="padding:8px 12px;text-align:center;font-size:.83rem;color:#64748b;">${nochesExtra}</td>
               <td style="padding:8px 12px;text-align:right;font-size:.83rem;color:#64748b;">${fmt(costoExtraDias / nochesExtra)}</td>
-              <td style="padding:8px 12px;text-align:right;font-size:.85rem;font-weight:700;color:#7c3aed;">${fmt(costoExtraDias)}</td>
+              <td style="padding:8px 12px;text-align:right;font-size:.85rem;font-weight:700;color:${_tAprobC.has('dias') ? '#16a34a' : '#7c3aed'};">${fmt(costoExtraDias)}</td>
             </tr>` : ''}
-            ${buildSvcRows(svcsAdic, '#7c3aed')}
+            ${svcsAdic.map((s, idx) => {
+                const cant = Number(s.Cantidad) || 1;
+                const precio = Number(s.Precio || s.Costo || s.PrecioUnitario || 0);
+                const pagado = _tAprobC.has('servicios');
+                return `<tr style="border-bottom:1px solid #f1f5f9;background:${pagado ? '#f0fdf4' : 'transparent'};">
+                    <td style="padding:8px 12px;font-size:.83rem;color:#334155;">
+                        ${s.NombreServicio}${s.HoraServicio ? `<span style="color:#94a3b8;font-size:.75rem;margin-left:4px;">(${s.HoraServicio})</span>` : ''}
+                        ${idx === 0 ? `<span style="margin-left:6px;display:inline-flex;align-items:center;padding:1px 6px;border-radius:5px;font-size:.66rem;font-weight:700;${pagado ? 'background:#dcfce7;border:1px solid #86efac;color:#16a34a;' : 'background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;'}">${pagado ? '✅ Verificado' : '⏳ Pendiente'}</span>` : ''}
+                    </td>
+                    <td style="padding:8px 12px;font-size:.83rem;color:#64748b;text-align:center;">${cant}</td>
+                    <td style="padding:8px 12px;font-size:.83rem;color:#64748b;text-align:right;">${fmt(precio)}</td>
+                    <td style="padding:8px 12px;font-size:.85rem;font-weight:700;color:${pagado ? '#16a34a' : '#7c3aed'};text-align:right;">${fmt(precio * cant)}</td>
+                </tr>`;
+            }).join('')}
           </tbody>
           <tfoot>
-            <tr style="background:#f5f3ff;">
-              <td colspan="3" class="tfoot-row" style="color:#6d28d9;">Total cargos adicionales:</td>
-              <td class="tfoot-row" style="color:#6d28d9;">${fmt(totalCargosAdic)}</td>
+            ${_cAprobTotal > 0 && _cPendTotal > 0 ? `
+            <tr style="background:#d1fae5;border-top:1.5px solid #6ee7b7;">
+              <td colspan="3" class="tfoot-row" style="color:#065f46;">✅ Pagado y verificado:</td>
+              <td class="tfoot-row" style="color:#065f46;">${fmt(_cAprobTotal)}</td>
             </tr>
+            <tr style="background:#fff7ed;">
+              <td colspan="3" class="tfoot-row" style="color:#9a3412;">⏳ Pendiente de pago:</td>
+              <td class="tfoot-row" style="color:#9a3412;">${fmt(_cPendTotal)}</td>
+            </tr>` : _cAprobTotal >= totalCargosAdic ? `
+            <tr style="background:#d1fae5;border-top:1.5px solid #6ee7b7;">
+              <td colspan="3" class="tfoot-row" style="color:#065f46;">✅ Todo verificado y pagado:</td>
+              <td class="tfoot-row" style="color:#065f46;">${fmt(_cAprobTotal)}</td>
+            </tr>` : `
+            <tr style="background:#f5f3ff;">
+              <td colspan="3" class="tfoot-row" style="color:#6d28d9;">⏳ Total pendiente de pago:</td>
+              <td class="tfoot-row" style="color:#6d28d9;">${fmt(totalCargosAdic)}</td>
+            </tr>`}
           </tfoot>
         </table>
       </div>
@@ -2166,8 +2203,8 @@
           <span class="lbl" style="color:#7c3aed;font-weight:700;">➕ Cargos adicionales</span>
           <span class="val" style="color:#7c3aed;font-weight:700;">${fmt(totalCargosAdic)}</span>
         </div>
-        ${costoExtraDias > 0 ? `<div class="t-row indent"><span>Días adicionales (${nochesExtra} noche${nochesExtra!==1?'s':''})</span><span>${fmt(costoExtraDias)}</span></div>` : ''}
-        ${svcsAdic.length > 0 ? `<div class="t-row indent"><span>Servicios extras</span><span>${fmt(totalSvcsAdic)}</span></div>` : ''}` : ''}
+        ${costoExtraDias > 0 ? `<div class="t-row indent"><span>📅 Días adicionales (${nochesExtra} noche${nochesExtra!==1?'s':''}) ${_tAprobC.has('dias') ? '<span style="color:#16a34a;font-size:.7rem;">✅</span>' : '<span style="color:#c2410c;font-size:.7rem;">⏳</span>'}</span><span style="color:${_tAprobC.has('dias') ? '#16a34a' : '#7c3aed'};">${fmt(costoExtraDias)}</span></div>` : ''}
+        ${svcsAdic.length > 0 ? `<div class="t-row indent"><span>🛎️ Servicios extras ${_tAprobC.has('servicios') ? '<span style="color:#16a34a;font-size:.7rem;">✅</span>' : '<span style="color:#c2410c;font-size:.7rem;">⏳</span>'}</span><span style="color:${_tAprobC.has('servicios') ? '#16a34a' : '#7c3aed'};">${fmt(totalSvcsAdic)}</span></div>` : ''}` : ''}
         ${Number(r.Descuento) > 0 ? `
         <div class="t-row sep discount">
           <span class="lbl">Descuento aplicado</span>
@@ -2180,9 +2217,20 @@
           <span>IVA (19%) incluido</span><span>${fmt(r.IVA)}</span>
         </div>
         <div class="t-row total-final">
-          <span class="lbl">TOTAL <span class="cop-badge">🇨🇴 COP</span></span>
+          <span class="lbl">TOTAL FACTURADO <span class="cop-badge">🇨🇴 COP</span></span>
           <span class="val">${fmt(r.MontoTotal)}</span>
         </div>
+        ${totalCargosAdic > 0 ? `
+        <div style="border-top:1px dashed #e2e8f0;margin-top:10px;padding-top:10px;">
+          ${_cAprobTotal > 0 ? `<div class="t-row" style="background:#f0fdf4;border-radius:7px;padding:6px 10px;margin-bottom:4px;">
+            <span style="color:#16a34a;font-weight:700;font-size:.83rem;">✅ Cargos adicionales verificados</span>
+            <span style="color:#16a34a;font-weight:800;">${fmt(_cAprobTotal)}</span>
+          </div>` : ''}
+          ${_cPendTotal > 0 ? `<div class="t-row" style="background:#fff7ed;border-radius:7px;padding:6px 10px;">
+            <span style="color:#9a3412;font-weight:700;font-size:.83rem;">⏳ Cargos adicionales pendientes</span>
+            <span style="color:#9a3412;font-weight:800;">${fmt(_cPendTotal)}</span>
+          </div>` : ''}
+        </div>` : ''}
       </div>
     </div>
 
@@ -2194,6 +2242,10 @@
 
   <div class="print-bar">
     <button class="btn-print" onclick="window.print()">🖨️ Imprimir comprobante</button>
+    <p style="margin-top:12px;font-size:.7rem;color:#94a3b8;">
+      &copy; 2026 Hospedaje Digital. Todos los derechos reservados.<br>
+      <span style="font-size:.67rem;">Desarrollado por Roberto Molina, Miguel R&iacute;os y Mauricio</span>
+    </p>
   </div>
 </div>
 </body>
