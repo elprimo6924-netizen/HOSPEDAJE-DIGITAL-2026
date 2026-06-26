@@ -822,6 +822,23 @@ const subirComprobanteCargos = async (req, res) => {
       fs.unlink(req.file.path, () => {});
       return res.status(404).json({ error: "Reserva no encontrada." });
     }
+
+    // Determinar qué tipos de cargos existen en esta reserva y actualizar la referencia
+    // Un solo comprobante cubre TODOS los cargos pendientes en ese momento
+    const [[counts]] = await db.query(
+      `SELECT
+         (SELECT COUNT(*) FROM detallereservaservicio WHERE IDReserva = ? AND EsAdicional = 1) AS numSvcs,
+         COALESCE((SELECT CostoExtension FROM reserva WHERE IdReserva = ? LIMIT 1), 0)          AS costoExt`,
+      [id, id]
+    );
+    const hasSvcs = Number(counts.numSvcs) > 0;
+    const hasDias = Number(counts.costoExt) > 0;
+    const tipoRef = (hasSvcs && hasDias) ? 'ambos' : hasSvcs ? 'servicios' : 'dias';
+    await db.query(
+      "UPDATE reserva SET ComprobanteCargosReferencia = ? WHERE IdReserva = ?",
+      [tipoRef, id]
+    );
+
     return res.status(200).json({ ok: true, comprobanteUrl, estado: "pendiente" });
   } catch (error) {
     if (req.file?.path) fs.unlink(req.file.path, () => {});

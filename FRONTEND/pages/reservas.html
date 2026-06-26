@@ -595,11 +595,22 @@
             // costoAlojamiento = MontoTotal - todos los servicios - todos los cargos adicionales
             const costoAlojamiento = Math.max(0, Number(r.MontoTotal || 0) - totalSvcsOrig - totalCargosAdic);
 
-            // Determinar qué tipos de cargos adicionales ya fueron verificados (comprobante aprobado)
+            // Determinar qué tipos de cargos adicionales ya fueron verificados
+            // Un comprobante puede cubrir 'servicios', 'dias' o 'ambos' (los dos al mismo tiempo)
             const _histCargos = r.historialComprobanteCargos || [];
             const _tiposAprobados = new Set();
-            _histCargos.forEach(h => { if (h.Estado === 'aprobado' && h.Tipo) _tiposAprobados.add(h.Tipo); });
-            if (r.ComprobanteCargosEstado === 'aprobado' && r.ComprobanteCargosReferencia) _tiposAprobados.add(r.ComprobanteCargosReferencia);
+            const _addTipo = (tipo) => {
+                if (tipo === 'ambos') { _tiposAprobados.add('servicios'); _tiposAprobados.add('dias'); }
+                else if (tipo) _tiposAprobados.add(tipo);
+            };
+            // Cortocircuito: EstadoCargosAdicionales=2 significa TODO confirmado (sin comprobante activo pendiente)
+            if (Number(r.EstadoCargosAdicionales) === 2 && r.ComprobanteCargosEstado !== 'pendiente') {
+                _tiposAprobados.add('servicios');
+                _tiposAprobados.add('dias');
+            } else {
+                _histCargos.forEach(h => { if (h.Estado === 'aprobado') _addTipo(h.Tipo); });
+                if (r.ComprobanteCargosEstado === 'aprobado') _addTipo(r.ComprobanteCargosReferencia);
+            }
             const montoCargosServAprobado = _tiposAprobados.has('servicios') ? totalSvcsAdic : 0;
             const montoCargosDiasAprobado = _tiposAprobados.has('dias')      ? costoExtraDias : 0;
             const montoCargosAprobados    = montoCargosServAprobado + montoCargosDiasAprobado;
@@ -1914,11 +1925,19 @@
             const totalCargosAdic = totalSvcsAdic + costoExtraDias;
             const costoAlojamiento = Math.max(0, Number(r.MontoTotal || 0) - totalSvcsOrig - totalCargosAdic);
 
-            // Determinar qué tipos de cargos ya fueron verificados (igual que en verDetalle)
+            // Determinar qué tipos de cargos ya fueron verificados (igual lógica que verDetalle)
             const _hC = r.historialComprobanteCargos || [];
             const _tAprobC = new Set();
-            _hC.forEach(h => { if (h.Estado === 'aprobado' && h.Tipo) _tAprobC.add(h.Tipo); });
-            if (r.ComprobanteCargosEstado === 'aprobado' && r.ComprobanteCargosReferencia) _tAprobC.add(r.ComprobanteCargosReferencia);
+            const _addTC = (tipo) => {
+                if (tipo === 'ambos') { _tAprobC.add('servicios'); _tAprobC.add('dias'); }
+                else if (tipo) _tAprobC.add(tipo);
+            };
+            if (Number(r.EstadoCargosAdicionales) === 2 && r.ComprobanteCargosEstado !== 'pendiente') {
+                _tAprobC.add('servicios'); _tAprobC.add('dias');
+            } else {
+                _hC.forEach(h => { if (h.Estado === 'aprobado') _addTC(h.Tipo); });
+                if (r.ComprobanteCargosEstado === 'aprobado') _addTC(r.ComprobanteCargosReferencia);
+            }
             const _cServAprobC = _tAprobC.has('servicios') ? totalSvcsAdic  : 0;
             const _cDiasAprobC = _tAprobC.has('dias')      ? costoExtraDias : 0;
             const _cAprobTotal = _cServAprobC + _cDiasAprobC;
