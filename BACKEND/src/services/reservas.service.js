@@ -126,7 +126,8 @@ const ReservasService = {
       ? ', r.EstadoCargosAdicionales'
       : '';
     const extensionFields2 = (rCols2.has('CostoExtension') ? ', r.CostoExtension' : '') +
-                             (rCols2.has('NochesExtension') ? ', r.NochesExtension' : '');
+                             (rCols2.has('NochesExtension') ? ', r.NochesExtension' : '') +
+                             (rCols2.has('EstadoPagoExtension') ? ', r.EstadoPagoExtension' : '');
     const tieneCargosSubq = svcCols0.has('EsAdicional')
       ? `, (SELECT MAX(CASE WHEN drs2.EsAdicional = 1 THEN 1 ELSE 0 END)
              FROM detallereservaservicio drs2 WHERE drs2.IDReserva = r.IdReserva) AS TieneCargosAdicionales`
@@ -253,8 +254,9 @@ const ReservasService = {
     const horaField       = svcCols.has('HoraServicio') ? ', drs.HoraServicio' : '';
     const cantField       = svcCols.has('Cantidad')     ? ', drs.Cantidad'     : '';
     const esAdicionalField= svcCols.has('EsAdicional')  ? ', drs.EsAdicional'  : '';
+    const estadoPagoField = svcCols.has('EstadoPago')   ? ', drs.EstadoPago'   : '';
     const [servicios] = await db.query(
-      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}${cantField}${esAdicionalField}
+      `SELECT s.IDServicio, s.NombreServicio, drs.Precio${horaField}${cantField}${esAdicionalField}${estadoPagoField}
        FROM detallereservaservicio drs
        JOIN servicio s ON drs.IDServicio = s.IDServicio
        WHERE drs.IDReserva = ?`,
@@ -763,6 +765,21 @@ const ReservasService = {
          WHERE IdReserva = ?`,
         [reservaId]
       );
+      // Marcar per-ítem: servicios adicionales pendientes → aprobados
+      try {
+        await db.query(
+          `UPDATE detallereservaservicio
+           SET EstadoPago = 'aprobado'
+           WHERE IDReserva = ? AND EsAdicional = 1 AND EstadoPago = 'pendiente'`,
+          [reservaId]
+        );
+        await db.query(
+          `UPDATE reserva
+           SET EstadoPagoExtension = 'aprobado'
+           WHERE IdReserva = ? AND EstadoPagoExtension = 'pendiente'`,
+          [reservaId]
+        );
+      } catch (_) { /* columnas pueden no existir en instalaciones antiguas */ }
       return result.affectedRows > 0 ? 'aprobado' : null;
     }
     if (accion === 'rechazar') {
@@ -862,10 +879,11 @@ const ReservasService = {
     return rows;
   },
 
-  agregarServicios: async (reservaId, servicios) => {
+  agregarServicios: async (reservaId, servicios, estadoPago = null) => {
     const detalleCols = await getDetalleServicioCols();
     const hasHoraServicio = detalleCols.has("HoraServicio");
     const hasEsAdicional  = detalleCols.has("EsAdicional");
+    const hasEstadoPago   = detalleCols.has("EstadoPago");
 
     let costoAdicional = 0;
 
@@ -879,7 +897,8 @@ const ReservasService = {
       const cols = ["IDReserva", "IDServicio", "Cantidad", "Precio", "Estado"];
       const vals = [reservaId, sid, qty, svc.Costo, 1];
       if (hasHoraServicio) { cols.push("HoraServicio"); vals.push(null); }
-      if (hasEsAdicional)  { cols.push("EsAdicional");  vals.push(1); } // 1 = cargo adicional post-reserva
+      if (hasEsAdicional)  { cols.push("EsAdicional");  vals.push(1); }
+      if (hasEstadoPago && estadoPago) { cols.push("EstadoPago"); vals.push(estadoPago); }
 
       await db.query(
         `INSERT IGNORE INTO detallereservaservicio (${cols.join(", ")}) VALUES (${cols.map(() => '?').join(", ")})`,
@@ -896,7 +915,7 @@ const ReservasService = {
     }
   },
 
-  extenderDias: async (reservaId, nuevaFechaFin) => {
+  extenderDias: async (reservaId, nuevaFechaFin, estadoPagoExt = null) => {
     const reservaCols = await getReservaCols();
     const habCol = reservaCols.has("IDHabitacion")
       ? "IDHabitacion"
@@ -958,6 +977,15 @@ const ReservasService = {
        WHERE IdReserva = ?`,
       [nuevaFechaFin, costoExtra, costoExtra, nightsExtra, reservaId]
     );
+
+    if (estadoPagoExt) {
+      try {
+        await db.query(
+          "UPDATE reserva SET EstadoPagoExtension = ? WHERE IdReserva = ?",
+          [estadoPagoExt, reservaId]
+        );
+      } catch (_) { /* columna puede no existir en instalaciones antiguas */ }
+    }
 
     return { ok: true, nightsExtra, costoExtra };
   },

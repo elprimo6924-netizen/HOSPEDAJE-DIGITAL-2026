@@ -512,7 +512,8 @@ const agregarServicios = async (req, res) => {
       return res.status(400).json({ error: "Selecciona al menos un servicio" });
     }
 
-    await ReservasService.agregarServicios(id, lista);
+    const estadoPago = esTransferencia ? 'pendiente' : (Number(metodoPago) === 1 ? 'aprobado' : null);
+    await ReservasService.agregarServicios(id, lista, estadoPago);
 
     if (metodoPago !== undefined && metodoPago !== null) {
       await db.query("UPDATE reserva SET MetodoPago = ? WHERE IdReserva = ?", [metodoPago, id]);
@@ -679,10 +680,10 @@ const extenderDias = async (req, res) => {
     const { nuevaFechaFin, metodoPago } = req.body;
     if (!nuevaFechaFin) return res.status(400).json({ error: "Indica la nueva fecha de finalización" });
 
-    const result = await ReservasService.extenderDias(id, nuevaFechaFin);
-    if (!result.ok) return res.status(400).json({ error: result.error });
-
     const esTransferencia = Number(metodoPago) === 2;
+    const estadoPagoExt = esTransferencia ? 'pendiente' : (Number(metodoPago) === 1 ? 'aprobado' : null);
+    const result = await ReservasService.extenderDias(id, nuevaFechaFin, estadoPagoExt);
+    if (!result.ok) return res.status(400).json({ error: result.error });
 
     // Guardar método de pago si se envió
     if (metodoPago !== undefined && metodoPago !== null) {

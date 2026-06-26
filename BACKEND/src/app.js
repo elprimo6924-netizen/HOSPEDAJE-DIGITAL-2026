@@ -317,6 +317,53 @@ const app = express();
     }
 })();
 
+// Migración: EstadoPago en detallereservaservicio + EstadoPagoExtension en reserva (tracking por ítem)
+(async () => {
+    try {
+        const dbName = process.env.DB_NAME || 'hospedaje';
+        const colExistsIn = async (table, col) => {
+            const [[row]] = await db.query(
+                'SELECT COUNT(*) AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?',
+                [dbName, table, col]
+            );
+            return row.c > 0;
+        };
+        let migro = false;
+        if (!(await colExistsIn('detallereservaservicio', 'EstadoPago'))) {
+            await db.query("ALTER TABLE detallereservaservicio ADD COLUMN EstadoPago VARCHAR(20) NULL");
+            // Backfill: marcar servicios adicionales como 'aprobado' en reservas ya confirmadas
+            await db.query(`
+                UPDATE detallereservaservicio drs
+                JOIN reserva r ON drs.IDReserva = r.IdReserva
+                SET drs.EstadoPago = 'aprobado'
+                WHERE drs.EsAdicional = 1
+                  AND drs.EstadoPago IS NULL
+                  AND r.EstadoCargosAdicionales = 2
+            `).catch(() => {});
+            migro = true;
+        }
+        if (!(await colExistsIn('reserva', 'EstadoPagoExtension'))) {
+            await db.query("ALTER TABLE reserva ADD COLUMN EstadoPagoExtension VARCHAR(20) NULL");
+            // Backfill: extensiones en reservas ya confirmadas
+            await db.query(`
+                UPDATE reserva
+                SET EstadoPagoExtension = 'aprobado'
+                WHERE EstadoPagoExtension IS NULL
+                  AND EstadoCargosAdicionales = 2
+                  AND COALESCE(CostoExtension, 0) > 0
+            `).catch(() => {});
+            migro = true;
+        }
+        if (migro) {
+            const svc = require('./services/reservas.service.js');
+            if (typeof svc._resetColsCache === 'function') svc._resetColsCache();
+            console.log('[MIGRATION] EstadoPago/EstadoPagoExtension agregados.');
+        }
+    } catch (err) {
+        console.error('[MIGRATION] Error en migración EstadoPago:', err.message);
+    }
+})();
+
 // Auto-sync de estados cada 60 s: cancela reservas con comprobante vencido, cierra estancias completadas
 setInterval(async () => {
     try {
