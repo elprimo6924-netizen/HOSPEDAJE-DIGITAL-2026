@@ -245,7 +245,7 @@ const cancelar = async (req, res) => {
         COALESCE(c.Apellido, ${userApellidoExpr}, '') AS Apellido,
         COALESCE(c.Email, ${userEmailExpr}) AS Email,
         COALESCE(hd.NombreHabitacion, hp.NombreHabitacion, 'Reserva') AS habitacion,
-        r.FechaInicio, r.FechaFinalizacion, r.MontoTotal
+        r.FechaInicio, r.FechaFinalizacion, r.Monto_Total AS MontoTotal
       FROM reserva r
       LEFT JOIN clientes c  ON r.NroDocumentoCliente = c.NroDocumento
       LEFT JOIN usuarios u  ON r.id_usuario = u.IDUsuario
